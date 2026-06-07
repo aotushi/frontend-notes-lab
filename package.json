@@ -1,0 +1,29 @@
+{
+  "name": "frontend-notes-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs --host 127.0.0.1",
+    "build": "npm run lint:timeline && vitepress build docs && node scripts/write-assets-ignore.mjs",
+    "build:questions": "node scripts/build-question-index.mjs",
+    "lint:timeline": "node scripts/lint-timeline-trace.mjs",
+    "sync:html-questions": "node scripts/sync-html-question-bank.mjs",
+    "sync:raw01": "node scripts/sync-raw01-migrated-docs.mjs",
+    "preview": "vitepress preview docs --host 127.0.0.1",
+    "dev:worker": "npm run build && wrangler dev --local",
+    "deploy": "npm run build && wrangler deploy",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250605.0",
+    "typescript": "^5.8.3",
+    "vitepress": "^1.6.3",
+    "vue": "^3.5.16",
+    "vue-tsc": "^2.2.10",
+    "wrangler": "^4.18.0"
+  }
+}

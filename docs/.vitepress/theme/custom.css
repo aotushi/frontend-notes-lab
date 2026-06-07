@@ -1,0 +1,56 @@
+:root {
+  --vp-c-brand-1: #1f766f;
+  --vp-c-brand-2: #2f9188;
+  --vp-c-brand-3: #56b2a9;
+  --vp-c-brand-soft: rgba(47, 145, 136, 0.14);
+  --vp-font-family-base: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --vp-code-border-radius: 4px;
+
+  /*
+   * VitePress default theme customization rule:
+   * Prefer overriding documented/theme CSS variables first. This keeps changes
+   * stable across theme updates and avoids patching node_modules.
+   *
+   * --vp-layout-max-width controls the whole documentation layout shell,
+   * including sidebar, content, and aside distribution on wide screens.
+   */
+  --vp-layout-max-width: 1760px;
+
+  /*
+   * Project-level token for article content width.
+   * VitePress does not expose a dedicated variable for the doc content column
+   * when the right aside is visible, so we define one here and apply it below.
+   */
+  --notes-doc-content-max-width: 920px;
+}
+
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3 {
+  letter-spacing: 0;
+}
+
+.vp-doc li + li {
+  margin-top: 4px;
+}
+
+.vp-doc .question-bank-answer {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 1280px) {
+  /*
+   * Do not change `.VPDoc` when the goal is to widen the article text.
+   * `.VPDoc` is only the outer document wrapper. The actual text column is
+   * limited by `.VPDoc.has-aside .content-container { max-width: 688px; }`
+   * in the default theme.
+   *
+   * Use a selector specific enough to override the default scoped rule without
+   * `!important`. Keep this override narrow so mobile/tablet layouts retain
+   * VitePress defaults.
+   */
+  .VPDoc.has-aside .container .content .content-container {
+    max-width: var(--notes-doc-content-max-width);
+  }
+}

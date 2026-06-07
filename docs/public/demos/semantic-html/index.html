@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML 语义化结构对比</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #5f6b7a;
+      --border: #d8e0ea;
+      --bad: #b42318;
+      --good: #047857;
+      --soft-bad: #fff1f0;
+      --soft-good: #ecfdf3;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .demo-shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 22px 18px 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    a {
+      color: #0f5f9f;
+    }
+
+    .intro {
+      margin-bottom: 16px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .panel {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .panel.full {
+      grid-column: 1 / -1;
+    }
+
+    .fake-page,
+    .semantic-page {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .top,
+    .site-header {
+      padding: 12px;
+      color: #fff;
+      background: #1f2937;
+    }
+
+    .brand {
+      font-weight: 750;
+    }
+
+    .links,
+    .site-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .links span,
+    .site-nav a {
+      color: #dbeafe;
+      font-size: 14px;
+    }
+
+    .content,
+    .semantic-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 160px;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .card,
+    .post {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fbfdff;
+    }
+
+    .fake-title {
+      margin-bottom: 8px;
+      font-size: 16px;
+      font-weight: 750;
+    }
+
+    .fake-button,
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 6px 12px;
+      border: 1px solid #0f766e;
+      border-radius: 6px;
+      color: #fff;
+      background: #0f766e;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .fake-aside,
+    .related {
+      padding: 12px;
+      border-radius: 6px;
+      background: #f3f6fa;
+      font-size: 14px;
+    }
+
+    .bottom,
+    .site-footer {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .score {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .score.bad {
+      background: var(--soft-bad);
+    }
+
+    .score.good {
+      background: var(--soft-good);
+    }
+
+    .score strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .score ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    pre {
+      margin: 12px 0 0;
+      padding: 12px;
+      border-radius: 6px;
+      overflow: auto;
+      color: #dbeafe;
+      background: #111827;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 820px) {
+      .grid,
+      .score-grid,
+      .content,
+      .semantic-main {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-shell">
+    <h1>HTML 语义化结构对比</h1>
+    <p class="intro">两段结构视觉接近，但浏览器能读到的结构信号不同。打开控制台也能看到同样的审计结果。</p>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>只用 div / span</h2>
+        <div class="fake-page" id="div-version">
+          <div class="top">
+            <div class="brand">Frontend Notes</div>
+            <div class="links">
+              <span>首页</span>
+              <span>HTML</span>
+              <span>CSS</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="card">
+              <div class="fake-title">HTML 语义化</div>
+              <p>用合适的标签表达内容结构，而不是只表达样式。</p>
+              <div class="fake-button" tabindex="0">阅读全文</div>
+            </div>
+            <div class="fake-aside">相关阅读：可访问性、SEO、表单标签。</div>
+          </div>
+          <div class="bottom">© Frontend Notes</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>语义化 HTML</h2>
+        <div class="semantic-page" id="semantic-version">
+          <header class="site-header">
+            <div class="brand">Frontend Notes</div>
+            <nav class="site-nav" aria-label="主导航">
+              <a href="#home">首页</a>
+              <a href="#html">HTML</a>
+              <a href="#css">CSS</a>
+            </nav>
+          </header>
+          <main class="semantic-main">
+            <article class="post">
+              <h3>HTML 语义化</h3>
+              <p>用合适的标签表达内容结构，而不是只表达样式。</p>
+              <button type="button">阅读全文</button>
+            </article>
+            <aside class="related" aria-label="相关阅读">相关阅读：可访问性、SEO、表单标签。</aside>
+          </main>
+          <footer class="site-footer">© Frontend Notes</footer>
+        </div>
+      </section>
+
+      <section class="panel full">
+        <h2>可验证信号</h2>
+        <div class="score-grid" id="scores"></div>
+        <pre id="log"></pre>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    function audit(root) {
+      return {
+        landmarks: root.querySelectorAll('header, nav, main, aside, footer').length,
+        headings: root.querySelectorAll('h1, h2, h3, h4, h5, h6').length,
+        realLinks: root.querySelectorAll('a[href]').length,
+        buttons: root.querySelectorAll('button').length,
+        fakeClickable: root.querySelectorAll('[tabindex]').length,
+        articles: root.querySelectorAll('article').length,
+        labelledNav: root.querySelectorAll('nav[aria-label], nav[aria-labelledby]').length
+      };
+    }
+
+    function renderScore(title, data, tone) {
+      return [
+        '<div class="score ' + tone + '">',
+        '<strong>' + title + '</strong>',
+        '<ul>',
+        '<li>语义地标：' + data.landmarks + '</li>',
+        '<li>标题元素：' + data.headings + '</li>',
+        '<li>真实链接 a[href]：' + data.realLinks + '</li>',
+        '<li>原生 button：' + data.buttons + '</li>',
+        '<li>tabindex 模拟控件：' + data.fakeClickable + '</li>',
+        '<li>article：' + data.articles + '</li>',
+        '<li>有名称的 nav：' + data.labelledNav + '</li>',
+        '</ul>',
+        '</div>'
+      ].join('');
+    }
+
+    var divResult = audit(document.getElementById('div-version'));
+    var semanticResult = audit(document.getElementById('semantic-version'));
+
+    document.getElementById('scores').innerHTML = [
+      renderScore('div / span 版本', divResult, 'bad'),
+      renderScore('语义化版本', semanticResult, 'good')
+    ].join('');
+
+    var output = {
+      divVersion: divResult,
+      semanticVersion: semanticResult
+    };
+
+    document.getElementById('log').textContent = JSON.stringify(output, null, 2);
+    console.log(output);
+  </script>
+</body>
+</html>

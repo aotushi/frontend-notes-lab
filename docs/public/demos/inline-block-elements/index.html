@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>inline、block、inline-block 可验证差异</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #5f6b7a;
+      --border: #d8e0ea;
+      --inline: #2563eb;
+      --block: #0f766e;
+      --inline-block: #a855f7;
+      --code: #101828;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 22px 18px 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: var(--code);
+      background: #eef2f7;
+    }
+
+    .intro {
+      margin-bottom: 16px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .panel {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .panel.full {
+      grid-column: 1 / -1;
+    }
+
+    .stage {
+      min-height: 116px;
+      padding: 12px;
+      border: 1px dashed #b8c2d0;
+      border-radius: 6px;
+      background: #fbfdff;
+    }
+
+    .box {
+      width: 150px;
+      height: 54px;
+      margin: 10px;
+      padding: 8px;
+      border: 2px solid currentColor;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 650;
+      text-align: center;
+    }
+
+    .inline {
+      display: inline;
+      color: var(--inline);
+      background: #dbeafe;
+    }
+
+    .block {
+      display: block;
+      color: var(--block);
+      background: #ccfbf1;
+    }
+
+    .inline-block {
+      display: inline-block;
+      color: var(--inline-block);
+      background: #f3e8ff;
+    }
+
+    .gap-demo {
+      font-size: 16px;
+    }
+
+    .gap-demo .box {
+      margin: 0;
+    }
+
+    .gap-demo.compact {
+      font-size: 0;
+    }
+
+    .gap-demo.compact .inline-block {
+      font-size: 14px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+      background: currentColor;
+    }
+
+    .measurements {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      padding: 10px;
+      border-radius: 6px;
+      background: #f3f6fa;
+      font-size: 13px;
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    pre {
+      min-height: 150px;
+      margin: 0;
+      padding: 13px;
+      border-radius: 6px;
+      overflow: auto;
+      color: #dbeafe;
+      background: #111827;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .measurements {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>inline、block、inline-block 可验证差异</h1>
+    <p class="intro">观察盒子是否换行、指定宽高是否生效、元素之间是否出现源码空白间隙。</p>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>1. 同样设置 width / height</h2>
+        <div class="stage" id="size-stage">
+          <span class="box inline" id="inline-box">inline</span>
+          <span class="box block" id="block-box">block</span>
+          <span class="box inline-block" id="inline-block-box">inline-block</span>
+        </div>
+        <div class="legend">
+          <span style="color: var(--inline)"><i class="dot"></i>普通 inline 不按指定宽高布局</span>
+          <span style="color: var(--block)"><i class="dot"></i>block 换行并可设置尺寸</span>
+          <span style="color: var(--inline-block)"><i class="dot"></i>inline-block 可同行也可设置尺寸</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>2. inline-block 源码空白间隙</h2>
+        <div class="stage">
+          <p><code>有换行/空格</code></p>
+          <div class="gap-demo" id="gap-normal">
+            <span class="box inline-block">A</span>
+            <span class="box inline-block">B</span>
+          </div>
+          <p><code>父级 font-size: 0</code></p>
+          <div class="gap-demo compact" id="gap-compact">
+            <span class="box inline-block">A</span>
+            <span class="box inline-block">B</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel full">
+        <h2>3. 浏览器实测数据</h2>
+        <div class="measurements" id="measurements"></div>
+      </section>
+
+      <section class="panel full">
+        <h2>4. 控制台同款日志</h2>
+        <pre id="log"></pre>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    var targets = [
+      ['inline', document.getElementById('inline-box')],
+      ['block', document.getElementById('block-box')],
+      ['inline-block', document.getElementById('inline-block-box')]
+    ];
+
+    var measurementRoot = document.getElementById('measurements');
+    var log = document.getElementById('log');
+
+    function readBox(label, element) {
+      var style = window.getComputedStyle(element);
+      var rect = element.getBoundingClientRect();
+
+      return {
+        label: label,
+        display: style.display,
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        marginTop: style.marginTop,
+        marginLeft: style.marginLeft,
+        paddingTop: style.paddingTop,
+        paddingLeft: style.paddingLeft
+      };
+    }
+
+    function measureGap(id) {
+      var root = document.getElementById(id);
+      var boxes = root.querySelectorAll('.inline-block');
+      var first = boxes[0].getBoundingClientRect();
+      var second = boxes[1].getBoundingClientRect();
+      return Math.round(second.left - first.right);
+    }
+
+    function render() {
+      var rows = targets.map(function (target) {
+        return readBox(target[0], target[1]);
+      });
+
+      measurementRoot.innerHTML = rows.map(function (row) {
+        return [
+          '<div class="metric">',
+          '<strong>' + row.label + '</strong>',
+          'computed display: <code>' + row.display + '</code><br>',
+          '实际尺寸: <code>' + row.width + ' x ' + row.height + '</code><br>',
+          'margin-top: <code>' + row.marginTop + '</code><br>',
+          'padding-top: <code>' + row.paddingTop + '</code>',
+          '</div>'
+        ].join('');
+      }).join('');
+
+      var lines = rows.map(function (row) {
+        return row.label + ': display=' + row.display + ', rect=' + row.width + 'x' + row.height;
+      });
+
+      lines.push('inline-block gap with whitespace: ' + measureGap('gap-normal') + 'px');
+      lines.push('inline-block gap with parent font-size:0: ' + measureGap('gap-compact') + 'px');
+
+      log.textContent = lines.join('\n');
+      console.clear();
+      lines.forEach(function (line) {
+        console.log(line);
+      });
+    }
+
+    window.addEventListener('load', render);
+    window.addEventListener('resize', render);
+  </script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>img srcset 与 sizes 选择验证</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #5f6b7a;
+      --border: #d8e0ea;
+      --accent: #0f766e;
+      --accent-soft: #dff5f1;
+      --code: #101828;
+      --warn: #a15c07;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 22px 18px 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: var(--code);
+      background: #eef2f7;
+    }
+
+    .intro {
+      margin-bottom: 16px;
+      color: var(--muted);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .image-shell {
+      padding: 14px;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, 0.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, 0.08) 1px, transparent 1px),
+        #fbfdff;
+      background-size: 28px 28px;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      max-width: 640px;
+      height: auto;
+      border: 1px solid #b7c6d8;
+      border-radius: 6px;
+      background: #ffffff;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #f9fbfd;
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .metric span {
+      display: block;
+      overflow-wrap: anywhere;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .candidates {
+      display: grid;
+      gap: 8px;
+    }
+
+    .candidate {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #f9fbfd;
+    }
+
+    .candidate.active {
+      border-color: #64b8ae;
+      background: var(--accent-soft);
+    }
+
+    .candidate strong {
+      color: var(--accent);
+    }
+
+    .bar {
+      height: 12px;
+      border-radius: 999px;
+      background: #d8e0ea;
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+    }
+
+    .note {
+      margin-top: 12px;
+      padding: 12px;
+      border-left: 4px solid var(--warn);
+      border-radius: 6px;
+      color: #67410a;
+      background: #fff7e8;
+      font-size: 14px;
+    }
+
+    pre {
+      margin: 14px 0 0;
+      padding: 13px;
+      border-radius: 6px;
+      overflow: auto;
+      color: #dbeafe;
+      background: #111827;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 840px) {
+      .layout,
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>img srcset 与 sizes 选择验证</h1>
+    <p class="intro">调整新窗口宽度或使用 DevTools 设备模式，观察浏览器选择的候选图片。当前资源由 <code>HTMLImageElement.currentSrc</code> 读取。</p>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="image-shell">
+          <img
+            id="responsive-image"
+            src="/demos/responsive-images-srcset/hero-800.svg"
+            srcset="
+              /demos/responsive-images-srcset/hero-400.svg 400w,
+              /demos/responsive-images-srcset/hero-800.svg 800w,
+              /demos/responsive-images-srcset/hero-1200.svg 1200w
+            "
+            sizes="(max-width: 640px) 100vw, (max-width: 960px) 60vw, 640px"
+            alt="响应式图片候选资源示意图"
+            width="1200"
+            height="675"
+          >
+        </div>
+        <div class="panel-body">
+          <h2>浏览器实测</h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <strong>当前 viewport</strong>
+              <span id="viewport"></span>
+            </div>
+            <div class="metric">
+              <strong>当前 DPR</strong>
+              <span id="dpr"></span>
+            </div>
+            <div class="metric">
+              <strong>图片显示宽度</strong>
+              <span id="display-width"></span>
+            </div>
+            <div class="metric">
+              <strong>currentSrc</strong>
+              <span id="current-src"></span>
+            </div>
+          </div>
+          <pre id="log"></pre>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-body">
+          <h2>候选资源</h2>
+          <div class="candidates" id="candidates">
+            <div class="candidate" data-file="hero-400.svg">
+              <strong>400w</strong>
+              <div class="bar"><span style="width: 33.3%"></span></div>
+            </div>
+            <div class="candidate" data-file="hero-800.svg">
+              <strong>800w</strong>
+              <div class="bar"><span style="width: 66.7%"></span></div>
+            </div>
+            <div class="candidate" data-file="hero-1200.svg">
+              <strong>1200w</strong>
+              <div class="bar"><span style="width: 100%"></span></div>
+            </div>
+          </div>
+          <p class="note">如果从大窗口缩小到小窗口，浏览器可能继续使用已缓存的大图。要验证“首次选择”，请调整宽度后刷新并查看 Network。</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    var image = document.getElementById('responsive-image');
+    var viewport = document.getElementById('viewport');
+    var dpr = document.getElementById('dpr');
+    var displayWidth = document.getElementById('display-width');
+    var currentSrc = document.getElementById('current-src');
+    var log = document.getElementById('log');
+    var candidates = Array.prototype.slice.call(document.querySelectorAll('.candidate'));
+
+    function basename(url) {
+      return url.split('/').pop() || url;
+    }
+
+    function update() {
+      var rect = image.getBoundingClientRect();
+      var chosen = basename(image.currentSrc || image.src);
+      var lines = [
+        'viewport width: ' + window.innerWidth + 'px',
+        'devicePixelRatio: ' + window.devicePixelRatio,
+        'display width: ' + Math.round(rect.width) + 'px',
+        'needed resource width ≈ display width x DPR = ' + Math.round(rect.width * window.devicePixelRatio) + 'px',
+        'currentSrc: ' + chosen
+      ];
+
+      viewport.textContent = window.innerWidth + 'px';
+      dpr.textContent = window.devicePixelRatio;
+      displayWidth.textContent = Math.round(rect.width) + 'px';
+      currentSrc.textContent = chosen;
+      log.textContent = lines.join('\n');
+
+      candidates.forEach(function (candidate) {
+        candidate.classList.toggle('active', candidate.dataset.file === chosen);
+      });
+    }
+
+    image.addEventListener('load', update);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    update();
+  </script>
+</body>
+</html>

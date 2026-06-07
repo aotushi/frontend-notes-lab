@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>link 与 script 位置验证</title>
+  <style>
+    :root {
+      --bg: #f4f7f6;
+      --ink: #17212b;
+      --muted: #64717d;
+      --line: #d9e2e1;
+      --paper: #ffffff;
+      --paper-soft: #f8fbfa;
+      --teal: #0f766e;
+      --blue: #2563eb;
+      --violet: #4f46e5;
+      --rose: #be123c;
+      --amber: #b45309;
+      --shadow: 0 18px 50px rgba(25, 46, 52, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", Verdana, sans-serif;
+      line-height: 1.6;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, 0.05) 1px, transparent 1px),
+        linear-gradient(rgba(15, 118, 110, 0.05) 1px, transparent 1px),
+        var(--bg);
+      background-size: 36px 36px;
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 20px 42px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 44px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: #e8edf3;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 24px;
+      margin-bottom: 18px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero__summary {
+      max-width: 760px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .hero__chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      max-width: 280px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: #2c3a43;
+      background: rgba(255, 255, 255, 0.78);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .case-card {
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+    }
+
+    .case-card > strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .case-card ol {
+      margin: 12px 0 0;
+      padding-left: 24px;
+    }
+
+    .case-card li + li {
+      margin-top: 6px;
+    }
+
+    .resource-preview {
+      display: grid;
+      gap: 12px;
+      margin: 14px 0 0;
+    }
+
+    .resource-preview img {
+      display: block;
+      width: 100%;
+      max-width: 640px;
+      border-radius: 8px;
+      background: #eef7f8;
+    }
+
+    .timeline {
+      margin-top: 16px;
+      overflow-x: visible;
+      padding: 6px 2px 2px;
+    }
+
+    .trace-map {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.5fr);
+      gap: 44px;
+      align-items: stretch;
+      margin-top: 16px;
+    }
+
+    .source-panel,
+    .timeline-panel {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+    }
+
+    .source-panel {
+      padding: 12px;
+      border: 1px solid #dfe8e7;
+      border-radius: 8px;
+      background: #f9fcfb;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: #263642;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .panel-title span:last-child {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .source-code {
+      margin: 0;
+      color: #24313a;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      white-space: normal;
+    }
+
+    .code-line {
+      display: block;
+      min-width: 0;
+      padding: 2px 6px;
+      border-radius: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .code-line--indent {
+      padding-left: 18px;
+    }
+
+    .source-node {
+      position: relative;
+      margin: 3px 0;
+      border: 1px solid transparent;
+      background: #ffffff;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+    }
+
+    .source-node::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 7px;
+      border-radius: 999px;
+      background: var(--node-color, var(--teal));
+      vertical-align: 1px;
+    }
+
+    .source-node--css {
+      --node-color: var(--teal);
+      border-color: rgba(15, 118, 110, 0.24);
+    }
+
+    .source-node--blocking,
+    .source-node--defer {
+      --node-color: var(--violet);
+      border-color: rgba(79, 70, 229, 0.22);
+    }
+
+    .source-node--image {
+      --node-color: var(--amber);
+      border-color: rgba(180, 83, 9, 0.22);
+    }
+
+    .connector-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .connector-line {
+      fill: none;
+      stroke: var(--connector-color, rgba(15, 118, 110, 0.58));
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-dasharray: 4 7;
+    }
+
+    .connector-dot {
+      fill: var(--connector-color, var(--teal));
+      stroke: none;
+    }
+
+    .connector-line--css,
+    .connector-dot--css {
+      --connector-color: rgba(15, 118, 110, 0.7);
+    }
+
+    .connector-line--blocking,
+    .connector-line--defer,
+    .connector-dot--blocking,
+    .connector-dot--defer {
+      --connector-color: rgba(79, 70, 229, 0.68);
+    }
+
+    .connector-line--image,
+    .connector-dot--image {
+      --connector-color: rgba(180, 83, 9, 0.68);
+    }
+
+    .timeline__scale,
+    .timeline__row {
+      display: grid;
+      grid-template-columns: 168px minmax(0, 1fr);
+      gap: 14px;
+    }
+
+    .timeline__scale {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .timeline__ticks {
+      position: relative;
+      height: 20px;
+      background:
+        linear-gradient(to right, rgba(100, 116, 139, 0.24) 1px, transparent 1px) 0 100% / 25% 12px repeat-x;
+    }
+
+    .timeline__ticks span {
+      position: absolute;
+      top: 0;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    .timeline__row {
+      align-items: center;
+      min-height: 58px;
+      border-top: 1px solid #edf2f1;
+    }
+
+    .timeline__label {
+      color: #263642;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .timeline__label small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .timeline__track {
+      position: relative;
+      height: 42px;
+      border-radius: 0;
+      background:
+        linear-gradient(to right, rgba(148, 163, 184, 0.18) 1px, transparent 1px) 0 0 / 25% 100% repeat-x;
+    }
+
+    .timeline__track::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      border-top: 1px dashed rgba(100, 116, 139, 0.28);
+    }
+
+    .timeline__bar,
+    .timeline__marker {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .timeline__bar {
+      min-width: 3px;
+      height: 14px;
+      border-radius: 999px;
+      background: #0891b2;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26);
+    }
+
+    .timeline__bar--css {
+      background: var(--teal);
+    }
+
+    .timeline__bar--blocking,
+    .timeline__bar--defer,
+    .timeline__bar--script {
+      background: var(--violet);
+    }
+
+    .timeline__bar--image {
+      background: var(--amber);
+    }
+
+    .timeline__marker {
+      width: 10px;
+      height: 28px;
+      border: 0;
+      border-radius: 999px;
+      background: #334155;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.92), 0 4px 10px rgba(15, 23, 42, 0.12);
+    }
+
+    .timeline__marker--parser,
+    .timeline__marker--css {
+      background: var(--blue);
+    }
+
+    .timeline__marker--blocking,
+    .timeline__marker--defer,
+    .timeline__marker--script {
+      background: var(--violet);
+    }
+
+    .timeline__marker--event {
+      background: var(--rose);
+    }
+
+    .timeline__marker--resource,
+    .timeline__marker--image {
+      background: var(--amber);
+    }
+
+    .timeline__marker {
+      cursor: help;
+    }
+
+    .timeline__legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .timeline__legend-item {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid #e3ebe9;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .timeline__legend-swatch {
+      width: 5px;
+      height: 24px;
+      border-radius: 999px;
+      background: #334155;
+    }
+
+    .timeline__legend-swatch--parser,
+    .timeline__legend-swatch--css {
+      background: var(--blue);
+    }
+
+    .timeline__legend-swatch--blocking,
+    .timeline__legend-swatch--defer {
+      background: var(--violet);
+    }
+
+    .timeline__legend-swatch--image {
+      background: var(--amber);
+    }
+
+    .timeline__legend-swatch--event {
+      background: var(--rose);
+    }
+
+    .timeline__legend-title {
+      min-width: 0;
+      overflow: hidden;
+      color: #24313a;
+      font-size: 12px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .reading-note {
+      margin: 14px 0 0;
+      padding: 12px 14px;
+      border-left: 4px solid var(--teal);
+      border-radius: 6px;
+      color: #334155;
+      background: #eefaf7;
+      font-size: 13px;
+    }
+
+    .timeline__legend-time {
+      color: var(--muted);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    #log {
+      min-height: 280px;
+      margin: 12px 0 0;
+      padding: 14px;
+      border-radius: 6px;
+      overflow: auto;
+      color: #dbeafe;
+      background: #101923;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 780px) {
+      main {
+        padding: 20px 12px 32px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .hero__chips {
+        justify-content: flex-start;
+        max-width: none;
+      }
+
+      .timeline__scale,
+      .timeline__row {
+        grid-template-columns: 116px minmax(0, 1fr);
+      }
+
+      .trace-map {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .connector-layer {
+        display: none;
+      }
+    }
+  </style>
+  <script>
+    (function () {
+      var queuedLogs = [];
+      var timelineEvents = [];
+      var timelineResources = [];
+      var timelineDuration = 1300;
+      var timelineRows = [
+        { id: 'parser', label: 'HTML 解析器', detail: '解析暂停 / 继续' },
+        { id: 'css', label: 'slow-style.css', detail: 'stylesheet 下载', connect: 'css' },
+        { id: 'blocking', label: 'blocking.js', detail: '可被预扫描下载；执行等 CSS', connect: 'blocking' },
+        { id: 'defer', label: 'defer.js', detail: '可提前下载；执行等 DOM', connect: 'defer' },
+        { id: 'image', label: 'slow-image.svg', detail: '图片下载不阻塞 DOM', connect: 'image' },
+        { id: 'event', label: '页面事件', detail: 'DOMContentLoaded / load' }
+      ];
+
+      function append(entry) {
+        var log = document.getElementById('log');
+
+        if (!log) {
+          queuedLogs.push(entry);
+          return;
+        }
+
+        while (queuedLogs.length > 0) {
+          log.textContent += queuedLogs.shift() + '\n';
+        }
+
+        log.textContent += entry + '\n';
+      }
+
+      function classifyMarker(message) {
+        if (message.indexOf('head inline script:') === 0) {
+          return { lane: 'parser', label: 'head' };
+        }
+
+        if (message.indexOf('head inline script after stylesheet') === 0) {
+          return { lane: 'parser', label: 'CSS 等待结束' };
+        }
+
+        if (message.indexOf('stylesheet load') === 0) {
+          return { lane: 'css', label: '应用' };
+        }
+
+        if (message.indexOf('blocking external script') === 0) {
+          return { lane: 'blocking', label: '执行 blocking.js' };
+        }
+
+        if (message.indexOf('body end inline script') === 0) {
+          return { lane: 'parser', label: 'body 末尾' };
+        }
+
+        if (message.indexOf('script after </body>') === 0) {
+          return { lane: 'parser', label: 'body 后' };
+        }
+
+        if (message.indexOf('defer script') === 0) {
+          return { lane: 'defer', label: '执行 defer.js' };
+        }
+
+        if (message.indexOf('DOMContentLoaded') === 0) {
+          return { lane: 'event', label: 'DCL' };
+        }
+
+        if (message.indexOf('image load') === 0) {
+          return { lane: 'image', label: '完成' };
+        }
+
+        if (message.indexOf('window load') === 0) {
+          return { lane: 'event', label: 'load' };
+        }
+
+        return null;
+      }
+
+      function addTimelineEvent(message, time) {
+        var marker = classifyMarker(message);
+
+        if (!marker) {
+          return;
+        }
+
+        timelineEvents.push({
+          lane: marker.lane,
+          label: marker.label,
+          time: time,
+          type:
+            marker.lane === 'event'
+              ? 'event'
+              : marker.lane === 'blocking' || marker.lane === 'defer'
+                ? 'script'
+                : marker.lane === 'css' || marker.lane === 'image'
+                  ? 'resource'
+                  : 'parser'
+        });
+        timelineDuration = Math.max(timelineDuration, time + 120);
+        renderTimeline();
+      }
+
+      function drawConnectors() {
+        var map = document.getElementById('traceMap');
+        var layer = document.getElementById('connectorLayer');
+
+        if (!map || !layer || window.matchMedia('(max-width: 780px)').matches) {
+          if (layer) {
+            layer.innerHTML = '';
+          }
+          return;
+        }
+
+        var mapRect = map.getBoundingClientRect();
+        var connections = ['css', 'blocking', 'defer', 'image'];
+
+        layer.setAttribute('viewBox', '0 0 ' + mapRect.width + ' ' + mapRect.height);
+        layer.innerHTML = connections
+          .map(function (key) {
+            var source = map.querySelector('[data-source="' + key + '"]');
+            var target = map.querySelector('[data-row="' + key + '"] .timeline__label');
+
+            if (!source || !target) {
+              return '';
+            }
+
+            var sourceRect = source.getBoundingClientRect();
+            var targetRect = target.getBoundingClientRect();
+            var x1 = sourceRect.right - mapRect.left - 2;
+            var y1 = sourceRect.top + sourceRect.height / 2 - mapRect.top;
+            var x2 = targetRect.left - mapRect.left + 4;
+            var y2 = targetRect.top + targetRect.height / 2 - mapRect.top;
+            var mid = Math.max(x1 + 22, x1 + (x2 - x1) * 0.5);
+            var path =
+              'M ' +
+              x1 +
+              ' ' +
+              y1 +
+              ' C ' +
+              mid +
+              ' ' +
+              y1 +
+              ', ' +
+              mid +
+              ' ' +
+              y2 +
+              ', ' +
+              x2 +
+              ' ' +
+              y2;
+
+            return (
+              '<path class="connector-line connector-line--' +
+              key +
+              '" d="' +
+              path +
+              '"></path><circle class="connector-dot connector-dot--' +
+              key +
+              '" cx="' +
+              x2 +
+              '" cy="' +
+              y2 +
+              '" r="4"></circle>'
+            );
+          })
+          .join('');
+      }
+
+      function renderTimeline() {
+        var rows = document.getElementById('timelineRows');
+        var legend = document.getElementById('timelineLegend');
+
+        if (!rows) {
+          return;
+        }
+
+        rows.innerHTML = timelineRows
+          .map(function (row) {
+            var bars = timelineResources
+              .filter(function (item) {
+                return item.lane === row.id;
+              })
+              .map(function (item) {
+                var left = Math.min((item.start / timelineDuration) * 100, 100);
+                var width = Math.max((item.duration / timelineDuration) * 100, 0.8);
+
+                return (
+                  '<span class="timeline__bar timeline__bar--' +
+                  item.lane +
+                  '" style="left:' +
+                  left +
+                  '%;width:' +
+                  width +
+                  '%" title="' +
+                  item.label +
+                  ' 下载耗时"></span>'
+                );
+              })
+              .join('');
+
+            var markers = timelineEvents
+              .filter(function (item) {
+                return item.lane === row.id;
+              })
+              .map(function (item) {
+                var left = Math.min((item.time / timelineDuration) * 100, 100);
+
+                return (
+                  '<span class="timeline__marker timeline__marker--' +
+                  item.type +
+                  ' timeline__marker--' +
+                  item.lane +
+                  '" style="left:' +
+                  left +
+                  '%" aria-label="' +
+                  item.label +
+                  '" title="' +
+                  item.label +
+                  '"></span>'
+                );
+              })
+              .join('');
+
+            return (
+              '<div class="timeline__row" data-row="' +
+              row.id +
+              '"><div class="timeline__label">' +
+              row.label +
+              '<small>' +
+              row.detail +
+              '</small>' +
+              '</div><div class="timeline__track"' +
+              (row.connect ? ' data-track="' + row.connect + '"' : '') +
+              '>' +
+              bars +
+              markers +
+              '</div></div>'
+            );
+          })
+          .join('');
+
+        if (legend) {
+          legend.innerHTML = timelineEvents
+            .map(function (item) {
+              return (
+                '<div class="timeline__legend-item"><span class="timeline__legend-swatch timeline__legend-swatch--' +
+                item.lane +
+                '"></span><span class="timeline__legend-title" title="' +
+                item.label +
+                '">' +
+                item.label +
+                '</span><span class="timeline__legend-time">' +
+                item.time.toFixed(0) +
+                'ms</span></div>'
+              );
+            })
+            .join('');
+        }
+
+        requestAnimationFrame(drawConnectors);
+      }
+
+      window.demoLog = function (message) {
+        var time = performance.now();
+        var entry = '[' + time.toFixed(1).padStart(6, ' ') + 'ms][' + document.readyState + '] ' + message;
+
+        console.log(entry);
+        append(entry);
+        addTimelineEvent(message, time);
+      };
+
+      document.addEventListener('readystatechange', function () {
+        window.demoLog('readystatechange -> ' + document.readyState);
+      });
+
+      document.addEventListener('DOMContentLoaded', function () {
+        window.demoLog('DOMContentLoaded: HTML 已解析，defer 脚本已执行完');
+      });
+
+      window.addEventListener('load', function () {
+        window.demoLog('window load: CSS、脚本、图片等页面依赖资源都已完成');
+
+        timelineResources = performance
+          .getEntriesByType('resource')
+          .filter(function (entry) {
+            return entry.name.indexOf('/api/demos/link-script-position/') !== -1;
+          })
+          .map(function (entry) {
+            var name = entry.name.split('/').pop().split('?')[0];
+            var lane =
+              name.indexOf('.css') !== -1
+                ? 'css'
+                : name.indexOf('.svg') !== -1
+                  ? 'image'
+                  : name.indexOf('blocking') !== -1
+                    ? 'blocking'
+                    : 'defer';
+
+            timelineDuration = Math.max(timelineDuration, entry.startTime + entry.duration + 120);
+            window.demoLog(
+              'resource timing: ' +
+                name +
+                ' start=' +
+                entry.startTime.toFixed(1) +
+                'ms duration=' +
+                entry.duration.toFixed(1) +
+                'ms'
+            );
+
+            return {
+              lane: lane,
+              label: name,
+              start: entry.startTime,
+              duration: entry.duration
+            };
+          });
+        renderTimeline();
+      });
+
+      window.demoLog('head inline script: 先建立日志，target exists = ' + Boolean(document.getElementById('target')));
+      window.addEventListener('resize', function () {
+        requestAnimationFrame(drawConnectors);
+      });
+    })();
+  </script>
+  <link
+    id="slow-style"
+    rel="stylesheet"
+    href="/api/demos/link-script-position/slow-style.css?delay=700"
+    onload="window.demoLog('stylesheet load: head 中的 CSS 已下载并应用')"
+  >
+  <script>
+    window.demoLog('head inline script after stylesheet: 这条日志会等待前面的 stylesheet 完成后出现');
+  </script>
+  <script src="/api/demos/link-script-position/blocking.js?delay=0"></script>
+  <script src="/api/demos/link-script-position/defer.js?delay=200" defer></script>
+</head>
+<body>
+  <main id="target">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Resource Loading Trace</p>
+        <h1>link 与 script 位置验证</h1>
+        <p class="hero__summary">
+          故意让 head 中的样式表延迟 700ms、图片延迟 1100ms，用时序图观察解析阻塞、defer 执行时机和 window load。
+        </p>
+      </div>
+      <div class="hero__chips" aria-label="实验参数">
+        <span class="chip">CSS +700ms</span>
+        <span class="chip">defer +200ms</span>
+        <span class="chip">image +1100ms</span>
+      </div>
+    </header>
+
+    <section class="case-card css-status">
+      <strong>可验证结论</strong>
+      <ol>
+        <li>head 中的 stylesheet 会尽早被发现，并且会影响后续脚本执行和首次渲染。</li>
+        <li>无 <code>async</code> / <code>defer</code> 的外链脚本会阻塞 HTML 解析和自身执行；但浏览器的 preload scanner 仍可能提前发现并下载后面的脚本资源。</li>
+        <li><code>defer</code> 脚本在 DOM 解析完成后、<code>DOMContentLoaded</code> 前执行。</li>
+        <li>写在 <code>&lt;/body&gt;</code> 后的脚本会被浏览器容错放回 body，但这不是规范结构。</li>
+        <li>图片不会阻塞 DOM 解析，但会推迟 <code>window load</code>。</li>
+      </ol>
+    </section>
+
+    <section class="case-card">
+      <strong>时序图</strong>
+      <p class="hint">
+        左侧是本页 HTML 中的关键节点，右侧是同一次加载得到的双轴时间图；连线只表示代码位置和资源行的对应关系，不表示主解析器已经执行到该节点。
+      </p>
+      <div id="traceMap" class="trace-map">
+        <svg id="connectorLayer" class="connector-layer" aria-hidden="true"></svg>
+        <div class="source-panel" aria-label="HTML 关键节点">
+          <div class="panel-title">
+            <span>HTML 位置</span>
+            <span>检测节点</span>
+          </div>
+          <pre class="source-code"><span class="code-line">&lt;head&gt;</span><span class="code-line code-line--indent source-node source-node--css" data-source="css">&lt;link rel="stylesheet" href="slow-style.css"&gt;</span><span class="code-line code-line--indent source-node source-node--blocking" data-source="blocking">&lt;script src="blocking.js"&gt;&lt;/script&gt;</span><span class="code-line code-line--indent source-node source-node--defer" data-source="defer">&lt;script defer src="defer.js"&gt;&lt;/script&gt;</span><span class="code-line">&lt;/head&gt;</span><span class="code-line">&lt;body&gt;</span><span class="code-line code-line--indent source-node source-node--image" data-source="image">&lt;img src="slow-image.svg"&gt;</span><span class="code-line">&lt;/body&gt;</span></pre>
+        </div>
+        <div class="timeline-panel">
+          <div class="timeline" aria-label="link 与 script 加载时序图">
+            <div class="timeline__scale" aria-hidden="true">
+              <span></span>
+              <div class="timeline__ticks">
+                <span style="left: 0%">0ms</span>
+                <span style="left: 25%">约 1/4</span>
+                <span style="left: 50%">约 1/2</span>
+                <span style="left: 75%">约 3/4</span>
+                <span style="left: 100%">完成</span>
+              </div>
+            </div>
+            <div id="timelineRows"></div>
+          </div>
+        </div>
+      </div>
+      <div id="timelineLegend" class="timeline__legend" aria-label="时序事件清单"></div>
+      <p class="reading-note">
+        读图规则：左侧节点说明资源写在 HTML 的哪个位置；右侧 X 轴是时间，Y 轴是资源或事件。长色条表示网络下载耗时，短竖条表示脚本执行或页面事件，虚线表示同一时间轴上的等待区间。`blocking.js` 的下载条可能很早出现，是因为现代浏览器会用 preload scanner 提前扫描后续资源；但它的执行竖条仍在 CSS 完成后，说明“提前下载”不等于“提前执行”。
+      </p>
+    </section>
+
+    <section class="case-card">
+      <strong>延迟图片资源</strong>
+      <div class="resource-preview">
+        <img
+          src="/api/demos/link-script-position/slow-image.svg?delay=1100"
+          alt="用于验证 window load 等待图片资源的延迟图片"
+          onload="window.demoLog('image load: 图片资源完成，但 DOMContentLoaded 早已可以触发')"
+        >
+      </div>
+    </section>
+
+    <section class="case-card">
+      <strong>执行日志</strong>
+      <pre id="log"></pre>
+    </section>
+
+    <script>
+      window.demoLog('body end inline script: target exists = ' + Boolean(document.getElementById('target')));
+    </script>
+  </main>
+</body>
+<script>
+  var afterBodyScript = document.currentScript;
+  window.demoLog(
+    'script after </body>: parentNode = ' +
+      afterBodyScript.parentNode.tagName +
+      ', body.contains(script) = ' +
+      document.body.contains(afterBodyScript)
+  );
+</script>
+</html>

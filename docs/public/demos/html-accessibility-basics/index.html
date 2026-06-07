@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTML 可访问性元素对比</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      color: #182033;
+      background: #f4f7fb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 22px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.25;
+    }
+
+    .lead {
+      max-width: 820px;
+      margin: 8px 0 20px;
+      color: #526072;
+      line-height: 1.7;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .column {
+      overflow: hidden;
+      border: 1px solid #d7deea;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .column header {
+      padding: 16px;
+      color: #fff;
+    }
+
+    .bad header {
+      background: #8a3412;
+    }
+
+    .good header {
+      background: #14532d;
+    }
+
+    .column h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+    .column header p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+      opacity: .88;
+    }
+
+    .example {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      border-top: 1px solid #e7ebf2;
+    }
+
+    .example h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .hint {
+      margin: 0;
+      color: #5a6678;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    label,
+    .visual-label {
+      display: block;
+      margin-bottom: 6px;
+      color: #263244;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    input,
+    button,
+    a.real-link,
+    .fake-button,
+    .fake-link,
+    .fake-icon {
+      min-height: 40px;
+      border-radius: 6px;
+      font: inherit;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid #b7c2d3;
+      padding: 8px 10px;
+    }
+
+    input[aria-invalid="true"] {
+      border-color: #dc2626;
+    }
+
+    button,
+    a.real-link,
+    .fake-button,
+    .fake-link,
+    .fake-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #1f5fbf;
+      background: #1f5fbf;
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .full {
+      width: 100%;
+    }
+
+    .fake-button,
+    .fake-link,
+    .fake-icon {
+      background: #64748b;
+      border-color: #64748b;
+      user-select: none;
+    }
+
+    .icon-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-button,
+    .fake-icon {
+      width: 42px;
+      min-height: 42px;
+      border-radius: 999px;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .error {
+      margin: 0;
+      color: #b91c1c;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .disclosure {
+      display: grid;
+      gap: 8px;
+    }
+
+    .panel {
+      border: 1px solid #c9d3e3;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f8fafc;
+      color: #344052;
+      line-height: 1.55;
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible {
+      outline: 3px solid #f59e0b;
+      outline-offset: 3px;
+    }
+
+    .code {
+      margin: 0;
+      overflow: auto;
+      border-radius: 6px;
+      padding: 10px;
+      background: #172033;
+      color: #dbeafe;
+      font: 13px/1.6 Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+    }
+
+    .try {
+      margin-top: 16px;
+      border: 1px dashed #9aa8bc;
+      border-radius: 8px;
+      padding: 14px 16px;
+      background: #fff;
+      color: #344052;
+      line-height: 1.65;
+    }
+
+    @media (max-width: 780px) {
+      body {
+        padding: 14px;
+      }
+
+      .compare {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>语义是基础，可访问性还要补齐关系、状态和反馈</h1>
+    <p class="lead">左侧不是“样式不好”，而是用户和辅助技术拿不到完整信息。右侧在使用原生元素的基础上，补齐可访问名称、错误提示关联、控件状态和键盘焦点。</p>
+
+    <div class="compare">
+      <section class="column bad" aria-labelledby="bad-title">
+        <header>
+          <h2 id="bad-title">不推荐写法</h2>
+          <p>看起来能用，但名称、状态或反馈没有正确暴露。</p>
+        </header>
+
+        <div class="example">
+          <h3>表单错误提示</h3>
+          <span class="visual-label">邮箱</span>
+          <input name="bad-email" type="email" value="abc">
+          <p class="error">请输入有效邮箱地址。</p>
+          <p class="hint">错误文字只是视觉上靠近输入框，控件本身没有声明“无效”，也没有关联错误说明。</p>
+          <pre class="code">&lt;span&gt;邮箱&lt;/span&gt;
+&lt;input value="abc"&gt;
+&lt;p&gt;请输入有效邮箱地址。&lt;/p&gt;</pre>
+        </div>
+
+        <div class="example">
+          <h3>图标按钮</h3>
+          <div class="icon-row">
+            <div class="fake-icon" onclick="this.textContent = '✓'">×</div>
+            <span class="hint">视觉上是关闭按钮，但没有按钮语义和可访问名称。</span>
+          </div>
+          <pre class="code">&lt;div onclick="close()"&gt;×&lt;/div&gt;</pre>
+        </div>
+
+        <div class="example">
+          <h3>展开状态</h3>
+          <div class="disclosure">
+            <div class="fake-button full" onclick="document.getElementById('bad-panel').hidden = !document.getElementById('bad-panel').hidden">展开详情</div>
+            <div id="bad-panel" class="panel">这里是订单配送详情。</div>
+          </div>
+          <p class="hint">视觉可以展开收起，但控件没有暴露 expanded/collapsed 状态。</p>
+          <pre class="code">&lt;div onclick="toggle()"&gt;展开详情&lt;/div&gt;</pre>
+        </div>
+
+        <div class="example">
+          <h3>链接目的</h3>
+          <a class="fake-link full">查看报告</a>
+          <p class="hint">没有 href 的 a 不是可靠链接，不能表达导航目的。</p>
+          <pre class="code">&lt;a&gt;查看报告&lt;/a&gt;</pre>
+        </div>
+      </section>
+
+      <section class="column good" aria-labelledby="good-title">
+        <header>
+          <h2 id="good-title">推荐写法</h2>
+          <p>同样的 UI，HTML 暴露了名称、关系、状态和键盘行为。</p>
+        </header>
+
+        <div class="example">
+          <h3>表单错误提示</h3>
+          <label for="good-email">邮箱</label>
+          <input id="good-email" name="good-email" type="email" value="abc" aria-invalid="true" aria-describedby="email-error">
+          <p id="email-error" class="error">请输入有效邮箱地址。</p>
+          <p class="hint">label 提供名称，aria-invalid 暴露错误状态，aria-describedby 关联错误说明。</p>
+          <pre class="code">&lt;label for="email"&gt;邮箱&lt;/label&gt;
+&lt;input id="email" aria-invalid="true" aria-describedby="email-error"&gt;
+&lt;p id="email-error"&gt;请输入有效邮箱地址。&lt;/p&gt;</pre>
+        </div>
+
+        <div class="example">
+          <h3>图标按钮</h3>
+          <div class="icon-row">
+            <button class="icon-button" type="button" aria-label="关闭弹窗" onclick="this.textContent = '✓'">×</button>
+            <span class="hint">图标不用可见文字时，按钮本身要提供可访问名称。</span>
+          </div>
+          <pre class="code">&lt;button aria-label="关闭弹窗"&gt;×&lt;/button&gt;</pre>
+        </div>
+
+        <div class="example">
+          <h3>展开状态</h3>
+          <div class="disclosure">
+            <button class="full" type="button" aria-expanded="true" aria-controls="good-panel" onclick="toggleGoodPanel(this)">展开详情</button>
+            <div id="good-panel" class="panel">这里是订单配送详情。</div>
+          </div>
+          <p class="hint">按钮语义负责键盘行为，aria-expanded 和 aria-controls 暴露当前状态与控制关系。</p>
+          <pre class="code">&lt;button aria-expanded="true" aria-controls="panel"&gt;展开详情&lt;/button&gt;
+&lt;div id="panel"&gt;这里是订单配送详情。&lt;/div&gt;</pre>
+        </div>
+
+        <div class="example">
+          <h3>链接目的</h3>
+          <a class="real-link full" href="#details">查看报告</a>
+          <p class="hint">有 href 的链接可以被键盘、浏览器和辅助技术识别为导航。</p>
+          <pre class="code">&lt;a href="#details"&gt;查看报告&lt;/a&gt;</pre>
+        </div>
+      </section>
+    </div>
+
+    <section id="details" class="try">
+      <strong>验证方式：</strong>从页面顶部开始按 Tab。右侧输入框、图标按钮、展开按钮、链接都会进入正常焦点顺序；左侧的 div 按钮和无 href 链接不会。打开浏览器无障碍树时，右侧还能看到错误说明、按钮名称和展开状态。
+    </section>
+  </main>
+
+  <script>
+    function toggleGoodPanel(button) {
+      var panel = document.getElementById(button.getAttribute('aria-controls'));
+      var nextExpanded = button.getAttribute('aria-expanded') !== 'true';
+
+      button.setAttribute('aria-expanded', String(nextExpanded));
+      panel.hidden = !nextExpanded;
+    }
+  </script>
+</body>
+</html>

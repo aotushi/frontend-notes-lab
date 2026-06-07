@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="225" viewBox="0 0 400 225" role="img" aria-label="400w responsive image candidate">
+  <rect width="400" height="225" fill="#dff5f1"/>
+  <rect x="18" y="18" width="364" height="189" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="4"/>
+  <text x="200" y="98" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#0f766e">400w</text>
+  <text x="200" y="138" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#35524f">small candidate</text>
+</svg>
