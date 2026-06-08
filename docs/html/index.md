@@ -76,10 +76,6 @@ HTML 分类收录文档结构、资源加载、语义化、可访问性、表单
 - [文件上传、自动完成与 textarea](/html/forms/file-upload-autocomplete-textarea)
 - [textarea 原格式输出与表单 target 下载](/html/forms/textarea-and-download-target)
 
-### 候选题库
-
-- [HTML 候选题库](/html/question-bank/)
-
 ## 主题组规划
 
 ### 文档结构

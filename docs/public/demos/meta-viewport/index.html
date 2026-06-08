@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>meta viewport 真实读数验证</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #5f6b7a;
+      --border: #d8e0ea;
+      --blue: #2563eb;
+      --green: #0f766e;
+      --amber: #a15c07;
+      --code: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 22px 18px 28px;
+      padding-top: max(22px, env(safe-area-inset-top));
+      padding-right: max(18px, env(safe-area-inset-right));
+      padding-bottom: max(28px, env(safe-area-inset-bottom));
+      padding-left: max(18px, env(safe-area-inset-left));
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: var(--code);
+      background: #eef2f7;
+    }
+
+    .intro {
+      margin-bottom: 16px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .panel.full {
+      grid-column: 1 / -1;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      min-height: 72px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #f9fbfd;
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric span {
+      display: block;
+      overflow-wrap: anywhere;
+      font-weight: 750;
+    }
+
+    .explain {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      color: #344766;
+      background: #eef4ff;
+      font-size: 14px;
+    }
+
+    .experiment-controls {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--green);
+    }
+
+    .viewport-stage {
+      width: min(100%, var(--stage-width));
+      max-width: 100%;
+      border: 1px dashed #b8c2d0;
+      border-radius: 8px;
+      overflow-x: auto;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, 0.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, 0.08) 1px, transparent 1px),
+        #fbfdff;
+      background-size: 24px 24px;
+    }
+
+    .fixed-box {
+      width: 680px;
+      min-height: 88px;
+      padding: 14px 16px;
+      border: 1px solid #f0c47a;
+      border-radius: 6px;
+      color: #67410a;
+      background: #fff7e8;
+      font-weight: 650;
+    }
+
+    .status {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status strong {
+      color: var(--amber);
+    }
+
+    .api-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .api-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #f9fbfd;
+    }
+
+    .api-row code {
+      overflow-wrap: anywhere;
+    }
+
+    .api-row span {
+      color: var(--green);
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    pre {
+      margin: 0;
+      padding: 13px;
+      border-radius: 6px;
+      overflow: auto;
+      color: #dbeafe;
+      background: #111827;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 800px) {
+      .grid,
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .api-row {
+        grid-template-columns: 1fr;
+      }
+
+      .api-row span {
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>meta viewport 真实读数验证</h1>
+    <p class="intro">这个页面不再模拟视口。上方读取当前浏览器真实 API 值；下方用一个真实 DOM 容器验证：`meta viewport` 只决定移动端布局基准，不会自动修好写死宽度的 CSS。</p>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>当前浏览器视口</h2>
+        <div class="metrics">
+          <div class="metric">
+            <strong>layout viewport</strong>
+            <span id="layout-size"></span>
+          </div>
+          <div class="metric">
+            <strong>window inner size</strong>
+            <span id="inner-size"></span>
+          </div>
+          <div class="metric">
+            <strong>visual viewport</strong>
+            <span id="visual-size"></span>
+          </div>
+          <div class="metric">
+            <strong>visual scale</strong>
+            <span id="visual-scale"></span>
+          </div>
+          <div class="metric">
+            <strong>DPR</strong>
+            <span id="dpr"></span>
+          </div>
+          <div class="metric">
+            <strong>document overflow</strong>
+            <span id="document-overflow"></span>
+          </div>
+        </div>
+        <p class="explain">布局视口和视觉视口是浏览器坐标空间，不是源码里的块元素。它们只能通过浏览器 API 读取，或者用 DevTools 设备模式改变后观察。</p>
+      </section>
+
+      <section class="panel">
+        <h2>对应 API</h2>
+        <div class="api-list">
+          <div class="api-row">
+            <code>document.documentElement.clientWidth</code>
+            <span id="api-layout-width"></span>
+          </div>
+          <div class="api-row">
+            <code>window.innerWidth</code>
+            <span id="api-inner-width"></span>
+          </div>
+          <div class="api-row">
+            <code>window.visualViewport?.width</code>
+            <span id="api-visual-width"></span>
+          </div>
+          <div class="api-row">
+            <code>window.devicePixelRatio</code>
+            <span id="api-dpr"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel full">
+        <h2>固定宽度溢出实验</h2>
+        <div class="experiment-controls">
+          <label for="stage-width">
+            容器宽度
+            <span id="stage-width-value"></span>
+          </label>
+          <input id="stage-width" type="range" min="320" max="760" value="390">
+        </div>
+        <div class="viewport-stage" id="viewport-stage">
+          <div class="fixed-box" id="fixed-box">这个 DOM 块真实存在，源码里能找到：<code>.fixed-box { width: 680px; }</code>。当容器小于 680px，它会产生横向溢出。</div>
+        </div>
+        <p class="status" id="overflow-status"></p>
+      </section>
+
+      <section class="panel full">
+        <h2>控制台同款日志</h2>
+        <pre id="log"></pre>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    var widthInput = document.getElementById('stage-width');
+    var stage = document.getElementById('viewport-stage');
+    var fixedBox = document.getElementById('fixed-box');
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    function readNumber(value) {
+      return Math.round(Number(value));
+    }
+
+    function update() {
+      var root = document.documentElement;
+      var visual = window.visualViewport;
+      var layoutWidth = root.clientWidth;
+      var layoutHeight = root.clientHeight;
+      var innerWidth = window.innerWidth;
+      var innerHeight = window.innerHeight;
+      var visualWidth = visual ? Math.round(visual.width) : innerWidth;
+      var visualHeight = visual ? Math.round(visual.height) : innerHeight;
+      var visualScale = visual ? visual.scale.toFixed(2) : 'unsupported';
+      var dpr = window.devicePixelRatio;
+      var stageWidth = readNumber(widthInput.value);
+      var fixedWidth = Math.round(fixedBox.getBoundingClientRect().width);
+      var hasLocalOverflow = fixedWidth > stageWidth;
+      var hasDocumentOverflow = root.scrollWidth > root.clientWidth;
+
+      stage.style.setProperty('--stage-width', stageWidth + 'px');
+      setText('stage-width-value', stageWidth + 'px');
+
+      setText('layout-size', layoutWidth + ' x ' + layoutHeight);
+      setText('inner-size', innerWidth + ' x ' + innerHeight);
+      setText('visual-size', visualWidth + ' x ' + visualHeight);
+      setText('visual-scale', visualScale);
+      setText('dpr', dpr);
+      setText('document-overflow', hasDocumentOverflow ? '是' : '否');
+
+      setText('api-layout-width', layoutWidth + 'px');
+      setText('api-inner-width', innerWidth + 'px');
+      setText('api-visual-width', visualWidth + 'px');
+      setText('api-dpr', dpr);
+
+      document.getElementById('overflow-status').innerHTML = hasLocalOverflow
+        ? '<strong>会溢出：</strong>固定块 680px > 容器 ' + stageWidth + 'px。'
+        : '<strong>不会溢出：</strong>固定块 680px <= 容器 ' + stageWidth + 'px。';
+
+      var lines = [
+        'layout viewport: ' + layoutWidth + ' x ' + layoutHeight,
+        'window inner size: ' + innerWidth + ' x ' + innerHeight,
+        'visual viewport: ' + visualWidth + ' x ' + visualHeight,
+        'visual scale: ' + visualScale,
+        'devicePixelRatio: ' + dpr,
+        'fixed DOM width: ' + fixedWidth + 'px',
+        'experiment container width: ' + stageWidth + 'px',
+        'local overflow: ' + hasLocalOverflow,
+        'document horizontal overflow: ' + hasDocumentOverflow
+      ];
+
+      document.getElementById('log').textContent = lines.join('\n');
+      console.clear();
+      lines.forEach(function (line) {
+        console.log(line);
+      });
+    }
+
+    widthInput.addEventListener('input', update);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', update);
+      window.visualViewport.addEventListener('scroll', update);
+    }
+
+    update();
+  </script>
+</body>
+</html>

@@ -198,12 +198,6 @@ export default defineConfig({
                 { text: '文件上传、自动完成与 textarea', link: '/html/forms/file-upload-autocomplete-textarea' },
                 { text: 'textarea 原格式输出与表单 target 下载', link: '/html/forms/textarea-and-download-target' }
               ]
-            },
-            {
-              text: '候选题库',
-              items: [
-                { text: 'HTML 候选题库', link: '/html/question-bank/' }
-              ]
             }
           ]
         }
