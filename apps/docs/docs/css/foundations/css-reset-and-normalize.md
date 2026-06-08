@@ -70,7 +70,7 @@ npm install normalize.css
 
 ## Demo
 
-<DemoFrame src="/demos/css-reset-normalize/index.html?v=20260608-5" title="CSS 初始化方案对比" height="2350" />
+<DemoFrame src="/demos/css-reset-normalize/index.html?v=20260608-6" title="CSS 初始化方案对比" height="2350" />
 
 ## 面试回答
 
