@@ -15,7 +15,8 @@
     "lint:timeline": "node scripts/lint-timeline-trace.mjs",
     "preview": "npm run preview -w @frontend-notes-lab/docs",
     "dev:worker": "npm run build && npm run dev -w @frontend-notes-lab/worker",
-    "deploy": "npm run build && npm run deploy -w @frontend-notes-lab/worker",
+    "deploy": "wrangler deploy --config apps/worker/wrangler.jsonc",
+    "deploy:full": "npm run build && npm run deploy",
     "typecheck": "npm run typecheck -w @frontend-notes-lab/docs && npm run typecheck -w @frontend-notes-lab/worker"
   },
   "dependencies": {
