@@ -1,0 +1,12 @@
+{
+  "name": "@frontend-notes-lab/docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs --host 127.0.0.1",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs --host 127.0.0.1",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  }
+}

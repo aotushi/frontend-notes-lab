@@ -2,8 +2,12 @@ import { defineConfig } from 'vitepress'
 import {
   clampLinkScriptPositionDelay,
   linkScriptPositionAssets
-} from '../../src/demos/linkScriptPositionAssets'
-import { clampDemoDelay, scriptAsyncDeferScripts } from '../../src/demos/scriptAsyncDeferScripts'
+} from '../../../worker/src/demos/linkScriptPositionAssets'
+import { clampDemoDelay, scriptAsyncDeferScripts } from '../../../worker/src/demos/scriptAsyncDeferScripts'
+
+function getDemoFile(url: URL) {
+  return decodeURIComponent(url.pathname.split('/').filter(Boolean).at(-1) || '')
+}
 
 export default defineConfig({
   title: 'Frontend Notes Lab',
@@ -25,7 +29,7 @@ export default defineConfig({
             }
 
             const url = new URL(req.url, 'http://localhost')
-            const file = decodeURIComponent(url.pathname.replace(/^\//, ''))
+            const file = getDemoFile(url)
             const script = scriptAsyncDeferScripts[file]
 
             if (!script) {
@@ -51,7 +55,7 @@ export default defineConfig({
             }
 
             const url = new URL(req.url, 'http://localhost')
-            const file = decodeURIComponent(url.pathname.replace(/^\//, ''))
+            const file = getDemoFile(url)
             const asset = linkScriptPositionAssets[file]
 
             if (!asset) {

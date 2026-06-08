@@ -2,7 +2,10 @@ node_modules/
 dist/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
+apps/docs/docs/.vitepress/cache/
+apps/docs/docs/.vitepress/dist/
 .wrangler/
+apps/worker/.wrangler/
 .scratch/
 worker.*.log
 vitepress.*.log

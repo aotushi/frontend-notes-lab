@@ -35,34 +35,37 @@ npm run build:questions
 
 ## 架构
 
-- `docs/`：VitePress 文档站源码
-- `docs/public/demos/`：每个知识点的独立可运行 demo
+- `apps/docs/docs/`：VitePress 文档站源码
+- `apps/docs/docs/public/demos/`：每个知识点的独立可运行 demo
+- `apps/worker/src/routes/`：Cloudflare Worker API 路由
+- `apps/worker/wrangler.jsonc`：Worker + Static Assets 一体部署配置
 - `raw-notes/`：原始迁移资料，扁平保存，不直接进入站点
-- `src/routes/`：Cloudflare Worker API 路由
+
+部署仍然由 Worker 统一承载：`apps/docs` 先构建静态站，`apps/worker` 通过 Wrangler 部署 Worker，并把 `apps/docs/docs/.vitepress/dist` 作为静态资源目录。`/api/*` 先进入 Worker，其他路径走静态文档。
 
 ## 内容迁移规则
 
-`raw-notes/` 只作为资料池。正式展示内容必须拆分到 `docs/` 的分类目录中，例如：
+`raw-notes/` 只作为资料池。正式展示内容必须拆分到 `apps/docs/docs/` 的分类目录中，例如：
 
-- `docs/resources/`
-- `docs/html/`
-- `docs/css/`
-- `docs/javascript/`
-- `docs/typescript/`
-- `docs/browser/`
-- `docs/network/`
-- `docs/git/`
-- `docs/vue/`
-- `docs/react/`
-- `docs/build-tools/`
-- `docs/engineering/`
-- `docs/performance/`
-- `docs/nodejs/`
-- `docs/mobile/`
-- `docs/mini-program/`
-- `docs/project/`
-- `docs/devops/`
+- `apps/docs/docs/resources/`
+- `apps/docs/docs/html/`
+- `apps/docs/docs/css/`
+- `apps/docs/docs/javascript/`
+- `apps/docs/docs/typescript/`
+- `apps/docs/docs/browser/`
+- `apps/docs/docs/network/`
+- `apps/docs/docs/git/`
+- `apps/docs/docs/vue/`
+- `apps/docs/docs/react/`
+- `apps/docs/docs/build-tools/`
+- `apps/docs/docs/engineering/`
+- `apps/docs/docs/performance/`
+- `apps/docs/docs/nodejs/`
+- `apps/docs/docs/mobile/`
+- `apps/docs/docs/mini-program/`
+- `apps/docs/docs/project/`
+- `apps/docs/docs/devops/`
 
 每个知识点独立成文，尽量配套可验证 demo。
 
-`raw-notes/00_资料收藏.md` 是例外：它作为资料源清单同步到 `docs/resources/`，同步时需要删掉低质量来源，并补充官方文档、规范和长期维护项目。
+`raw-notes/00_资料收藏.md` 是例外：它作为资料源清单同步到 `apps/docs/docs/resources/`，同步时需要删掉低质量来源，并补充官方文档、规范和长期维护项目。

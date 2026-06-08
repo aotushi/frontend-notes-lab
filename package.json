@@ -3,23 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "vitepress dev docs --host 127.0.0.1",
-    "build": "npm run lint:timeline && vitepress build docs && node scripts/write-assets-ignore.mjs",
+    "dev": "npm run dev -w @frontend-notes-lab/docs",
+    "dev:docs": "npm run dev -w @frontend-notes-lab/docs",
+    "build": "npm run lint:timeline && npm run build -w @frontend-notes-lab/docs && node scripts/write-assets-ignore.mjs",
+    "build:docs": "npm run build -w @frontend-notes-lab/docs",
     "build:questions": "node scripts/build-question-index.mjs",
     "lint:timeline": "node scripts/lint-timeline-trace.mjs",
-    "sync:html-questions": "node scripts/sync-html-question-bank.mjs",
-    "sync:raw01": "node scripts/sync-raw01-migrated-docs.mjs",
-    "preview": "vitepress preview docs --host 127.0.0.1",
-    "dev:worker": "npm run build && wrangler dev --local",
-    "deploy": "npm run build && wrangler deploy",
-    "typecheck": "vue-tsc --noEmit"
+    "preview": "npm run preview -w @frontend-notes-lab/docs",
+    "dev:worker": "npm run build && npm run dev -w @frontend-notes-lab/worker",
+    "deploy": "npm run build && npm run deploy -w @frontend-notes-lab/worker",
+    "typecheck": "npm run typecheck -w @frontend-notes-lab/docs && npm run typecheck -w @frontend-notes-lab/worker"
   },
   "dependencies": {
     "hono": "^4.6.14"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250605.0",
+    "@types/node": "^25.9.2",
     "typescript": "^5.8.3",
     "vitepress": "^1.6.3",
     "vue": "^3.5.16",

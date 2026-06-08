@@ -27,7 +27,7 @@
 ## 时序图设计规范
 
 - 加载、解析、执行、事件触发类时序图必须优先使用 `TimelineTrace` 组件。
-- 具体规范见 `docs/agents/timeline-trace-guidelines.md`。
+- 具体规范见 `apps/docs/docs/agents/timeline-trace-guidelines.md`。
 - Markdown 文档中不允许手写一次性 `<svg>` 时序图。
 - Markdown 文档中不允许手写 `.timeline__*` / `.trace-map` / `.connector-*` 这类页面私有时序图样式。
 - 横条表示持续过程，短竖条表示瞬时事件，虚线表示等待或依赖关系。
@@ -45,7 +45,7 @@
 
 ## 组件维护
 
-- VitePress 自定义组件放在 `docs/.vitepress/theme/components/`。
+- VitePress 自定义组件放在 `apps/docs/docs/.vitepress/theme/components/`。
 - 新增或修改 Vue 组件时使用 Vue 3 Composition API 和 `<script setup lang="ts">`。
 - 公共组件优先复用和扩展，避免为单个页面复制一套交互。
 - 自定义组件应支持键盘操作和可访问名称；弹层至少支持关闭按钮、遮罩关闭和 Esc 关闭。

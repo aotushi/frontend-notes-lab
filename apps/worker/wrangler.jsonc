@@ -1,10 +1,10 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
+  "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "frontend-notes-lab",
   "main": "src/worker.ts",
   "compatibility_date": "2026-06-05",
   "assets": {
-    "directory": "docs/.vitepress/dist",
+    "directory": "../docs/docs/.vitepress/dist",
     "binding": "ASSETS",
     "html_handling": "drop-trailing-slash",
     "not_found_handling": "404-page",

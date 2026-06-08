@@ -2,9 +2,9 @@ import { readdir, readFile } from 'node:fs/promises'
 import { join, relative } from 'node:path'
 
 const root = process.cwd()
-const docsDir = join(root, 'docs')
+const docsDir = join(root, 'apps', 'docs', 'docs')
 const ignoredFiles = new Set([
-  'docs/agents/timeline-trace-guidelines.md'
+  'apps/docs/docs/agents/timeline-trace-guidelines.md'
 ])
 
 const forbiddenPatterns = [
