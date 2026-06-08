@@ -213,39 +213,76 @@ export default defineConfig({
           items: [
             { text: '分类首页', link: '/css/' },
             {
-              text: '基础',
+              text: '基础语法与层叠',
               items: [
-                { text: 'CSS 基础与引入方式', link: '/css/basics/css-basic-and-loading' }
+                { text: '分类说明', link: '/css/foundations/' },
+                { text: 'CSS 基础与引入方式', link: '/css/foundations/css-basic-and-loading' },
+                { text: 'CSS 初始化、Reset 与 Normalize', link: '/css/foundations/css-reset-and-normalize' }
               ]
             },
             {
-              text: '盒模型与格式化',
+              text: '选择器与伪类',
               items: [
+                { text: '分类说明', link: '/css/selectors/' },
+                { text: '选择器、优先级与层叠', link: '/css/selectors/specificity-and-cascade' }
+              ]
+            },
+            {
+              text: '值、单位与函数',
+              items: [
+                { text: '分类说明', link: '/css/values-units-functions/' }
+              ]
+            },
+            {
+              text: '盒模型与格式化上下文',
+              items: [
+                { text: '分类说明', link: '/css/box-model/' },
                 { text: '盒模型与 BFC', link: '/css/box-model/box-model-and-bfc' }
               ]
             },
             {
               text: '布局',
               items: [
+                { text: '分类说明', link: '/css/layout/' },
                 { text: 'Flex、Grid 与定位布局', link: '/css/layout/flex-grid-position' }
               ]
             },
             {
-              text: '兼容与打印',
+              text: '响应式与条件规则',
               items: [
-                { text: '打印、字体与布局兼容', link: '/css/compatibility/print-fonts-and-layout-compat' }
+                { text: '分类说明', link: '/css/responsive/' }
               ]
             },
             {
-              text: '选择器与层叠',
+              text: '文本、字体与排版',
               items: [
-                { text: '选择器、优先级与层叠', link: '/css/selectors/specificity-and-cascade' }
+                { text: '分类说明', link: '/css/typography/' }
               ]
             },
             {
-              text: '渲染与可见性',
+              text: '颜色、背景与视觉效果',
               items: [
-                { text: '重排、重绘与隐藏方式', link: '/css/visual-formatting/paint-reflow-visibility' }
+                { text: '分类说明', link: '/css/visual-effects/' }
+              ]
+            },
+            {
+              text: '动画、变换与交互',
+              items: [
+                { text: '分类说明', link: '/css/animation-interaction/' }
+              ]
+            },
+            {
+              text: '分页、打印与特殊媒介',
+              items: [
+                { text: '分类说明', link: '/css/special-media/' },
+                { text: '打印、字体与布局兼容', link: '/css/special-media/print-fonts-and-layout-compat' }
+              ]
+            },
+            {
+              text: 'CSSOM、渲染与性能',
+              items: [
+                { text: '分类说明', link: '/css/rendering/' },
+                { text: '重排、重绘与隐藏方式', link: '/css/rendering/paint-reflow-visibility' }
               ]
             }
           ]

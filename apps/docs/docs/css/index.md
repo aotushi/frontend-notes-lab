@@ -1,48 +1,49 @@
 # CSS
 
-CSS 分类收录选择器、盒模型、布局、响应式、动画、层叠上下文、工程化样式等主题。
+CSS 章节按 CSS 官方模块和现代学习路径组织，不按旧面试题来源组织。
 
-## 已迁移知识点
+## 分类索引
 
-### 基础
+### [基础语法与层叠](/css/foundations/)
 
-- [CSS 基础与引入方式](/css/basics/css-basic-and-loading)
+CSS 语法、规则、声明、at-rule、层叠、继承、优先级、作用域、自定义属性、`@layer`、CSS Nesting。
 
-### 盒模型与视觉格式化
+### [选择器与伪类](/css/selectors/)
 
-- [盒模型与 BFC](/css/box-model/box-model-and-bfc)
-- [重排、重绘与隐藏方式](/css/visual-formatting/paint-reflow-visibility)
+类型选择器、类选择器、ID 选择器、属性选择器、组合器、伪类、伪元素、`:is()`、`:where()`、`:has()`。
 
-### 布局
+### [值、单位与函数](/css/values-units-functions/)
 
-- [Flex、Grid 与定位布局](/css/layout/flex-grid-position)
+长度单位、百分比、颜色值、`calc()`、`min()`、`max()`、`clamp()`、环境变量、CSS 数据类型。
 
-### 兼容与打印
+### [盒模型与格式化上下文](/css/box-model/)
 
-- [打印、字体与布局兼容](/css/compatibility/print-fonts-and-layout-compat)
+盒模型、`box-sizing`、margin 折叠、BFC、IFC、包含块、替换元素、溢出。
 
-### 选择器与层叠
+### [布局](/css/layout/)
 
-- [选择器、优先级与层叠](/css/selectors/specificity-and-cascade)
+正常流、`display`、浮动、定位、Flex、Grid、Box Alignment、多列布局、逻辑属性、书写模式、Anchor Positioning。
 
-## 主题组规划
+### [响应式与条件规则](/css/responsive/)
 
-### 选择器与层叠
+媒体查询、容器查询、`@supports`、响应式单位、视口相关 CSS、适配策略。
 
-选择器、优先级、继承、层叠上下文、CSS 变量。
+### [文本、字体与排版](/css/typography/)
 
-### 盒模型与视觉格式化
+字体、字体加载、`line-height`、`white-space`、`text-overflow`、列表、计数器、书写方向。
 
-盒模型、margin、padding、border、BFC、溢出。
+### [颜色、背景与视觉效果](/css/visual-effects/)
 
-### 布局
+颜色、背景、边框、阴影、渐变、滤镜、遮罩、裁剪、混合模式、形状。
 
-Flex、Grid、定位、浮动、常见布局题。
+### [动画、变换与交互](/css/animation-interaction/)
 
-### 响应式
+`transform`、`transition`、`animation`、滚动吸附、View Transitions、焦点、光标、表单控件外观。
 
-媒体查询、容器查询、移动端适配、单位体系。
+### [分页、打印与特殊媒介](/css/special-media/)
 
-### 动画与交互
+打印样式、Paged Media、Fragmentation、特殊媒介下的布局与字体兼容。
 
-transition、animation、transform、动效性能。
+### [CSSOM、渲染与性能](/css/rendering/)
+
+CSSOM、样式计算、布局、绘制、合成、`contain`、`content-visibility`、`will-change`。

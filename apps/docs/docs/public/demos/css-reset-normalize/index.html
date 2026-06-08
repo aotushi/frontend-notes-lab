@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS 初始化方案对比</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: #f4f7fb;
+        color: #142033;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 24px;
+      }
+
+      .shell {
+        max-width: 1260px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 28px;
+        line-height: 1.2;
+      }
+
+      .lead {
+        max-width: 980px;
+        margin: 0 0 12px;
+        color: #526273;
+        font-size: 16px;
+        line-height: 1.7;
+      }
+
+      .scope-note {
+        margin: 0 0 22px;
+        padding: 12px 14px;
+        border: 1px solid #cbd7e5;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #435266;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .shared-html {
+        margin: 0 0 18px;
+        padding: 14px 16px;
+        border: 1px solid #d6e0ea;
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .shared-html__title {
+        margin: 0 0 8px;
+        font-size: 15px;
+        line-height: 1.4;
+      }
+
+      .shared-html__text {
+        margin: 0;
+        color: #5d6d7e;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .comparison {
+        display: grid;
+        gap: 18px;
+      }
+
+      .case {
+        overflow: hidden;
+        border: 1px solid #d6e0ea;
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .case__head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: start;
+        padding: 14px 16px;
+        border-bottom: 1px solid #d6e0ea;
+        background: #f9fbfd;
+      }
+
+      .case__title {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.35;
+      }
+
+      .case__tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: #e7eef7;
+        color: #31506f;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .case__note {
+        grid-column: 1 / -1;
+        margin: 0;
+        color: #5d6d7e;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .case__body {
+        display: grid;
+        grid-template-columns: minmax(360px, 0.95fr) minmax(420px, 1.2fr);
+        height: 560px;
+      }
+
+      .code-panel,
+      .preview-panel {
+        min-width: 0;
+        min-height: 0;
+      }
+
+      .code-panel {
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #d6e0ea;
+        background: #111827;
+        color: #dbeafe;
+      }
+
+      .panel-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 42px;
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .code-panel .panel-label {
+        color: #bfdbfe;
+      }
+
+      .preview-panel .panel-label {
+        border-bottom-color: #d6e0ea;
+        color: #334155;
+      }
+
+      .code-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        scrollbar-gutter: stable both-edges;
+      }
+
+      .code-scroll pre {
+        min-width: max-content;
+        margin: 0;
+        padding: 16px;
+        font-family:
+          "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono",
+          monospace;
+        font-size: 13px;
+        line-height: 1.65;
+        white-space: pre;
+      }
+
+      .code-scroll code {
+        color: inherit;
+      }
+
+      .preview-panel {
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+      }
+
+      .viewport {
+        flex: 1;
+        min-height: 0;
+        background: #fff;
+      }
+
+      iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      .legend {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .legend__item {
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid #d6e0ea;
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .legend__item strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+
+      .legend__item span {
+        color: #5d6d7e;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 760px) {
+        body {
+          padding: 16px;
+        }
+
+        .case__body,
+        .legend {
+          grid-template-columns: 1fr;
+        }
+
+        .case__body {
+          height: auto;
+        }
+
+        .code-panel {
+          border-right: 0;
+          border-bottom: 1px solid #d6e0ea;
+        }
+
+        .code-scroll {
+          max-height: 360px;
+        }
+
+        .viewport {
+          min-height: 380px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <h1>CSS 初始化方案对比</h1>
+      <p class="lead">
+        三个案例使用相同 HTML 结构，右侧通过 URL 加载真实页面；左侧只展示每个方案额外添加的差异 CSS。代码区可滚动，避免长规则被裁掉。
+      </p>
+      <p class="scope-note">
+        这种组织方式避免模板字符串堆积：每个方案都是独立 HTML，差异样式放在 `cases/*.css`，公共演示框架放在 `shared-demo.css`。
+      </p>
+
+      <section class="shared-html" aria-label="共同 HTML 结构说明">
+        <h2 class="shared-html__title">共同 HTML 结构</h2>
+        <p class="shared-html__text">
+          每个预览页都包含同一组元素：标题、段落、列表、图片、label、input、button 和一个 width: 100% 的盒子。因为结构相同，左侧不重复展示 HTML，只展示会改变这些元素表现的初始化 CSS。
+        </p>
+      </section>
+
+      <section id="comparison" class="comparison" aria-label="CSS 初始化方案对比"></section>
+
+      <section class="legend" aria-label="观察点">
+        <div class="legend__item">
+          <strong>默认间距</strong>
+          <span>Reset 通常清掉 margin；Normalize 倾向保留标题、段落、列表的可读默认。</span>
+        </div>
+        <div class="legend__item">
+          <strong>盒模型</strong>
+          <span>Reset 常统一为 border-box，宽度更符合组件开发直觉。</span>
+        </div>
+        <div class="legend__item">
+          <strong>媒体元素</strong>
+          <span>Reset 常让图片等媒体变成 block 并限制 max-width，避免行内空隙和溢出。</span>
+        </div>
+        <div class="legend__item">
+          <strong>表单控件</strong>
+          <span>Normalize 和现代 reset 都会关注表单控件，但目标分别是兼容修正和组件基线。</span>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const cases = [
+        {
+          title: "浏览器默认样式",
+          tag: "UA stylesheet",
+          note: "不添加初始化 CSS，观察浏览器默认样式与演示基础 CSS 叠加后的结果。",
+          source: "./cases/ua.html",
+          css: null
+        },
+        {
+          title: "现代 Reset 基线",
+          tag: "reset",
+          note: "主动建立项目默认值：清 margin、统一盒模型、媒体块级化、控件继承字体。",
+          source: "./cases/reset.html",
+          css: "./cases/reset.css"
+        },
+        {
+          title: "Normalize 思路",
+          tag: "normalize",
+          note: "尽量保留有用默认样式，只修正跨浏览器不一致和可用性问题。",
+          source: "./cases/normalize.html",
+          css: "./cases/normalize.css"
+        }
+      ]
+
+      function escapeHtml(value) {
+        return value
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+      }
+
+      async function getSource(url) {
+        const response = await fetch(url)
+        if (!response.ok) {
+          return `/* failed to load ${url}: ${response.status} */`
+        }
+
+        return response.text()
+      }
+
+      async function renderCase(caseItem) {
+        const article = document.createElement("article")
+        const cssLabel = caseItem.css ?? "无额外初始化 CSS"
+        article.className = "case"
+        article.innerHTML = `
+          <header class="case__head">
+            <h2 class="case__title">${escapeHtml(caseItem.title)}</h2>
+            <span class="case__tag">${escapeHtml(caseItem.tag)}</span>
+            <p class="case__note">${escapeHtml(caseItem.note)}</p>
+          </header>
+          <div class="case__body">
+            <section class="code-panel" aria-label="${escapeHtml(caseItem.title)}代码">
+              <div class="panel-label">
+                <span>差异 CSS</span>
+                <span>${escapeHtml(cssLabel)}</span>
+              </div>
+              <div class="code-scroll">
+                <pre><code>Loading...</code></pre>
+              </div>
+            </section>
+            <section class="preview-panel" aria-label="${escapeHtml(caseItem.title)}预览">
+              <div class="panel-label">渲染结果</div>
+              <div class="viewport">
+                <iframe title="${escapeHtml(caseItem.title)}示例" src="${escapeHtml(caseItem.source)}"></iframe>
+              </div>
+            </section>
+          </div>
+        `
+
+        const code = article.querySelector("code")
+        code.textContent = caseItem.css
+          ? await getSource(caseItem.css)
+          : "/* 本案例不额外添加初始化 CSS。\n   右侧只使用浏览器默认样式和 shared-demo.css 中的公共演示框架样式。 */"
+        return article
+      }
+
+      async function render() {
+        const comparison = document.querySelector("#comparison")
+        const articles = await Promise.all(cases.map(renderCase))
+        articles.forEach((article) => comparison.append(article))
+      }
+
+      render()
+    </script>
+  </body>
+</html>
