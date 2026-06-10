@@ -216,8 +216,9 @@ export default defineConfig({
               text: '基础语法与层叠',
               items: [
                 { text: '分类说明', link: '/css/foundations/' },
-                { text: 'CSS 基础与引入方式', link: '/css/foundations/css-basic-and-loading' },
-                { text: 'CSS 初始化、Reset 与 Normalize', link: '/css/foundations/css-reset-and-normalize' }
+                { text: 'CSS 引入方式与 @import', link: '/css/foundations/css-basic-and-loading' },
+                { text: 'CSS 初始化、Reset 与 Normalize', link: '/css/foundations/css-reset-and-normalize' },
+                { text: 'CSS 预处理器', link: '/css/foundations/css-preprocessors' }
               ]
             },
             {
@@ -230,21 +231,28 @@ export default defineConfig({
             {
               text: '值、单位与函数',
               items: [
-                { text: '分类说明', link: '/css/values-units-functions/' }
+                { text: '分类说明', link: '/css/values-units-functions/' },
+                { text: '尺寸约束、单位与百分比', link: '/css/values-units-functions/sizing-units-and-percentages' }
               ]
             },
             {
               text: '盒模型与格式化上下文',
               items: [
                 { text: '分类说明', link: '/css/box-model/' },
-                { text: '盒模型与 BFC', link: '/css/box-model/box-model-and-bfc' }
+                { text: '盒模型与 box-sizing', link: '/css/box-model/box-model-and-bfc' },
+                { text: '浮动与清除浮动', link: '/css/box-model/float-and-clear' },
+                { text: 'BFC 块级格式化上下文', link: '/css/box-model/block-formatting-context' }
               ]
             },
             {
               text: '布局',
               items: [
                 { text: '分类说明', link: '/css/layout/' },
-                { text: 'Flex、Grid 与定位布局', link: '/css/layout/flex-grid-position' }
+                { text: 'display 与布局总览', link: '/css/layout/flex-grid-position' },
+                { text: 'flex 弹性布局', link: '/css/layout/flex-layout' },
+                { text: 'Grid 布局', link: '/css/layout/grid-layout' },
+                { text: 'position 定位', link: '/css/layout/position-layout' },
+                { text: '瀑布流、居中和经典布局案例', link: '/css/layout/layout-patterns' }
               ]
             },
             {
@@ -256,13 +264,15 @@ export default defineConfig({
             {
               text: '文本、字体与排版',
               items: [
-                { text: '分类说明', link: '/css/typography/' }
+                { text: '分类说明', link: '/css/typography/' },
+                { text: '行高、文本溢出与行内间隙', link: '/css/typography/line-height-overflow-and-inline-gaps' }
               ]
             },
             {
               text: '颜色、背景与视觉效果',
               items: [
-                { text: '分类说明', link: '/css/visual-effects/' }
+                { text: '分类说明', link: '/css/visual-effects/' },
+                { text: 'CSS 绘制基础形状', link: '/css/visual-effects/css-shapes' }
               ]
             },
             {

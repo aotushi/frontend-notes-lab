@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>选择器优先级与层叠验证</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #f6f8fb;
+        color: #172033;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 28px;
+        line-height: 1.2;
+      }
+
+      .intro {
+        margin-top: 10px;
+        color: #4b5870;
+        font-size: 15px;
+      }
+
+      .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 20px;
+      }
+
+      .tab {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 8px 12px;
+        background: #ffffff;
+        color: #1f2a44;
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .tab[aria-pressed="true"] {
+        border-color: #126f62;
+        background: #e7f5f2;
+        color: #0f5e54;
+        font-weight: 700;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid #d8e0ea;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .panel__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #e5ebf2;
+      }
+
+      .panel__title {
+        font-size: 16px;
+      }
+
+      .panel__body {
+        padding: 16px;
+      }
+
+      .stage {
+        display: grid;
+        place-items: center;
+        min-height: 170px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        background:
+          linear-gradient(90deg, rgba(18, 111, 98, 0.06) 1px, transparent 1px),
+          linear-gradient(rgba(18, 111, 98, 0.06) 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
+
+      .target {
+        border: 3px solid currentColor;
+        border-radius: 8px;
+        padding: 18px 22px;
+        background: #ffffff;
+        font-weight: 800;
+        transition: color 160ms ease, transform 160ms ease;
+      }
+
+      .target:hover {
+        transform: translateY(-1px);
+      }
+
+      .list-demo {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(42px, 1fr));
+        gap: 8px;
+        width: min(100%, 520px);
+        padding: 0;
+        list-style: none;
+      }
+
+      .list-demo li {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 12px 0;
+        text-align: center;
+        font-weight: 800;
+      }
+
+      .code {
+        overflow: auto;
+        max-height: 300px;
+        margin-top: 14px;
+        border-radius: 8px;
+        background: #0f172a;
+        color: #e5e7eb;
+        font-size: 13px;
+      }
+
+      pre {
+        margin: 0;
+        padding: 14px;
+      }
+
+      .summary {
+        display: grid;
+        gap: 10px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #edf2f7;
+      }
+
+      .row:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .label {
+        color: #5b677a;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .value {
+        min-width: 0;
+        font-weight: 700;
+      }
+
+      .note {
+        margin-top: 16px;
+        border-left: 4px solid #126f62;
+        padding: 12px 14px;
+        background: #eef8f6;
+        color: #173f39;
+      }
+
+      @layer reset, components;
+
+      @layer reset {
+        .layer-demo .target {
+          color: #b91c1c;
+        }
+      }
+
+      @layer components {
+        .layer-demo strong {
+          color: #126f62;
+        }
+      }
+
+      .specificity-demo .target {
+        color: #2563eb;
+      }
+
+      .specificity-demo #demoTarget {
+        color: #b91c1c;
+      }
+
+      .where-demo :where(.target.important) {
+        color: #b91c1c;
+      }
+
+      .where-demo .target {
+        color: #126f62;
+      }
+
+      .nth-demo li:nth-child(-n + 3) {
+        border-color: #126f62;
+        background: #e7f5f2;
+        color: #0f5e54;
+      }
+
+      .nth-demo li:nth-last-child(-n + 2) {
+        border-color: #b91c1c;
+        background: #fff1f2;
+        color: #b91c1c;
+      }
+
+      @media (max-width: 820px) {
+        main {
+          padding: 16px;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .row {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>选择器优先级与层叠验证</h1>
+      <p class="intro">切换案例观察最终颜色。重点看：同一元素命中多条规则时，浏览器先比较层叠阶段，再比较 specificity 和源码顺序。</p>
+
+      <div class="tabs" role="group" aria-label="案例切换">
+        <button class="tab" type="button" data-case="specificity" aria-pressed="true">ID 胜出</button>
+        <button class="tab" type="button" data-case="layer" aria-pressed="false">@layer 胜出</button>
+        <button class="tab" type="button" data-case="where" aria-pressed="false">:where() 零权重</button>
+        <button class="tab" type="button" data-case="nth" aria-pressed="false">前 N / 后 N</button>
+      </div>
+
+      <section class="workspace">
+        <article class="panel">
+          <div class="panel__head">
+            <h2 class="panel__title" id="caseTitle">ID 选择器胜出</h2>
+          </div>
+          <div class="panel__body">
+            <div class="stage" id="stage"></div>
+            <div class="code">
+              <pre><code id="caseCode"></code></pre>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel__head">
+            <h2 class="panel__title">判定结果</h2>
+          </div>
+          <div class="panel__body">
+            <div class="summary">
+              <div class="row">
+                <div class="label">命中元素</div>
+                <div class="value" id="targetLabel"></div>
+              </div>
+              <div class="row">
+                <div class="label">最终结果</div>
+                <div class="value" id="resultLabel"></div>
+              </div>
+              <div class="row">
+                <div class="label">原因</div>
+                <div class="value" id="reasonLabel"></div>
+              </div>
+            </div>
+            <p class="note" id="caseNote"></p>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const cases = {
+        specificity: {
+          className: "specificity-demo",
+          title: "ID 选择器胜出",
+          stage: '<strong id="demoTarget" class="target important">目标元素</strong>',
+          target: "#demoTarget.target.important",
+          result: "红色",
+          reason: "#demoTarget 是 1-0-0，.target 是 0-1-0。两者同属普通作者样式时，ID 权重更高。",
+          note: "Specificity 不是十进制加法。ID 列高于 CLASS 列，十个 class 也不会进位超过一个 ID。",
+          code: `.target {
+  color: #2563eb;
+}
+
+#demoTarget {
+  color: #b91c1c;
+}`
+        },
+        layer: {
+          className: "layer-demo",
+          title: "@layer 比 specificity 更早参与判断",
+          stage: '<strong class="target">目标元素</strong>',
+          target: ".layer-demo .target",
+          result: "绿色",
+          reason: "components layer 排在 reset layer 之后。层叠层先于 specificity 比较，所以较低权重的 strong 可以覆盖较高权重的 .target。",
+          note: "@layer 的价值是控制样式组优先级，避免为了覆盖第三方或基础样式而不断堆高选择器。",
+          code: `@layer reset, components;
+
+@layer reset {
+  .target {
+    color: #b91c1c;
+  }
+}
+
+@layer components {
+  strong {
+    color: #126f62;
+  }
+}`
+        },
+        where: {
+          className: "where-demo",
+          title: ":where() 参数复杂但权重为 0",
+          stage: '<strong class="target important">目标元素</strong>',
+          target: ".target.important",
+          result: "绿色",
+          reason: ":where(.target.important) 的 specificity 是 0-0-0；.target 是 0-1-0，因此 .target 胜出。",
+          note: ":where() 适合写基础样式和主题入口，因为它不会制造高权重，后续组件样式更容易覆盖。",
+          code: `:where(.target.important) {
+  color: #b91c1c;
+}
+
+.target {
+  color: #126f62;
+}`
+        },
+        nth: {
+          className: "nth-demo",
+          title: ":nth-child() 和 :nth-last-child()",
+          stage: '<ol class="list-demo"><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li></ol>',
+          target: ".list-demo li",
+          result: "1-3 命中前 3；5-6 命中后 2",
+          reason: ":nth-child(-n + 3) 从开头计数，:nth-last-child(-n + 2) 从末尾计数。兄弟索引从 1 开始。",
+          note: "如果写 :nth-child(-n + 3 of .important)，会先在 .important 子集合里计数；这和 .important:nth-child(-n + 3) 不同。",
+          code: `li:nth-child(-n + 3) {
+  color: #0f5e54;
+}
+
+li:nth-last-child(-n + 2) {
+  color: #b91c1c;
+}`
+        }
+      };
+
+      const buttons = Array.from(document.querySelectorAll(".tab"));
+      const stage = document.querySelector("#stage");
+      const title = document.querySelector("#caseTitle");
+      const code = document.querySelector("#caseCode");
+      const targetLabel = document.querySelector("#targetLabel");
+      const resultLabel = document.querySelector("#resultLabel");
+      const reasonLabel = document.querySelector("#reasonLabel");
+      const note = document.querySelector("#caseNote");
+
+      function renderCase(name) {
+        const selected = cases[name];
+        stage.className = `stage ${selected.className}`;
+        stage.innerHTML = selected.stage;
+        title.textContent = selected.title;
+        code.textContent = selected.code;
+        targetLabel.textContent = selected.target;
+        resultLabel.textContent = selected.result;
+        reasonLabel.textContent = selected.reason;
+        note.textContent = selected.note;
+
+        buttons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.case === name));
+        });
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          renderCase(button.dataset.case);
+        });
+      });
+
+      renderCase("specificity");
+    </script>
+  </body>
+</html>

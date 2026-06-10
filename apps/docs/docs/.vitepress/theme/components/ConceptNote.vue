@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, shallowRef } from 'vue'
 
+interface ConceptSection {
+  title: string
+  body?: string
+  items?: string[]
+  code?: string
+}
+
 interface Props {
   title?: string
   label?: string
+  details?: string
+  sections?: ConceptSection[]
   tone?: 'default' | 'warning'
 }
 
@@ -84,7 +93,20 @@ onBeforeUnmount(() => {
             </header>
 
             <div class="concept-note__body">
-              <slot />
+              <template v-if="props.sections?.length">
+                <section v-for="section in props.sections" :key="section.title" class="concept-note__section">
+                  <p class="concept-note__section-title">
+                    <strong>{{ section.title }}</strong>
+                  </p>
+                  <p v-if="section.body">{{ section.body }}</p>
+                  <ul v-if="section.items?.length">
+                    <li v-for="item in section.items" :key="item">{{ item }}</li>
+                  </ul>
+                  <pre v-if="section.code"><code>{{ section.code }}</code></pre>
+                </section>
+              </template>
+              <p v-else-if="props.details">{{ props.details }}</p>
+              <slot v-else />
             </div>
           </aside>
         </div>
@@ -101,20 +123,26 @@ onBeforeUnmount(() => {
 .concept-note__trigger {
   display: inline;
   margin: 0;
-  padding: 2px 7px;
+  padding: 1px 3px;
   border: 0;
-  border-radius: 6px;
-  background: #111827;
-  color: #f9fafb;
+  border-radius: 3px;
+  background: rgba(20, 184, 166, 0.1);
+  color: var(--vp-c-text-1);
   font: inherit;
   line-height: inherit;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--vp-c-brand-1);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
   cursor: pointer;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 
 .concept-note__trigger:hover {
-  background: #0f766e;
+  background: rgba(20, 184, 166, 0.18);
+  color: var(--vp-c-brand-1);
 }
 
 .concept-note__trigger:focus-visible {
@@ -123,7 +151,8 @@ onBeforeUnmount(() => {
 }
 
 .concept-note__trigger--warning {
-  background: #7c2d12;
+  background: rgba(234, 88, 12, 0.12);
+  text-decoration-color: #c2410c;
 }
 
 .concept-note__layer {
@@ -237,6 +266,43 @@ onBeforeUnmount(() => {
 
 .concept-note__body :deep(strong) {
   color: var(--vp-c-brand-1);
+}
+
+.concept-note__section {
+  margin: 14px 0;
+}
+
+.concept-note__section:first-child {
+  margin-top: 0;
+}
+
+.concept-note__section:last-child {
+  margin-bottom: 0;
+}
+
+.concept-note__section-title {
+  margin-bottom: 4px;
+}
+
+.concept-note__body ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.concept-note__body li + li {
+  margin-top: 4px;
+}
+
+.concept-note__body pre {
+  overflow: auto;
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--vp-code-block-bg);
+}
+
+.concept-note__body code {
+  font-size: 0.92em;
 }
 
 .concept-note-panel-enter-active,

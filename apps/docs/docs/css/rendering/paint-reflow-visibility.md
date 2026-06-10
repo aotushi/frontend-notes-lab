@@ -4,21 +4,15 @@
 
 ## 问题
 
-- line-height理解
 - display:none, visiblity: hidden; opacity: 0之间的区别
-- 文字超长的省略号写法
-- 图片为什么有左右上下间隙,怎么去除?
+- 有什么不同的方式可以隐藏内容？
 - chrome字体如何小于12px?
 - 为什么会发生样式抖动?
 - 重排和重绘
 
 ## 结论
 
-以下内容先按原文完整迁移，仅做标题层级调整；精炼、去重、校准和 demo 化放到后续步骤。
-
-### line-height理解
-
-行高是指一行文字的高度，具体说是两行文字间基线的距离。CSS中起高度作用的是 height 和 line-height，没有定义 height 属性，最终其表现作用一定是 line-height 。
+本页只处理 CSS 对渲染树、布局、绘制和可见性的影响。行高、文本溢出、图片间隙等排版问题归入“文本、字体与排版”。
 
 ### display:none, visiblity: hidden; opacity: 0之间的区别
 
@@ -28,45 +22,17 @@
 
 更多：[分析比较 opacity: 0、visibility: hidden、display: none 优劣和适用场景](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/100)
 
-### 文字超长的省略号写法
+### 有什么不同的方式可以隐藏内容？
 
-##### 单行文本省略
-```css
-.single-line-ellipsis {
-  width: 200px; /* 设置一个固定宽度，根据实际需求调整 */
-  white-space: nowrap; /* 强制文本在一行内显示 */
-  overflow: hidden; /* 超出宽度的部分隐藏 */
-  text-overflow: ellipsis; /* 用省略号表示超出的文本 */
-}
-```
+隐藏内容要先区分目标：是否占布局空间、是否可点击、是否仍暴露给辅助技术、是否只是视觉裁剪。
 
-##### 多行文本省略
-```css
-
-.multi-line-ellipsis {
-  width: 200px; /* 设置一个固定宽度，根据实际需求调整 */
-  overflow: hidden; /* 超出宽度的部分隐藏 */
-  text-overflow: ellipsis; /* 这行对于多行省略号只是辅助，主要靠下面的属性 */
-  display: -webkit-box; /* 开启弹性伸缩盒子模型 */
-  -webkit-line-clamp: 3; /* 显示的行数，超出部分用省略号表示，这里设置为 3 行，可根据需求修改 */
-  -webkit-box-orient: vertical; /* 子元素垂直排列 */
-}
-```
-
-### 图片为什么有左右上下间隙,怎么去除?
-
-**原因：**
-- 左右：因为 img 是 `inline-block` 行内块元素，行内元素之间有『换行（回车），空格，tab』时会产生左右间隙
-- 上下：**行内元素默认与父容器基线对齐**，而基线与父容器底部有一定间隙，所以上下图片间有间隙。
-**解决办法：**
-- 移除上下间隙：
-    - img 本身设置 `display: block;`
-    - 父元素设置 `font-size: 0;` （基线与字体大小有关，字体为零，基线间就没距离了）
-    - img 本身设置 `vertical-align: bottom;`（让inline-block的img与每行的底部对齐）
-- 移除左右间距：
-    - 行内元素间不要有换行，连成一行写消除间隙
-    - 第一行结尾写上 `<!-- ，第二行开头跟上 -->` 。即利用注释消除间距
-    - 父元素 font-size 设置 0
+- `display: none`：元素不生成盒子，不占布局空间，通常也不会暴露给屏幕阅读器。
+- `visibility: hidden`：元素仍占布局空间，但不可见，通常不可交互。
+- `opacity: 0`：元素透明但仍占布局空间，仍可能响应点击和聚焦。
+- `position: absolute` 加负向偏移：元素脱离正常流，可移出视口；更适合视觉隐藏但保留可访问内容时配合严格的 visually-hidden 模式。
+- `clip-path` 或旧式 `clip`：裁剪可见区域，常见于视觉隐藏文本。
+- `width: 0; height: 0; overflow: hidden`：通过尺寸和溢出裁剪隐藏内容。
+- `transform: scale(0)`：视觉缩放到不可见，但布局和交互影响要谨慎验证。
 
 ### chrome字体如何小于12px?
 
