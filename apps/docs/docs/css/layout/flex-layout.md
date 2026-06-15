@@ -2,177 +2,128 @@
 
 ## 问题
 
-- flex弹性布局
+Flex 是什么？容器属性和项目属性分别控制什么？`flex: 1`、`flex: auto`、`flex: none` 有什么区别？`align-items` 和 `align-content` 为什么经常被混淆？
 
 ## 结论
 
-### flex弹性布局
+### 理解路径
 
-##### 是什么?
-是一种一维布局模型，它提供了强大的空间分布和对齐能力，能够有效地处理不同尺寸的元素布局。Flexbox布局是CSS3中引入的一种新的布局模式，特别适用于响应式设计和不确定内容尺寸的情况。
+1. Flexbox 是一维布局模型：一次主要处理一条主轴上的空间分配，再处理交叉轴上的对齐和换行后的行间分布。
+2. 开启 Flex 布局的是容器：`display: flex` 或 `display: inline-flex` 会让容器的直接子元素成为 flex item。
+3. 容器属性决定主轴方向、是否换行、整体对齐；项目属性决定单个项目的顺序、放大、缩小、基准尺寸和自身对齐。
+4. `flex` 简写本质上控制的是 `flex-grow`、`flex-shrink`、`flex-basis`。多数“为什么宽度没按预期分配”的问题都要回到这三个值。
+5. Flex 适合一维分布、导航栏、工具栏、卡片行、等高列和简单居中；需要同时严格控制行和列时，优先考虑 Grid。
 
-##### flex容器6属性及作用
-* **flex-direction**  主轴的方向（即子元素的排列方向: row | row-reverse | column | column-reverse。默认row。
-* **flex-wrap** 子元素是否需要换行.可选值有:nowrap | wrap | wrap-reverse。默认nowrap。
-* **flex-flow** 上面两项合并写法
-* **justify-content** 子元素在主轴的对齐方式
-	* flex-start
-	* flex-end
-	* center
-	* space-between  两端对齐，项目之间的间隔都相等。
-	* space-around   每个项目两侧的间隔相等。所以，项目之间的间隔比项目与边框的间隔大一倍。
-* **align-items** 子元素在交叉轴上的对齐方式
-	* flex-start  交叉轴的起点对齐
-	* flex-end
-	* center   交叉轴的起点对齐
-	* baseline 项目的第一行文字的基线对齐。
-	* stretch  默认值）：如果项目未设置高度或设为auto，将占满整个容器的高度。
-* **align-content** 定义了多根交叉轴存在时子元素在交叉轴上的对齐方式。如果项目只有一根轴线，该属性不起作用。
+### Flex 是什么
 
-##### flex元素6属性
-* order 定义子元素的排列顺序(在主轴上数字越小越靠前)
-* flex-grow 元素的放大比例,默认为0.如果都为1,则每项元素在空间扩大时等分剩余空间
-* flex-shrink 元素的缩小比例
-	* 默认为1,空间不足时均等比例缩小;用0来表示禁止缩小.
-	* 如果一个子元素的flex-shrink属性为0,其它子元素的为1.则空间不足时,前者不缩小.
-	* 负值对该属性无效
-* flex-basis 默认值为auto,表示元素占据主轴空间的原大小.
-  * 可以设置具体数值或auto
-  * 如果值为auto,则元素大小将根据内容自动调整.
+Flexbox，全称 Flexible Box Layout，是 CSS 的弹性盒布局模型。它适合在一个方向上分配空间，并在项目尺寸未知或容器尺寸变化时保持稳定对齐。
 
-* flex 上面3项的缩写. 
-  * `flex:1`表示项目会根据剩余空间按等比例放大/缩小(相等于 1 1 0%).最后值不为auto就不会按本身宽度而均分计算.
-  * `flex:none`  等价于`flex:0 0 auto`  盒子没有很大或缩小,基于各自内容自适应大小,采用本身默认大小
-  * `flex:100px` 等价于`flex:1 1 100px`，表示项目会根据剩余空间按比例放大，也会按比例缩小，基准长度为100像素.
-* align-self 单个元素的对齐方式
+Flex 的“一维”不是说页面只能横向或纵向排布，而是说一次布局主要沿一个主轴工作。主轴由 `flex-direction` 决定，交叉轴与主轴垂直。`flex-wrap` 允许项目换到多行，但每一行仍按主轴独立分配空间；如果要同时控制行和列的网格关系，Grid 更合适。
 
+### 容器属性
 
-##### 实例
+| 属性 | 作用 | 常见值 |
+| --- | --- | --- |
+| `flex-direction` | 决定主轴方向 | `row`、`row-reverse`、`column`、`column-reverse` |
+| `flex-wrap` | 决定项目是否换行 | `nowrap`、`wrap`、`wrap-reverse` |
+| `flex-flow` | `flex-direction` 和 `flex-wrap` 的简写 | `row wrap` |
+| `justify-content` | 沿主轴分配项目和剩余空间 | `flex-start`、`center`、`space-between`、`space-around`、`space-evenly` |
+| `align-items` | 控制每一行内项目在交叉轴上的默认对齐 | `stretch`、`flex-start`、`center`、`flex-end`、`baseline` |
+| `align-content` | 多行时控制各行在交叉轴上的空间分布 | `stretch`、`center`、`space-between`、`space-around` |
 
-###### flex布局解决最后一行两边分布的问题
-**解决前:**
-![[Pasted image 20250227160455.png]]
+`align-items` 和 `align-content` 的区别是高频面试点：`align-items` 管单行内每个项目如何在交叉轴对齐；`align-content` 管多条 flex line 之间如何分布。单行容器或 `flex-wrap: nowrap` 时，`align-content` 没有效果。
 
-**解决后:**
-![[Pasted image 20250227160433.png]]
+### 项目属性
 
-**解决方案:**
+| 属性 | 作用 |
+| --- | --- |
+| `order` | 改变项目的视觉排列顺序，数值越小越靠前。不要用它改变真实阅读或键盘顺序。 |
+| `flex-grow` | 有剩余空间时，按增长因子分配正空间，初始值是 `0`。 |
+| `flex-shrink` | 空间不足时，按收缩因子和基准尺寸分摊负空间，初始值是 `1`，负值无效。 |
+| `flex-basis` | 项目参与弹性计算前的主轴初始尺寸，初始值是 `auto`。 |
+| `flex` | `flex-grow`、`flex-shrink`、`flex-basis` 的简写。 |
+| `align-self` | 覆盖单个项目的交叉轴对齐方式。 |
 
-```html
-<div class="container">
-    <div class="item">1</div>
-    <div class="item">2</div>
-    <div class="item">3</div>
-    <div class="item">4</div>
-    <div class="item">5</div>
-    <div class="item">6</div>
-    <div class="item">7</div>
-    <span></span>
-    <span></span>
-  </div>
+把元素设为 flex 容器后，直接子元素变成 flex item。对 flex item 来说，`float` 和 `clear` 不会让它浮动或清除浮动，也不会让它脱离 flex 布局；`vertical-align` 对 flex item 没有效果。需要把某个项目推到右侧时，通常用 `margin-left: auto` 或调整主轴分布，而不是 `float: right`。
+
+### `flex` 简写怎么答
+
+`flex` 的三个组成部分是：
+
+```css
+flex: <flex-grow> <flex-shrink> <flex-basis>;
 ```
 
+常见写法可以这样理解：
 
-**方案说明:**
- 如果我们每一行显示的个数为 n，那我们可以最后一行子项的后面加上 n-2 个 span 元素，span 元素的宽度和其它子项元素宽度一样，但不用设置高度。
-**为什么是添加 n-2 个 span 元素呢 ？**
-- 当最后一行只有 1 个子元素时，他会默认靠左，不用处理
-- 当最后一行子元素正好时，我们就不用关心这个问题。
-所以要去掉这两种情况，只需要加 n-2 个 span 元素就好
+| 写法 | 展开 | 含义 |
+| --- | --- | --- |
+| `flex: initial` | `0 1 auto` | 默认行为：不放大，可以缩小，基准尺寸按自身尺寸。 |
+| `flex: auto` | `1 1 auto` | 先按自身尺寸参与计算，再吸收剩余空间，也可以缩小。 |
+| `flex: none` | `0 0 auto` | 不放大、不缩小，按自身尺寸占位，空间不足时可能溢出。 |
+| `flex: 1` | 浏览器通常按 `1 1 0%` 处理 | 忽略自身基准尺寸，按增长因子分配空间。 |
+| `flex: 0 0 100px` | `0 0 100px` | 固定基准尺寸，不参与放大和缩小。 |
 
-###### 如何实现响应式flex布局
-通过使用媒体查询和弹性盒子属性，实现响应式Flex布局，以适应不同的屏幕尺寸。
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Flexbox Responsive Layout</title>
-  <style>
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-    }
+`flex: 1` 和 `flex: auto` 的关键差别在 `flex-basis`：`flex: 1` 从 0 基准开始分配空间，更容易得到等分列；`flex: auto` 先保留项目自身内容或宽高，再分配剩余空间，不一定等宽。
 
-    .item {
-      flex: 1 0 calc(33.333% - 20px);
-      margin-bottom: 20px;
-      background-color: #ccc;
-      text-align: center;
-      padding: 10px;
-    }
+### 常见应用和边界
 
-    @media (max-width: 768px) {
-      .item {
-        flex: 1 0 calc(50% - 20px);
-      }
-    }
+#### 水平垂直居中
 
-    @media (max-width: 480px) {
-      .item {
-        flex: 1 0 calc(100% - 20px);
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="item">Item 1</div>
-    <div class="item">Item 2</div>
-    <div class="item">Item 3</div>
-    <div class="item">Item 4</div>
-    <div class="item">Item 5</div>
-    <div class="item">Item 6</div>
-  </div>
-</body>
-</html>
+```css
+.box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 ```
 
-###### 等高列
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Equal Height Columns with Flexbox</title>
-  <style>
-    .container {
-      display: flex;
-    }
+这只会对 `.box` 的直接子元素生效。要看到垂直居中效果，容器在交叉轴方向上必须有可分配空间，例如有明确高度、`min-height` 或来自父容器的高度。
 
-    .column {
-      flex: 1;
-      padding: 20px;
-      background-color: #ccc;
-    }
+#### 等高列
 
-    .column:first-child {
-      margin-right: 20px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="column">
-      <h2>Column 1</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam malesuada felis vel augue accumsan, at posuere neque tincidunt. Sed pulvinar, nisi in fringilla fringilla, lorem nisl semper purus, vel consequat ipsum nibh vitae libero.</p>
-    </div>
-    <div class="column">
-      <h2>Column 2</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam malesuada felis vel augue accumsan, at posuere neque tincidunt. Sed pulvinar, nisi in fringilla fringilla, lorem nisl semper purus, vel consequat ipsum nibh vitae libero. Proin dictum arcu a libero pulvinar auctor. </p>
-      <p>Praesent lobortis erat vel justo finibus, nec ullamcorper quam pretium. Vivamus sed ipsum ligula. Donec lobortis sodales massa eu placerat.</p>
-    </div>
-  </div>
-</body>
-</html>
+默认 `align-items: stretch` 会让同一行 flex items 在交叉轴上拉伸，因此常用于等高列。注意这不是让内容文字等量，也不是让多行之间的所有卡片都等高。
+
+#### 固定列数和最后一行
+
+旧写法会在最后一行追加不可见占位元素来修正 `space-between` 的分布。现代写法更推荐用 `gap` 加固定 `flex-basis` 控制列宽和间距：
+
+```css
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.item {
+  flex: 0 0 calc((100% - 36px) / 4);
+}
 ```
+
+如果需求是严格的二维网格、每行每列都要对齐，Grid 通常比 Flex 更直接。
+
+#### Flex 和 Grid 怎么选
+
+- 内容主要沿一条轴分布，或者项目数量和尺寸不固定：优先 Flex。
+- 需要同时控制行和列、网格轨道、二维对齐：优先 Grid。
+- 导航栏、按钮组、工具栏、卡片横排、左右分布：Flex 更自然。
+- 仪表盘、相册网格、复杂页面骨架：Grid 更自然。
 
 ## Demo
 
-待补充。
+<FlexPlayground />
+
+这个组件覆盖三类常见面试题：
+
+- 切换 `flex-direction`、`justify-content`、`align-items`、`align-content`，观察主轴和交叉轴如何变化。
+- 横向拖拽 `flex` 简写案例，比较 `initial`、`auto`、`none`、`1`。
+- 用 `gap` 和 `flex-basis` 实现固定列数的多行布局，避免最后一行被 `space-between` 拉开。
 
 ## 参考来源
 
-待补充。
+- [MDN: Basic concepts of flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Flexible_box_layout/Basic_concepts)
+- [MDN: flex](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/flex)
+- [MDN: Aligning items in a flex container](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Flexible_box_layout/Aligning_items)
+- [MDN: align-content](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/align-content)
+- [CSS Flexible Box Layout Module Level 1](https://www.w3.org/TR/css-flexbox-1/)
+- [CSS Box Alignment Module Level 3](https://www.w3.org/TR/css-align-3/)
