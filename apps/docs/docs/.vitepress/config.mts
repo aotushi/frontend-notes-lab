@@ -314,7 +314,8 @@ export default defineConfig({
             {
               text: '执行机制',
               items: [
-                { text: '执行上下文、作用域、闭包与 this', link: '/javascript/execution-model/scope-closure-this' }
+                { text: '执行上下文、作用域、闭包与 this', link: '/javascript/execution-model/scope-closure-this' },
+                { text: '内存模型与垃圾回收', link: '/javascript/execution-model/memory-and-garbage-collection' }
               ]
             },
             {
@@ -339,7 +340,7 @@ export default defineConfig({
             {
               text: 'DOM / BOM',
               items: [
-                { text: 'DOM 事件与前台存储', link: '/javascript/dom-bom/events-and-storage' }
+                { text: 'DOM/BOM 事件、存储与页面通信', link: '/javascript/dom-bom/events-and-storage' }
               ]
             },
             {

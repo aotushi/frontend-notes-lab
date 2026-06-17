@@ -1,55 +1,151 @@
 # 原型链与继承
 
-迁移自 `raw-notes/01_HTML&CSS&JS&TS.md`。
-
 ## 问题
 
-- 原型链
-- 继承
-- 面向对象的3特征
+JavaScript 的原型、原型链、构造函数、`new`、`class`、继承和 `instanceof` 分别是什么？ES5 组合继承、寄生组合继承和 ES6 `class extends` 有什么关系？
 
 ## 结论
 
-以下内容先按原文完整迁移，仅做标题层级调整；精炼、去重、校准和 demo 化放到后续步骤。
+### 理解路径
 
-### 原型链
+JavaScript 对象复用的基础是原型委托。对象本身没有某个属性时，会沿 `[[Prototype]]` 链继续查找。构造函数、`new` 和 `class` 都是在这套原型机制之上的语法和约定。
 
-##### 是什么
-由相互关联的原型组成的<span style="color: blue">链状结构</span>
+### 原型和原型链是什么？
 
-##### 原型对象
-###### 定义
-每一个JavaScript对象(null除外)在创建的时候就会<u>与之关联另一个对象</u>，这个对象就是我们所说的原型，每一个对象都会从原型"继承"属性。
+每个普通对象都有一个内部 `[[Prototype]]` 指向另一个对象或 `null`。读取属性时，如果对象自身没有该属性，引擎会沿 `[[Prototype]]` 查找，这条链就是原型链。
 
-##### 原型链查找规则概述
-- 当我们要获取一个对象的属性时,浏览器会先在对象自身中寻找
-- 如果有则直接使用,如果没有则去对象的原型中寻找
-- 找到了则使用,没有则去原型的原型里去寻找.以此类推, 直到找到Object的原型,如果依然没有找到则返回undefined
-- Object的原型是所有对象的原型,它的原型没有原型
+```js
+const parent = { role: 'admin' }
+const child = Object.create(parent)
 
-##### 原型链图例
-![原型与原型链结构图.png](https://i.loli.net/2021/03/31/mAWeRV3vnhjDM5B.png)
+child.name = 'Ada'
+child.role // 'admin'
+```
 
-### 继承
+### 构造函数、`prototype` 和 `__proto__` 怎么区分？
 
-[[JS 继承和原型链#继承]]
+1. 函数的 `prototype` 属性用于给通过 `new` 创建的实例指定原型。
+2. 实例的内部 `[[Prototype]]` 指向构造函数的 `prototype`。
+3. `__proto__` 是访问内部原型的历史访问器，正式代码优先用 `Object.getPrototypeOf()` 和 `Object.setPrototypeOf()`。
 
-### 面向对象的3特征
+```js
+function User(name) {
+  this.name = name
+}
 
-- 封装:
-  - 将可复用的代码用一个结构包装起来, 后面可以反复使用
-  - js的哪些语法体现了封装性: 函数 ==> 对象 ==> 模块 ==> 组件 ==> 库
-  - 封装都要有个特点: 不需要外部看到的必须隐藏起来, 只向外部暴露想让外部使用的功能或数据
-- 继承
-  - JS中的6种继承方式
-- 多态: 多种形态
-  - 理解
-    - 声明时指定一个类型对象, 并调用其方法,
-    - 实际使用时可以指定任意子类型对象, 运行的方法就是当前子类型对象的方法
-  - JS中有多态:(去看class中的笔记)
-    - 由于JS是弱类型语言, 在声明时都不用指定类型
-    - 在使用时可以指定任意类型的数据 ==> 这已经就是多态的体现了
+User.prototype.say = function say() {
+  return this.name
+}
+
+const user = new User('Ada')
+Object.getPrototypeOf(user) === User.prototype // true
+```
+
+### `new` 操作符做了什么？
+
+`new Fn(...args)` 主要做四件事：
+
+1. 创建一个新对象。
+2. 把新对象的 `[[Prototype]]` 指向 `Fn.prototype`。
+3. 以新对象作为 `this` 调用 `Fn`。
+4. 如果构造函数显式返回对象，则返回该对象；否则返回新对象。
+
+### `class` 是什么？
+
+`class` 是基于原型的语法糖，但不只是简单替换构造函数。类声明有暂时性死区，类体默认严格模式，类方法不可枚举，必须用 `new` 调用构造器。
+
+```js
+class User {
+  constructor(name) {
+    this.name = name
+  }
+
+  say() {
+    return this.name
+  }
+}
+```
+
+### 常见继承方式怎么评价？
+
+| 方式 | 特点 | 主要问题 |
+| --- | --- | --- |
+| 原型链继承 | 子类型原型指向父类型实例 | 引用属性共享，难传参 |
+| 构造函数继承 | 在子构造函数中调用父构造函数 | 不能复用父原型方法 |
+| 组合继承 | 构造函数继承 + 原型链继承 | 父构造函数调用两次 |
+| 寄生组合继承 | 用 `Object.create` 连接原型 | ES5 中较完整 |
+| `class extends` | 标准语法，支持 `super` | 本质仍是原型委托 |
+
+### `instanceof` 的内部逻辑是什么？
+
+`obj instanceof Ctor` 会检查 `Ctor.prototype` 是否出现在 `obj` 的原型链上。
+
+```js
+function myInstanceof(value, ctor) {
+  if (value == null || (typeof value !== 'object' && typeof value !== 'function')) {
+    return false
+  }
+
+  let proto = Object.getPrototypeOf(value)
+  const target = ctor.prototype
+
+  while (proto) {
+    if (proto === target) return true
+    proto = Object.getPrototypeOf(proto)
+  }
+
+  return false
+}
+```
+
+跨 realm 或构造函数自定义 `Symbol.hasInstance` 时，`instanceof` 结果可能变化。
+
+### 面向对象三特征在 JavaScript 中怎么理解？
+
+封装可以通过闭包、模块、私有字段和对象边界实现；继承主要通过原型委托和 `class extends` 实现；多态来自动态派发，即不同对象暴露同名方法并在运行时调用。
 
 ## Demo
 
-待补充：可视化对象、构造函数、`prototype`、实例原型之间的关系，并实现一个简化版 `new`。
+### 寄生组合继承
+
+```js
+function Parent(name) {
+  this.name = name
+}
+
+Parent.prototype.say = function say() {
+  return this.name
+}
+
+function Child(name, age) {
+  Parent.call(this, name)
+  this.age = age
+}
+
+Child.prototype = Object.create(Parent.prototype)
+Child.prototype.constructor = Child
+```
+
+### `class extends`
+
+```js
+class Parent {
+  constructor(name) {
+    this.name = name
+  }
+}
+
+class Child extends Parent {
+  constructor(name, age) {
+    super(name)
+    this.age = age
+  }
+}
+```
+
+## 参考来源
+
+- [MDN: Inheritance and the prototype chain](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_and_the_prototype_chain)
+- [MDN: new operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new)
+- [MDN: Classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes)
+- [MDN: instanceof](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof)
