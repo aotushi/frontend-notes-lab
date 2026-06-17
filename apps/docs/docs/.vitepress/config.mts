@@ -545,6 +545,10 @@ export default defineConfig({
     },
     search: {
       provider: 'local'
+    },
+    outline: {
+      label: 'On this page',
+      level: [2, 3]
     }
   }
 })
