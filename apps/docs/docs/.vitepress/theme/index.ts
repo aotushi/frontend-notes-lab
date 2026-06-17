@@ -4,6 +4,7 @@ import ConceptNote from './components/ConceptNote.vue'
 import DemoFrame from './components/DemoFrame.vue'
 import FlexPlayground from './components/FlexPlayground.vue'
 import HeightPercentDiagram from './components/HeightPercentDiagram.vue'
+import PositionPlayground from './components/PositionPlayground.vue'
 import TimelineTrace from './components/TimelineTrace.vue'
 import './custom.css'
 
@@ -14,6 +15,7 @@ export default {
     app.component('DemoFrame', DemoFrame)
     app.component('FlexPlayground', FlexPlayground)
     app.component('HeightPercentDiagram', HeightPercentDiagram)
+    app.component('PositionPlayground', PositionPlayground)
     app.component('TimelineTrace', TimelineTrace)
   }
 } satisfies Theme

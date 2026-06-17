@@ -1,6 +1,6 @@
 # 面试题更新进度
 
-最后更新：2026-06-15
+最后更新：2026-06-17
 
 ## 当前锚点
 
@@ -17,7 +17,7 @@
 - `apps/docs/docs/css/layout/flex-grid-position.md`：display 与布局总览。
 - `apps/docs/docs/css/layout/flex-layout.md`：flex 弹性布局；2026-06-15 已审查失效草稿信息，改为组件化案例。
 - `apps/docs/docs/css/layout/grid-layout.md`：Grid 布局。
-- `apps/docs/docs/css/layout/position-layout.md`：position 定位。
+- `apps/docs/docs/css/layout/position-layout.md`：position 定位；2026-06-16 已审查旧草稿和 raw-data 中定位、包含块、sticky、fixed、z-index、定位居中相关题，删除过时兼容性表述并补充权威来源；2026-06-17 根据阅读反馈补充 sticky 和 absolute containing block 的场景化解释，并新增左右两栏 `PositionPlayground` 组件覆盖每个 position 值。
 - `apps/docs/docs/css/layout/layout-patterns.md`：瀑布流、居中和经典布局案例。
 
 ## 统计口径
