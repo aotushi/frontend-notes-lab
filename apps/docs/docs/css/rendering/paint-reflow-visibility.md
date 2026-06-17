@@ -1,121 +1,327 @@
 # 重排、重绘与隐藏方式
 
-迁移自 `raw-notes/01_HTML&CSS&JS&TS.md`。
-
 ## 问题
 
-- display:none, visiblity: hidden; opacity: 0之间的区别
-- 有什么不同的方式可以隐藏内容？
-- chrome字体如何小于12px?
-- 为什么会发生样式抖动?
-- 重排和重绘
+`display: none`、`visibility: hidden`、`opacity: 0` 有什么区别？页面上隐藏元素有哪些方式？浏览器渲染流程里的 style、layout、paint、composite 分别是什么？哪些操作会触发重排和重绘？为什么动画优先使用 `transform` 和 `opacity`？如何避免布局抖动和布局抖动式的性能问题？
 
 ## 结论
 
-本页只处理 CSS 对渲染树、布局、绘制和可见性的影响。行高、文本溢出、图片间隙等排版问题归入“文本、字体与排版”。
+### 理解路径
 
-### display:none, visiblity: hidden; opacity: 0之间的区别
+1. 先把浏览器渲染更新拆成几个阶段：样式计算、布局、绘制、合成。不同 CSS 属性会影响不同阶段。
+2. “重排 / 回流”对应 layout 重新计算；“重绘”对应 paint 重新绘制；合成只组合已有图层，通常更适合高频动画。
+3. 隐藏元素不是一个问题，而是一组取舍：是否占位、是否可点击、是否可聚焦、是否仍暴露给辅助技术、是否参与动画。
+4. 性能优化不要只背“减少重排”，要能说出触发原因、强制同步布局、读写分离、动画属性选择和隔离范围。
+5. 视觉稳定性也属于渲染质量：没有预留图片、字体、异步内容、广告位或折叠面板空间，都会造成布局跳动。
 
-- `display: none` （不占空间，不能点击）（回流+重绘）
-- `visibility: hidden` （**占据空间**，不可点击）（重绘）
-- `opacity: 0`（**占据空间**，可以点击）（重建图层，性能较高）
+### 浏览器一次渲染更新经历哪些阶段？
 
-更多：[分析比较 opacity: 0、visibility: hidden、display: none 优劣和适用场景](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/100)
+常见简化路径是：
 
-### 有什么不同的方式可以隐藏内容？
-
-隐藏内容要先区分目标：是否占布局空间、是否可点击、是否仍暴露给辅助技术、是否只是视觉裁剪。
-
-- `display: none`：元素不生成盒子，不占布局空间，通常也不会暴露给屏幕阅读器。
-- `visibility: hidden`：元素仍占布局空间，但不可见，通常不可交互。
-- `opacity: 0`：元素透明但仍占布局空间，仍可能响应点击和聚焦。
-- `position: absolute` 加负向偏移：元素脱离正常流，可移出视口；更适合视觉隐藏但保留可访问内容时配合严格的 visually-hidden 模式。
-- `clip-path` 或旧式 `clip`：裁剪可见区域，常见于视觉隐藏文本。
-- `width: 0; height: 0; overflow: hidden`：通过尺寸和溢出裁剪隐藏内容。
-- `transform: scale(0)`：视觉缩放到不可见，但布局和交互影响要谨慎验证。
-
-### chrome字体如何小于12px?
-
-- 老版：`webkit-text-size-adjust: none`
-- 新版：`webkit-transform: scale(.8, .8)`
-
-### 为什么会发生样式抖动?
-
-因为没有指定元素具体高度和宽度，比如数据还没有加载进来时元素高度是 100px(假设这里是 100px)，数据加载进来后，因为有了数据，然后元素被撑大，所有出现了抖动
-
-### 重排和重绘
-
-> https://juejin.cn/post/6844904083212468238
-
-
-##### 重绘重排区别
-重绘和重排是浏览器渲染页面的两个过程，它们有以下区别：
-* 重绘是指元素的外观发生改变，但不影响布局的情况，例如改变颜色、背景、边框等。
-* 重排是指元素的几何属性发生改变，影响了布局的情况，例如改变位置、大小、内容等。
-* 重排往往有重绘。因此，在优化页面性能时，应该尽量减少重排和重绘的次数和范围。
-
-##### 哪些操作导致重排
-[[六 性能优化#2.重排和重绘的优化#1.触发布局与重绘的操作有哪些?]]
-
-
-##### 哪些操作会导致重绘
-- 更新元素的颜色
-- 文本方向
-- 阴影
-
-##### 重排优化
-
-###### 1.减少重排范围
-* 尽可能直接在目标元素上操作,而不用操作父元素/兄弟元素
-* 不使用table布局,1个小改动会造成整个table重新布局
-
-###### 2.减少重排次数
-* 样式集中改变 class代替style
-* 分离读写操作
-* 将DOM元素离线操作
-* 使用absolute或fixed脱离文档流
-* 优化动画
-
-面试回答：
-
-> 减少重排和重绘的核心是减少影响范围和次数。样式修改尽量合并，通过 class 批量切换；布局读取和写入分离，避免读写交错触发布局抖动；复杂 DOM 操作可离线处理后一次性插入；动画优先使用 `transform`、`opacity` 这类不触发布局的属性，并避免 table 等牵一发动全身的布局结构。
-
-**样式集中改变**
-
-**分离读写操作**
-读操作放在一起,写入操作放在一起
-
-**将DOM离线** !!
-* 使用 display:none
-* documentFragment
-* 复制节点,副本操作,然后替换
-
-```js
-
-
-// 缓存 DOM 元素（只获取一次）
-const container = document.getElementById('container');
-
-// 合并样式操作（减少回流）
-Object.assign(container.style, {
-  width: '100px',
-  height: '200px',
-  border: '10px solid red',
-  color: 'red'
-});
-
-// 离线后的操作（复用缓存对象）
-// 假设后续需要修改部分属性
-Object.assign(container.style, {
-  width: '200px',     // 覆盖原有宽度
-  backgroundColor: 'blue' // 新增背景色
-});
+```text
+DOM / CSSOM 变化
+  -> Style：计算匹配到的样式
+  -> Layout：计算盒子的尺寸和位置
+  -> Paint：把背景、文字、边框、阴影等绘制成像素
+  -> Composite：把不同图层合成到屏幕
 ```
 
-**优化动画**
-* 动画效果应用position为absolute/fixed
-* 启用GPU加速的属性: CSS转换, CSS33D变换transform webgl, 视频
+并不是每次更新都会走完整条链路：
+
+| 变化类型 | 可能触发阶段 | 示例 |
+| --- | --- | --- |
+| 改变几何信息 | style -> layout -> paint -> composite | `width`、`height`、`padding`、`border-width`、`top`、`left`、字体大小、内容插入 |
+| 改变外观但不改布局 | style -> paint -> composite | `color`、`background-color`、`box-shadow`、`visibility` |
+| 改变可合成属性 | style -> composite | `transform`、`opacity` 的常见动画场景 |
+
+这里的“可能”很重要。真实浏览器会根据属性、元素状态、图层、硬件、是否动画、是否隔离等因素优化；面试回答不要把任何属性绝对化成“一定只触发某一步”。但作为工程判断，几何属性最贵，绘制属性次之，合成属性更适合高频动画。
+
+### 重排和重绘有什么区别？
+
+重排，也常叫回流或 layout，是浏览器重新计算元素尺寸、位置和相关布局约束。只要某个变化影响盒子的几何关系，就可能触发布局计算。
+
+重绘是元素几何关系不变，但可见外观发生变化，需要重新绘制像素。例如文字颜色、背景、阴影、边框颜色变化通常属于绘制层面的变化。
+
+关系可以这样记：
+
+- 重排通常会导致后续重绘和合成，因为位置尺寸变了，像素也要重新生成。
+- 重绘不一定导致重排，因为外观可能变了，但盒子大小和位置没变。
+- 合成更新通常不需要重新布局或重新绘制，因此 `transform` / `opacity` 常用于动画。
+
+### 哪些操作容易触发重排？
+
+常见触发点包括：
+
+- 改变元素几何属性：`width`、`height`、`padding`、`margin`、`border-width`、`top`、`left`。
+- 改变布局方式或结构：`display`、`position`、`float`、Flex/Grid 相关轨道或项目尺寸。
+- 插入、删除、移动 DOM 节点，或修改会改变尺寸的文本内容。
+- 改变字体、字号、行高、图片尺寸等影响内容测量的属性。
+- 改变视口尺寸、滚动条状态或容器尺寸。
+- 读取某些布局信息前，浏览器发现前面已有待处理的样式写入，于是被迫同步 layout。
+
+最后一项就是强制同步布局。典型坏例子是读写交错：
+
+```js
+for (const item of items) {
+  item.style.width = `${container.offsetWidth / 3}px`
+  item.style.height = `${item.offsetWidth}px`
+}
+```
+
+`style.width` 是写入，`offsetWidth` 是读取布局。循环里不断写后再读，浏览器可能被迫反复把待处理样式刷新成布局结果。
+
+更稳的做法是先读后写：
+
+```js
+const containerWidth = container.offsetWidth
+const itemWidth = containerWidth / 3
+
+for (const item of items) {
+  item.style.width = `${itemWidth}px`
+  item.style.height = `${itemWidth}px`
+}
+```
+
+### 如何减少重排、重绘和布局抖动？
+
+优化方向是减少范围、减少次数、避开高频 layout：
+
+1. 合并样式变更：用 class 或 CSS 变量一次性切换，避免逐条写大量 inline style。
+2. 分离布局读取和写入：先批量读取尺寸，再批量写样式，避免 layout thrashing。
+3. 缓存测量结果：同一帧内不要重复读取相同布局数据。
+4. 控制影响范围：复杂组件可考虑 `contain`、固定尺寸、独立滚动容器或合理的组件边界。
+5. 大量 DOM 更新离线处理：使用 `DocumentFragment` 或先在内存中构建，再一次性插入。
+6. 动画优先用 `transform` 和 `opacity`，避免在每一帧改 `width`、`height`、`top`、`left`。
+7. 对长列表使用分页、虚拟滚动或 `content-visibility: auto`，避免一次渲染大量屏幕外内容。
+8. 预留稳定空间：图片写 `width` / `height` 或 `aspect-ratio`，异步卡片、广告位、骨架屏要有接近最终尺寸的占位。
+
+`display: none` 离线修改 DOM 是旧题里常见答案。它在某些场景能减少中间阶段的渲染，但重新显示时仍会触发布局；如果只是为了批量插入节点，优先考虑 fragment、模板拼装或框架自身的批处理。
+
+### 为什么动画优先使用 `transform` 和 `opacity`？
+
+`transform` 和 `opacity` 在很多浏览器实现里可以交给合成阶段处理：元素原本绘制好的图层被移动、缩放、旋转或改变透明度，不必每一帧重新计算布局，也常常不必重新绘制内容。
+
+```css
+.panel {
+  transition:
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+.panel[data-state="closed"] {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  pointer-events: none;
+}
+```
+
+不要把“GPU 加速”理解成越多越好。提升为独立图层可能增加内存占用、纹理上传和合成成本。`will-change` 也不是通用性能开关，应只在确认某个元素即将发生高频变化时短时间使用：
+
+```css
+.dragging-card {
+  will-change: transform;
+}
+```
+
+动画结束后可以移除对应 class，让浏览器回收优化状态。
+
+### `display: none`、`visibility: hidden`、`opacity: 0` 有什么区别？
+
+| 属性 | 是否占布局空间 | 是否可见 | 是否可点击/聚焦 | 常见用途 |
+| --- | --- | --- | --- | --- |
+| `display: none` | 否 | 否 | 否 | 条件渲染、彻底移除一个区域 |
+| `visibility: hidden` | 是 | 否 | 通常否 | 保留占位但隐藏内容 |
+| `opacity: 0` | 是 | 否 | 仍可能是 | 淡入淡出动画、视觉透明 |
+
+几个细节要说清楚：
+
+- `display: none` 不生成盒子，切换它会影响周围布局，所以常伴随重排。
+- `visibility: hidden` 保留盒子，元素不可见，通常也不能被指针命中或获得焦点。
+- `opacity: 0` 只是透明，布局、事件命中、键盘焦点和可访问性都不会自动消失；如果只是隐藏弹层，还要配合 `pointer-events: none`、焦点管理或 `aria-hidden` / `inert` 等语义控制。
+- `opacity` 小于 `1` 会创建新的 stacking context，但不等于一定“重建图层”或一定“性能更高”。
+
+### 页面上隐藏元素有哪些方式？
+
+隐藏方式要按目标选择：
+
+| 目标 | 推荐方式 | 说明 |
+| --- | --- | --- |
+| 完全不展示、不占位、不交互 | `display: none` 或条件渲染 | 适合 tab 面板、折叠区域、权限不可见内容 |
+| 不展示但保留占位 | `visibility: hidden` | 适合保持表格列宽、占位测量等 |
+| 透明动画 | `opacity: 0` + 事件/焦点控制 | 适合 fade 动画，不要忘记交互状态 |
+| 视觉隐藏但保留给屏幕阅读器 | `.visually-hidden` 模式 | 适合“跳到主内容”、图标按钮文本 |
+| 裁剪内容 | `clip-path`、`overflow: hidden` | 适合视觉裁剪，不等于语义隐藏 |
+| 隐藏滚动条但可滚动 | 浏览器相关滚动条样式 | 要保留键盘、触控和滚轮滚动能力 |
+
+常用的视觉隐藏模式：
+
+```css
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+```
+
+隐藏滚动条但保留滚动能力：
+
+```css
+.scroll-area {
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.scroll-area::-webkit-scrollbar {
+  display: none;
+}
+```
+
+这种做法要谨慎使用。滚动条本身是可发现性提示，完全隐藏可能让用户不知道区域可以滚动。
+
+### `rgba()` 和 `opacity` 的透明效果有什么区别？
+
+`opacity` 作用在整个元素合成结果上，包含背景、文字、边框和所有子元素：
+
+```css
+.card {
+  opacity: 0.5;
+}
+```
+
+`rgba()`、`rgb(... / alpha)` 或带透明度的颜色只作用于当前使用这个颜色的属性：
+
+```css
+.card {
+  background: rgb(0 0 0 / 50%);
+}
+```
+
+如果只想让背景半透明，而文字和按钮保持不透明，用透明颜色；如果想让整个元素一起淡入淡出，用 `opacity`。
+
+### `display` 可以和 `opacity` 一起过渡吗？
+
+传统回答是：`opacity` 可以连续过渡，`display` 不能像数值那样连续过渡，因为 `display` 决定元素是否生成盒子。实际项目里常用两阶段状态：先让元素参与布局或定位，再过渡透明度，动画结束后再切 `display` 或卸载节点。
+
+```css
+.dialog {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.dialog[data-leaving="true"] {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+```
+
+现代 CSS 也有离散属性过渡能力，例如 `transition-behavior: allow-discrete` 和 `@starting-style`，但要按目标浏览器兼容性决定是否使用。面试中更稳的答案仍是：视觉动画交给 `opacity` / `transform`，结构移除交给状态管理或动画结束回调。
+
+### `content-visibility`、`contain` 和 `will-change` 怎么答？
+
+这三个能力都和“限制渲染成本”有关，但用途不同：
+
+| 能力 | 作用 | 适合场景 | 风险 |
+| --- | --- | --- | --- |
+| `contain` | 告诉浏览器某个子树在布局、绘制、样式或尺寸上可被隔离 | 独立卡片、复杂列表项、局部组件 | `size` containment 会影响尺寸计算，不能随便加 |
+| `content-visibility: auto` | 允许浏览器跳过屏幕外内容的布局和绘制 | 长文章、长列表、折叠下方的大区块 | 需要 `contain-intrinsic-size` 预估空间，避免滚动跳动 |
+| `will-change` | 提前提示某属性即将变化 | 即将拖拽、即将播放动画的元素 | 过度使用会增加内存和合成成本 |
+
+```css
+.article-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 480px;
+}
+
+.isolated-card {
+  contain: layout paint;
+}
+```
+
+这些不是默认全站加的“优化三件套”。先用性能工具定位瓶颈，再对局部热点使用。
+
+### 旧题：Chrome 字体如何小于 12px？
+
+这个题来自早期浏览器限制和移动端文字自动调整语境，不适合继续背“`-webkit-text-size-adjust: none`”这种答案。`text-size-adjust` 控制的是移动浏览器文字自动放大策略，不是通用的“小于 12px 字体开关”。
+
+如果只是徽标、角标、装饰性小字，可以用更小的 `font-size`，或在确有视觉需求时用 `transform: scale()` 做视觉缩放；但正文内容不应为了还原视觉稿而压到不可读。更好的答案是：先确认浏览器和可访问性要求，正文保持可读字号，装饰性文字才考虑缩放。
 
 ## Demo
 
-待补充：对比三种隐藏方式的占位、点击和布局影响；展示布局读写交错导致的重排。
+### 隐藏方式对比
+
+```html
+<button class="ghost display-none">display none</button>
+<button class="ghost visibility-hidden">visibility hidden</button>
+<button class="ghost opacity-zero">opacity zero</button>
+```
+
+```css
+.display-none {
+  display: none;
+}
+
+.visibility-hidden {
+  visibility: hidden;
+}
+
+.opacity-zero {
+  opacity: 0;
+}
+```
+
+这三段同时放在页面里时，`display: none` 不占位；`visibility: hidden` 占位但不可见；`opacity: 0` 占位、透明，并且如果没有额外处理仍可能被点击或聚焦。
+
+### 读写分离
+
+```js
+const width = list.clientWidth
+const columnWidth = Math.floor((width - 24) / 3)
+
+requestAnimationFrame(() => {
+  for (const item of list.children) {
+    item.style.width = `${columnWidth}px`
+  }
+})
+```
+
+把布局读取放在写入之前，并把写入集中到同一帧，可以减少强制同步布局和布局抖动。
+
+### 避免布局跳动
+
+```css
+.media-card {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.media-card > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+```
+
+图片加载前先有稳定比例，加载后不会突然把后续内容推开。
+
+## 参考来源
+
+- [web.dev: Rendering performance](https://web.dev/articles/rendering-performance)
+- [web.dev: Avoid large, complex layouts and layout thrashing](https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing)
+- [MDN: `display`](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
+- [MDN: `visibility`](https://developer.mozilla.org/en-US/docs/Web/CSS/visibility)
+- [MDN: `opacity`](https://developer.mozilla.org/en-US/docs/Web/CSS/opacity)
+- [MDN: `pointer-events`](https://developer.mozilla.org/en-US/docs/Web/CSS/pointer-events)
+- [MDN: `will-change`](https://developer.mozilla.org/en-US/docs/Web/CSS/will-change)
+- [MDN: `contain`](https://developer.mozilla.org/en-US/docs/Web/CSS/contain)
+- [MDN: `content-visibility`](https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility)
+- [MDN: `text-size-adjust`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-size-adjust)
