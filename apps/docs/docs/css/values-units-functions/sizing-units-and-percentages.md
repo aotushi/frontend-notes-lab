@@ -20,6 +20,23 @@
 | `vw` / `vh` | 视口宽高的 1% | 全屏区块、响应式尺寸 |
 | `vmin` / `vmax` | 视口宽高中较小值/较大值的 1% | 保持视口相关比例 |
 
+### `em` 的参考对象
+
+`em` 不是永远参考父元素。它的参考对象取决于使用它的属性：
+
+- 用在 `font-size` 上时，`1em` 等于父元素计算后的 `font-size`。这是因为元素自己的 `font-size` 还没有算出来，不能用自己定义自己。
+- 用在 `width`、`height`、`padding`、`margin`、`border-radius` 等其它属性上时，`1em` 等于当前元素自身计算后的 `font-size`。
+
+```css
+.item {
+  font-size: 1.3em; /* 参考父元素的 font-size */
+  padding: 1em; /* 参考 .item 自己计算后的 font-size */
+  width: 10em; /* 参考 .item 自己计算后的 font-size */
+}
+```
+
+如果父元素字号是 `16px`，`.item` 的最终字号就是 `16px * 1.3 = 20.8px`；此时 `padding: 1em` 等于 `20.8px`，`width: 10em` 等于 `208px`。
+
 ## Demo
 
 ```css
@@ -54,6 +71,43 @@ body,
 ```
 
 在水平书写模式下，`padding-top: 50%` 是相对包含块宽度计算，不是相对包含块高度计算。
+
+### MDN 嵌套列表中的 `em` 字号计算
+
+MDN values and units 练习里常见写法是给嵌套列表项设置：
+
+```css
+.ems li {
+  font-size: 1.3em;
+}
+```
+
+由于这里的 `em` 用在 `font-size` 上，所以每一层 `li` 都按父元素计算后的字号继续乘以 `1.3`。假设外层基准字号是浏览器默认的 `16px`：
+
+| 元素层级 | 计算公式 | 结果 |
+| --- | --- | --- |
+| 第 1 层 `.ems > li` | `16px * 1.3` | `20.8px` |
+| 第 2 层 `.ems > li li` | `16px * 1.3 * 1.3` | `27.04px` |
+| 第 3 层 `.ems > li li li` | `16px * 1.3 * 1.3 * 1.3` | `35.152px` |
+
+在控制台验证时，用 `getComputedStyle()` 读取计算后的真实字号：
+
+```js
+const thirdLevelLi = document.querySelector('.ems > li li li')
+
+parseFloat(getComputedStyle(thirdLevelLi).fontSize)
+```
+
+如果要查看某个范围内所有内层 `li` 的字号，可以先选出集合再逐个读取：
+
+```js
+[...document.querySelectorAll('.ems > li:nth-child(3) li')]
+  .map((li, index) => ({
+    index: index + 1,
+    text: li.textContent.trim(),
+    fontSize: getComputedStyle(li).fontSize
+  }))
+```
 
 ## 面试回答
 

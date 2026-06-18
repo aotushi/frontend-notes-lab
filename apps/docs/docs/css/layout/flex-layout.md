@@ -56,15 +56,20 @@ flex: <flex-grow> <flex-shrink> <flex-basis>;
 
 常见写法可以这样理解：
 
-| 写法 | 展开 | 含义 |
-| --- | --- | --- |
-| `flex: initial` | `0 1 auto` | 默认行为：不放大，可以缩小，基准尺寸按自身尺寸。 |
-| `flex: auto` | `1 1 auto` | 先按自身尺寸参与计算，再吸收剩余空间，也可以缩小。 |
-| `flex: none` | `0 0 auto` | 不放大、不缩小，按自身尺寸占位，空间不足时可能溢出。 |
-| `flex: 1` | 浏览器通常按 `1 1 0%` 处理 | 忽略自身基准尺寸，按增长因子分配空间。 |
-| `flex: 0 0 100px` | `0 0 100px` | 固定基准尺寸，不参与放大和缩小。 |
+| 写法 | 展开 | 含义 | 场景 |
+| --- | --- | --- | --- |
+| `flex: initial` | `0 1 auto` | 默认行为：不放大，可以缩小，基准尺寸按自身尺寸。 | 保留默认弹性行为，通常不用显式写。 |
+| `flex: auto` | `1 1 auto` | 先按内容宽度、`width` 或自身主轴尺寸占位，再把剩余空间分给可增长项目。它更尊重内容宽度，所以不一定等宽。 | 自适应内容。 |
+| `flex: none` | `0 0 auto` | 按自身尺寸占位，不放大也不缩小。 | 固定尺寸。 |
+| `flex: 1` | 浏览器通常按 `1 1 0%` 处理 | 不先按内容占位，而是把基准尺寸当作 0，再按增长因子抢同一份剩余空间。多个项目都写 `flex: 1` 时，最容易得到等分效果。 | 等分布局。 |
+| `flex: 0 0 200px` | `0 0 200px` | 基准尺寸固定为 200px，不参与放大和缩小。 | 固定宽度。 |
 
-`flex: 1` 和 `flex: auto` 的关键差别在 `flex-basis`：`flex: 1` 从 0 基准开始分配空间，更容易得到等分列；`flex: auto` 先保留项目自身内容或宽高，再分配剩余空间，不一定等宽。
+`flex: 1` 和 `flex: auto` 的关键差别在 `flex-basis`，也就是“分配剩余空间之前，项目先占多少位置”。
+
+- `flex: 1` → `1 1 0%`：每个项目都先当作 0 宽，再一起按 `flex-grow` 抢剩余空间。三个元素都写 `flex: 1`，通常就是各占容器的三分之一。
+- `flex: auto` → `1 1 auto`：每个项目先按内容宽度、`width` 或自身主轴尺寸占位，再一起分配剩余空间。内容长的项目起点更大，所以最终宽度可能更大。
+
+可以这样记：想等分，用 `flex: 1`；想保留内容差异、再自适应剩余空间，用 `flex: auto`。
 
 ### 常见应用和边界
 
@@ -86,7 +91,19 @@ flex: <flex-grow> <flex-shrink> <flex-basis>;
 
 #### 固定列数和最后一行
 
-旧写法会在最后一行追加不可见占位元素来修正 `space-between` 的分布。现代写法更推荐用 `gap` 加固定 `flex-basis` 控制列宽和间距：
+这个问题通常出现在这种写法里：
+
+```css
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+```
+
+`space-between` 会把**每一行自己的剩余空间**都分散到项目之间。当前面几行刚好排满时，看起来很整齐；但最后一行如果只有 2 个项目，它们也会被推到这一行的两端，中间空出很大一块。
+
+更稳定的思路是：不要让 `space-between` 负责列间距，而是用 `gap` 固定间距，再用 `flex-basis` 固定每个项目的列宽。这样最后一行项目会自然从左往右排列，不会被强行拉到两端。
 
 ```css
 .list {
@@ -100,6 +117,14 @@ flex: <flex-grow> <flex-shrink> <flex-basis>;
 }
 ```
 
+这里的 `36px` 来自 4 列之间的 3 个间隙：`12px * 3`。所以每个项目宽度是：
+
+```text
+(容器宽度 - 三个间隙) / 4
+```
+
+旧方案会在最后一行后面追加不可见占位元素，让最后一行“假装排满”。这种方案能工作，但会污染 DOM，也要根据每行列数计算占位数量。除非要兼容很旧的布局环境，否则优先用 `gap + flex-basis`。
+
 如果需求是严格的二维网格、每行每列都要对齐，Grid 通常比 Flex 更直接。
 
 #### Flex 和 Grid 怎么选
@@ -108,6 +133,53 @@ flex: <flex-grow> <flex-shrink> <flex-basis>;
 - 需要同时控制行和列、网格轨道、二维对齐：优先 Grid。
 - 导航栏、按钮组、工具栏、卡片横排、左右分布：Flex 更自然。
 - 仪表盘、相册网格、复杂页面骨架：Grid 更自然。
+
+#### 如何用 Flex 实现“四合院”布局
+
+“四合院”布局通常指上、下、左、右围绕中间内容的结构。Flex 可以通过外层纵向排列、内层横向排列实现：
+
+```html
+<section class="courtyard">
+  <header class="courtyard__top">top</header>
+  <div class="courtyard__middle">
+    <aside class="courtyard__left">left</aside>
+    <main class="courtyard__center">center</main>
+    <aside class="courtyard__right">right</aside>
+  </div>
+  <footer class="courtyard__bottom">bottom</footer>
+</section>
+```
+
+```css
+.courtyard {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.courtyard__top,
+.courtyard__bottom {
+  flex: 0 0 64px;
+}
+
+.courtyard__middle {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+}
+
+.courtyard__left,
+.courtyard__right {
+  flex: 0 0 200px;
+}
+
+.courtyard__center {
+  min-width: 0;
+  flex: 1;
+}
+```
+
+如果布局需要严格控制二维网格、区域命名和响应式重排，Grid 的 `grid-template-areas` 会比嵌套 Flex 更直接。Flex 方案适合简单页面骨架或兼容旧代码。
 
 ## Demo
 

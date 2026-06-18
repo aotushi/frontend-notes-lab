@@ -145,9 +145,9 @@ const alignContentOptions: AlignContent[] = ['stretch', 'flex-start', 'center', 
       </div>
 
       <ul class="flex-playground__facts">
-        <li><code>flex: auto</code> 先按自身主轴尺寸参与计算，再参与放大和缩小。</li>
+        <li><code>flex: auto</code> 先按内容或自身宽度占位，再分配剩余空间，不一定等宽。</li>
         <li><code>flex: none</code> 不放大也不缩小，容易撑破容器。</li>
-        <li><code>flex: 1</code> 把基准尺寸视为 0，再按增长因子分配剩余空间。</li>
+        <li><code>flex: 1</code> 从 0 开始抢空间，多个项目都写它时最容易得到等分效果。</li>
       </ul>
     </div>
 
