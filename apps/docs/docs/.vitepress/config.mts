@@ -272,7 +272,8 @@ export default defineConfig({
               text: '颜色、背景与视觉效果',
               items: [
                 { text: '分类说明', link: '/css/visual-effects/' },
-                { text: 'CSS 绘制基础形状', link: '/css/visual-effects/css-shapes' }
+                { text: 'CSS 绘制基础形状', link: '/css/visual-effects/css-shapes' },
+                { text: '颜色主题与深色模式', link: '/css/visual-effects/color-theme' }
               ]
             },
             {

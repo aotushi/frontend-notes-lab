@@ -2,7 +2,7 @@
 
 ## 问题
 
-`display: none`、`visibility: hidden`、`opacity: 0` 有什么区别？页面上隐藏元素有哪些方式？浏览器渲染流程里的 style、layout、paint、composite 分别是什么？哪些操作会触发重排和重绘？为什么动画优先使用 `transform` 和 `opacity`？如何避免布局抖动和布局抖动式的性能问题？
+`display: none`、`visibility: hidden`、`opacity: 0`、`overflow: hidden` 有什么区别？页面上隐藏元素有哪些方式？浏览器渲染流程里的 style、layout、paint、composite 分别是什么？哪些操作会触发重排和重绘？为什么动画优先使用 `transform` 和 `opacity`？如何避免布局抖动和布局抖动式的性能问题？
 
 ## 结论
 
@@ -139,6 +139,28 @@ for (const item of items) {
 - `visibility: hidden` 保留盒子，元素不可见，通常也不能被指针命中或获得焦点。
 - `opacity: 0` 只是透明，布局、事件命中、键盘焦点和可访问性都不会自动消失；如果只是隐藏弹层，还要配合 `pointer-events: none`、焦点管理或 `aria-hidden` / `inert` 等语义控制。
 - `opacity` 小于 `1` 会创建新的 stacking context，但不等于一定“重建图层”或一定“性能更高”。
+
+### `overflow: hidden` 和几种隐藏方式有什么区别？
+
+`overflow: hidden` 不是“隐藏这个元素”，而是裁剪这个元素盒子之外的溢出内容。元素本身仍然存在、占位、可见，也仍可能参与事件命中。
+
+| 写法 | 作用对象 | 是否占位 | 核心区别 |
+| --- | --- | --- | --- |
+| `display: none` | 元素自身 | 否 | 不生成盒子，子树也不参与布局和绘制 |
+| `visibility: hidden` | 元素自身视觉 | 是 | 保留布局空间，隐藏自身和后代可见性 |
+| `opacity: 0` | 元素合成结果 | 是 | 只是透明，交互和可访问性不自动移除 |
+| `overflow: hidden` | 溢出内容 | 是 | 裁剪超出 padding box 的内容，不隐藏元素自身 |
+
+```css
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+```
+
+上面这个例子里 `overflow: hidden` 的目的不是让头像消失，而是把图片裁成圆形区域。用它创建 BFC 或裁剪内容时，要注意可能会截断阴影、下拉菜单、焦点环和绝对定位溢出内容。
 
 ### 页面上隐藏元素有哪些方式？
 
@@ -320,6 +342,7 @@ requestAnimationFrame(() => {
 - [MDN: `display`](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 - [MDN: `visibility`](https://developer.mozilla.org/en-US/docs/Web/CSS/visibility)
 - [MDN: `opacity`](https://developer.mozilla.org/en-US/docs/Web/CSS/opacity)
+- [MDN: `overflow`](https://developer.mozilla.org/en-US/docs/Web/CSS/overflow)
 - [MDN: `pointer-events`](https://developer.mozilla.org/en-US/docs/Web/CSS/pointer-events)
 - [MDN: `will-change`](https://developer.mozilla.org/en-US/docs/Web/CSS/will-change)
 - [MDN: `contain`](https://developer.mozilla.org/en-US/docs/Web/CSS/contain)

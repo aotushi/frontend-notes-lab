@@ -3,6 +3,7 @@
 ## 问题
 
 - 浏览器如何解析 CSS 选择器的，换句话说 CSS 的匹配规则是什么？
+- 常见 CSS 选择器有哪些？
 - css 如何匹配前 N 个子元素及最后 N 个子元素
 - 选择器优先级
 
@@ -29,6 +30,26 @@
 - 一旦条件满足，就可以确认这个 `<span>` 匹配该选择器。
 
 需要注意：这是常见的实现和教学模型，不是 CSS 规范要求浏览器必须这样实现。现代浏览器还会做选择器缓存、样式失效范围计算等优化。真实性能优化不要只盯着“选择器长不长”，更应该关注 DOM 规模、样式重算范围、频繁 class 切换和复杂状态变化。
+
+### 常见 CSS 选择器有哪些？
+
+常见选择器可以按“选中条件”分类记忆：
+
+| 类型 | 示例 | 说明 |
+| --- | --- | --- |
+| 类型选择器 | `button` | 按元素名选择 |
+| 类选择器 | `.primary` | 按 `class` 选择 |
+| ID 选择器 | `#app` | 按 `id` 选择 |
+| 通配选择器 | `*` | 匹配任意元素 |
+| 属性选择器 | `[disabled]`、`[type="email"]` | 按属性存在或属性值选择 |
+| 后代组合器 | `.card p` | 匹配某个祖先内部的后代 |
+| 子代组合器 | `.menu > li` | 只匹配直接子元素 |
+| 相邻兄弟组合器 | `h2 + p` | 匹配紧接在前一个元素后的兄弟 |
+| 通用兄弟组合器 | `h2 ~ p` | 匹配后续同级兄弟 |
+| 伪类 | `:hover`、`:focus-visible`、`:nth-child(2n)` | 匹配状态或结构 |
+| 伪元素 | `::before`、`::after`、`::marker` | 匹配元素的一部分或生成内容 |
+
+面试时不要只背名字，还要能说明它们对优先级的影响：ID 权重高于类、属性和伪类；类、属性和伪类高于元素和伪元素；通配符和组合器本身不增加权重。
 
 ### css 如何匹配前 N 个子元素及最后 N 个子元素
 
@@ -184,5 +205,6 @@ a:active {
 - [张鑫旭：深入理解 CSS 中的级联规则](https://www.zhangxinxu.com/wordpress/2022/05/deep-in-css-cascade/)
 - [MDN: Cascade](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Introduction)
 - [MDN: Specificity](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Specificity)
+- [MDN: CSS selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors)
 - [MDN: `:nth-child()`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:nth-child)
 - [MDN: `:nth-last-child()`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:nth-last-child)

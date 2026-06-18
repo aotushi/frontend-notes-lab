@@ -2,7 +2,7 @@
 
 ## 问题
 
-`line-height` 怎么理解？单行/多行文本怎么居中和省略？图片或 `inline-block` 元素之间为什么会出现空隙？
+`line-height` 怎么理解？`line-height` 如何继承？单行/多行文本怎么居中和省略？图片或 `inline-block` 元素之间为什么会出现空隙？
 
 ## 结论
 
@@ -13,6 +13,47 @@
 单行省略依赖三个条件：固定可用宽度、禁止换行、隐藏溢出并使用 `text-overflow: ellipsis`。多行省略现代浏览器通常使用 `line-clamp` 或带 `-webkit-` 前缀的兼容写法。
 
 图片底部空隙通常来自行内替换元素参与行盒排版时的基线对齐；`inline-block` 元素之间的水平空隙来自 HTML 源码里的空白字符被排版成文本空格。解决方向不是“神秘 margin”，而是改变显示类型、对齐方式或消除空白字符。
+
+### `line-height` 如何继承？
+
+`line-height` 的继承结果取决于写法：
+
+| 写法 | 继承给子元素的是什么 | 特点 |
+| --- | --- | --- |
+| `line-height: 30px` | 计算后的长度 `30px` | 子元素字号变化时行高不跟着变 |
+| `line-height: 200%` | 父元素计算后的长度 | 百分比先按父元素字号算成长度，再继承 |
+| `line-height: 2` | 数字 `2` 本身 | 子元素按自己的字号重新计算，更适合正文排版 |
+| `line-height: normal` | 关键字 | 由浏览器和字体决定 |
+
+例如：
+
+```css
+body {
+  font-size: 20px;
+  line-height: 200%;
+}
+
+p {
+  font-size: 16px;
+}
+```
+
+`body` 的 `line-height` 先计算为 `40px`，`p` 继承到的是这个 `40px`，而不是 `16px * 200% = 32px`。
+
+如果写成无单位数字：
+
+```css
+body {
+  font-size: 20px;
+  line-height: 2;
+}
+
+p {
+  font-size: 16px;
+}
+```
+
+`p` 继承数字 `2`，最终行高是 `16px * 2 = 32px`。所以全局正文样式更推荐用无单位 `line-height`，组件局部需要固定视觉高度时再使用具体长度。
 
 ## Demo
 

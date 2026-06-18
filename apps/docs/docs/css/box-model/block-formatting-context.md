@@ -107,6 +107,34 @@ BFC 主要影响三类布局关系：
 }
 ```
 
+#### 垂直 margin 折叠如何计算
+
+普通块流中相邻块盒的垂直 margin 可能折叠，折叠后的距离不是简单相加。
+
+```css
+p {
+  margin-block-start: 10px;
+  margin-block-end: 15px;
+}
+```
+
+```html
+<p>AAA</p>
+<p></p>
+<p></p>
+<p></p>
+<p>BBB</p>
+```
+
+这些空段落的上下 margin 会连续折叠在一起。全部都是正 margin 时，折叠结果取最大值，所以 `AAA` 和 `BBB` 之间的间距通常是 `15px`，不是多个段落 margin 的总和。
+
+折叠计算要注意：
+
+- 全部为正值时，取最大正值。
+- 全部为负值时，取绝对值最大的负值。
+- 正负混合时，最大正值和最小负值相加。
+- flex/grid 项目之间不会按普通块流规则发生这种垂直 margin 折叠。
+
 ### 常见误区
 
 - BFC 是布局上下文，不是 CSS 属性。
@@ -142,5 +170,6 @@ BFC 主要影响三类布局关系：
 
 - [MDN: Block formatting context](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Display/Block_formatting_context)
 - [MDN: Introduction to formatting contexts](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Display/Formatting_contexts)
+- [MDN: Mastering margin collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_box_model/Mastering_margin_collapsing)
 - [CSS 2.2: Block formatting contexts](https://www.w3.org/TR/CSS22/visuren.html#block-formatting)
 - [MDN: display](https://developer.mozilla.org/en-US/docs/Web/CSS/display)

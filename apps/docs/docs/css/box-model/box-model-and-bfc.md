@@ -2,7 +2,7 @@
 
 ## 问题
 
-CSS 盒模型是什么？`content-box` 和 `border-box` 有什么区别？
+CSS 盒模型是什么？`content-box` 和 `border-box` 有什么区别？`offsetWidth` 如何计算？负 `margin` 会怎样影响布局？
 
 ## 结论
 
@@ -27,6 +27,58 @@ html {
   box-sizing: inherit;
 }
 ```
+
+### `offsetWidth` 如何按盒模型计算？
+
+`offsetWidth` 是 DOM 几何属性，返回元素边框盒的布局宽度，通常包含内容宽度、左右 `padding`、左右 `border` 和垂直滚动条宽度，不包含 `margin`。
+
+```html
+<div id="box"></div>
+```
+
+```css
+#box {
+  box-sizing: content-box;
+  width: 100px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin: 10px;
+}
+```
+
+这个元素的 `offsetWidth` 是：
+
+```text
+100 + 10 * 2 + 1 * 2 = 122
+```
+
+如果希望 `offsetWidth` 接近声明的 `100px`，应把盒模型切到 `border-box`：
+
+```css
+#box {
+  box-sizing: border-box;
+  width: 100px;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+```
+
+注意 `offsetWidth` 是整数布局值，涉及缩放、子像素和滚动条时，结果可能和 `getBoundingClientRect().width` 不完全一样。
+
+### 负 `margin` 会怎样影响布局？
+
+负 `margin` 仍然参与正常流布局，不等于 `transform` 视觉位移。它会改变元素的 margin box，从而影响自己和后续元素的排布。
+
+常见方向可以这样理解：
+
+| 写法 | 常见效果 |
+| --- | --- |
+| `margin-left: -20px` | 元素向左靠，后续布局仍按新的 margin box 计算 |
+| `margin-top: -20px` | 元素向上靠，可能和前面的内容更接近或重叠 |
+| `margin-right: -20px` | 元素占用的右侧外部空间变小，后续行内或布局内容可能靠近 |
+| `margin-bottom: -20px` | 元素下方外部空间变小，后续块可能上移 |
+
+负 margin 常用于少量视觉对齐或旧布局技巧，但它会影响正常流，维护成本较高。现代布局里优先考虑 Grid/Flex、`gap`、定位或 `transform`，只有明确需要改变布局占用关系时再用负 margin。
 
 ## Demo
 
@@ -66,3 +118,5 @@ CSS 盒模型由内容区、内边距、边框和外边距组成。默认的 `co
 - [MDN: CSS box model](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Box_model)
 - [MDN: The box model](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Box_model)
 - [MDN: box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/box-sizing)
+- [MDN: HTMLElement.offsetWidth](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetWidth)
+- [MDN: margin](https://developer.mozilla.org/en-US/docs/Web/CSS/margin)
