@@ -12,7 +12,7 @@
 
 ### `Symbol` 是什么？适合解决什么问题？
 
-`Symbol` 是一种原始类型，每次调用 `Symbol()` 都会创建唯一值。它常用于避免对象属性名冲突、定义协议钩子和实现非字符串 key。
+`Symbol` 是一种原始类型，每次调用 `Symbol()` 都会创建唯一值。它常用于避免对象属性名冲突、<ConceptNote label="定义协议钩子" title="Symbol 如何定义协议钩子" :sections="[{ title: '直观理解', body: '有些 Symbol 是 JavaScript 语言预留的入口。对象实现这些 Symbol 属性后，语言内部操作会在特定时机主动调用它们。' }, { title: '示例', body: '对象实现 Symbol.toPrimitive 后，JavaScript 在需要把它转成原始值时会调用这个方法。', code: `const price = {\n  amount: 99,\n  currency: 'CNY',\n  [Symbol.toPrimitive](hint) {\n    if (hint === 'number') {\n      return this.amount\n    }\n\n    return this.amount + ' ' + this.currency\n  }\n}\n\n+price // 99\nString(price) // '99 CNY'` }, { title: '边界', body: '这不是普通业务字段名，而是语言协议的一部分。常见协议入口还包括 Symbol.iterator、Symbol.toStringTag、Symbol.hasInstance 等。' }]" /> 和 <ConceptNote label="实现非字符串 key" title="Symbol 和非字符串 key" :sections="[{ title: '直观理解', body: '普通对象的属性名只能是字符串或 Symbol。Symbol key 不会和同名字符串属性冲突，也不会被 Object.keys() 这类常规枚举直接列出。' }, { title: '对象 key 的边界', body: '如果 key 本身是对象，普通对象会把它转成字符串，容易出现 [object Object] 冲突；这类动态映射应该用 Map 保留 key 的原始身份。' }, { title: '示例', code: `const domKey = { id: 'app' }\nconst stateByNode = new Map()\n\nstateByNode.set(domKey, { mounted: true })\nstateByNode.get(domKey) // { mounted: true }\n\nconst objectStore = {}\nobjectStore[domKey] = 'value'\n\nObject.keys(objectStore) // ['[object Object]']` }]" />。
 
 ```js
 const id = Symbol('id')
@@ -32,9 +32,9 @@ Reflect.ownKeys(user) // [ 'name', Symbol(id) ]
 | 维度 | `Object` | `Map` |
 | --- | --- | --- |
 | key 类型 | 字符串或 Symbol | 任意值 |
-| 原型属性干扰 | 默认有原型链 | 无业务 key 干扰 |
-| 数量 | 需要手动维护或 `Object.keys()` | `size` |
-| 迭代顺序 | 有属性顺序规则 | 按插入顺序迭代 |
+| 原型属性干扰 | 默认继承 `toString`、`constructor` 等原型属性 | 只保存你放进去的键值对 |
+| 数量 | 没有内置数量属性，需要自己维护计数或临时用 `Object.keys()` 统计 | `size` 直接返回当前条数 |
+| 迭代顺序 | 整数索引键会先按升序排，其它字符串键再按创建顺序排 | 谁先 `set`，谁就先被迭代 |
 | 使用场景 | 结构化记录 | 动态键值表 |
 
 对象适合表达固定结构数据，`Map` 适合频繁增删、key 类型不固定或需要按插入顺序遍历的映射。
@@ -64,7 +64,26 @@ const nextMap = new Map(Object.entries(object))
 const unique = [...new Set([1, 1, 2, 3])]
 ```
 
-`Set` 判断相等使用 SameValueZero：`NaN` 视为相等，`+0` 和 `-0` 视为相等。
+`Set` 判断相等使用 <ConceptNote label="SameValueZero" title="SameValueZero 是什么" :sections="[{ title: '直观理解', body: 'SameValueZero 是 ECMAScript 规范里的抽象比较算法，不是 JavaScript 暴露出来的函数，代码里不能调用 SameValueZero()。' }, { title: '记忆方式', body: '它的大部分行为接近 ===，但 NaN 会被视为相等；同时 +0 和 -0 也视为同一个值。' }, { title: '近似伪实现', code: `function sameValueZero(a, b) {\n  return a === b || (Number.isNaN(a) && Number.isNaN(b))\n}` }]" />，不是 `Object.is()`，也不是单纯的 `===`。可以把它记成：大部分行为接近 `===`，但 `NaN` 会被视为相等；同时 `+0` 和 `-0` 也视为同一个值。
+
+| 比较点 | `===` | `Object.is()` | `Set` / SameValueZero |
+| --- | --- | --- | --- |
+| `NaN` 和 `NaN` | 不相等 | 相等 | 相等 |
+| `+0` 和 `-0` | 相等 | 不相等 | 相等 |
+| 两个不同对象字面量 | 不相等 | 不相等 | 不相等 |
+
+对象、数组和函数仍然按引用身份判断，不会做结构深比较：
+
+```js
+new Set([NaN, NaN]).size // 1
+new Set([+0, -0]).size // 1
+Object.is(+0, -0) // false
+
+const a = { id: 1 }
+const b = { id: 1 }
+
+new Set([a, b, a]).size // 2
+```
 
 ### `WeakMap` / `WeakSet` 与 `Map` / `Set` 的区别是什么？
 
@@ -265,21 +284,395 @@ Math.abs(0.1 + 0.2 - 0.3) < Number.EPSILON // true
 
 如果涉及金额，优先用整数最小单位、定点数方案或专门的 decimal 库，避免直接用浮点数累加。
 
-### 数组去重和扁平化有哪些常见方式？
+### 数组去重有哪些常见方式？
 
-去重优先用 `Set` 表达唯一集合：
+数组去重题不要只背一个 API。面试里常问“写出多种方式”，但实际回答要同时说明相等规则、是否改变原数组、是否保留顺序、是否支持对象和是否会破坏类型。
+
+| 排序 | 方式 | 复杂度 / 成本 | 适合场景 | 边界 |
+| --- | --- | --- | --- | --- |
+| 1 | `Set` | 平均 O(n)，空间 O(n) | 常规值去重默认首选，保留首次出现顺序 | 对象、数组、函数按引用去重，不做结构比较 |
+| 2 | `Map` 自定义 key | 平均 O(n)，空间 O(n)，另有 key 计算成本 | 对象数组按业务字段去重 | key 冲突时需明确保留第一个还是最后一个 |
+| 3 | 对象键值表 | 平均 O(n)，空间 O(n)，另有字符串化成本 | 旧题里用于模拟哈希表 | key 构造容易丢信息，复杂值风险高 |
+| 4 | 排序 + 相邻比较 | O(n log n)，空间 O(n) | 可接受排序后的简单数组 | 不保留原始顺序；默认 `sort()` 按字符串排序 |
+| 5 | 排序 + 快慢指针 | O(n log n)，空间 O(n)；若原地排序可降到 O(1) 额外空间 | 数字数组、算法题 | 不保留原始顺序；比较函数必须正确 |
+| 6 | `for` + `includes` | O(n²)，空间 O(n) | 小数组、强调可读性 | 数据量大时慢 |
+| 7 | `reduce` + `includes` / `indexOf` | O(n²)，空间 O(n)，`concat` 会产生中间数组 | 函数式写法展示 | `indexOf` 不能识别 `NaN` |
+| 8 | `filter` + `indexOf` | O(n²)，空间 O(n) | 旧题常见写法 | 会漏掉 `NaN` |
+| 9 | 双循环 + 新数组 | O(n²)，空间 O(n) | 理解朴素算法 | `===` 不能识别重复 `NaN` |
+| 10 | 双循环 + `splice` | O(n²)，且删除会移动元素 | 原地删除思路 | 修改数组，重复项多时移动成本明显 |
+
+1. `Set`
 
 ```js
-const unique = (list) => [...new Set(list)]
+const uniqueBySet = (list) => [...new Set(list)]
+
+uniqueBySet([1, 1, NaN, NaN, +0, -0])
+// [1, NaN, 0]
 ```
 
-扁平化优先用 `flat()`，需要自定义深度或兼容旧环境时再手写递归。
+点评：现代项目默认优先用它表达“唯一集合”。它能去掉 `NaN`，但对象、数组、函数仍按引用身份判断。
+
+2. `Map` 键值表 / 自定义 key
 
 ```js
-[1, [2, [3]]].flat(2) // [1, 2, 3]
+function uniqueBy(list, getKey) {
+  const seen = new Map()
+  const result = []
+
+  for (const item of list) {
+    const key = getKey(item)
+
+    if (!seen.has(key)) {
+      seen.set(key, true)
+      result.push(item)
+    }
+  }
+
+  return result
+}
+
+uniqueBy(
+  [
+    { id: 1, name: 'Ada' },
+    { id: 1, name: 'Ada Lovelace' },
+    { id: 2, name: 'Linus' }
+  ],
+  (item) => item.id
+)
+// [{ id: 1, name: 'Ada' }, { id: 2, name: 'Linus' }]
 ```
 
-如果元素是对象，`Set` 只按引用去重；如果要按对象字段去重，需要用 `Map` 或自定义 key。
+点评：`Map` 版本平均复杂度接近 O(n)，适合对象数组按业务字段去重；这个写法保留首次出现项，如果想保留最后出现项，可以用 `new Map(list.map(...)).values()`。
+
+3. 对象键值表
+
+```js
+function uniqueByObjectKey(list) {
+  const seen = Object.create(null)
+
+  return list.filter((item) => {
+    const key = `${typeof item}:${JSON.stringify(item)}`
+
+    if (Object.hasOwn(seen, key)) {
+      return false
+    }
+
+    seen[key] = true
+    return true
+  })
+}
+```
+
+点评：哈希表思路平均复杂度接近 O(n)，比反复线性查找更适合大数组；缺点是 key 构造质量决定正确性，`JSON.stringify(/a/)` 得到 `{}`，函数和 `undefined` 也会丢信息，遇到循环引用还会抛错。普通对象可以调用 `obj.hasOwnProperty(key)`；但 `Object.create(null)` 创建的是无原型对象，没有这个方法，来自外部的数据对象也可能覆盖同名属性，因此更稳的写法是 `Object.hasOwn(seen, key)` 或 `Object.prototype.hasOwnProperty.call(seen, key)`。
+
+4. 排序 + 相邻比较
+
+```js
+function uniqueBySortedNeighbor(list) {
+  return [...list]
+    .sort()
+    .filter((item, index, array) => index === 0 || item !== array[index - 1])
+}
+```
+
+点评：它会改变顺序；默认 `sort()` 按字符串排序，`[1, 10, 2]` 会排成 `[1, 10, 2]`，不是数值升序。数字数组应传比较函数。
+
+5. 排序 + 快慢指针
+
+```js
+function uniqueBySortedPointers(list) {
+  const result = [...list].sort((a, b) => a - b)
+
+  if (result.length === 0) {
+    return result
+  }
+
+  let slow = 0
+
+  for (let fast = 1; fast < result.length; fast += 1) {
+    if (result[fast] !== result[slow]) {
+      slow += 1
+      result[slow] = result[fast]
+    }
+  }
+
+  return result.slice(0, slow + 1)
+}
+```
+
+点评：适合算法题里的数字数组；排序已经破坏原始顺序，不适合需要保留首次出现顺序的业务数据。
+
+6. `for` + `includes`
+
+```js
+function uniqueByIncludes(list) {
+  const result = []
+
+  for (const item of list) {
+    if (!result.includes(item)) {
+      result.push(item)
+    }
+  }
+
+  return result
+}
+```
+
+点评：`includes` 使用 SameValueZero，因此能识别重复的 `NaN`。缺点是每次都要在结果数组里查找，复杂度仍是 O(n²)。
+
+7. `reduce` + `includes` / `indexOf`
+
+```js
+function uniqueByReduceIncludes(list) {
+  return list.reduce((result, item) => {
+    return result.includes(item) ? result : result.concat(item)
+  }, [])
+}
+
+function uniqueByReduceIndexOf(list) {
+  return list.reduce((result, item) => {
+    return result.indexOf(item) === -1 ? result.concat(item) : result
+  }, [])
+}
+```
+
+点评：`includes` 版本更接近 `Set` 的相等规则；`indexOf` 版本不能识别 `NaN`，只适合解释旧写法。
+
+8. `filter` + `indexOf`
+
+```js
+function uniqueByFilterIndexOf(list) {
+  return list.filter((item, index, array) => array.indexOf(item) === index)
+}
+```
+
+点评：这是常见老答案，但会丢掉 `NaN`，因为 `indexOf(NaN)` 永远是 `-1`。
+
+9. 双循环 + 新数组
+
+```js
+function uniqueByDoubleLoop(list) {
+  const result = []
+
+  for (const item of list) {
+    let duplicated = false
+
+    for (const current of result) {
+      if (item === current) {
+        duplicated = true
+        break
+      }
+    }
+
+    if (!duplicated) {
+      result.push(item)
+    }
+  }
+
+  return result
+}
+```
+
+点评：比 `splice` 版本安全，不改原数组；缺点仍是 O(n²)，并且 `===` 不会把 `NaN` 和 `NaN` 判断为相等。
+
+10. 双循环 + `splice`
+
+```js
+function uniqueBySplice(list) {
+  const result = [...list]
+
+  for (let i = 0; i < result.length; i += 1) {
+    for (let j = i + 1; j < result.length; j += 1) {
+      if (result[j] === result[i]) {
+        result.splice(j, 1)
+        j -= 1
+      }
+    }
+  }
+
+  return result
+}
+```
+
+点评：这种写法能保留首次出现顺序，但 `splice` 每次删除都会移动后续元素，重复项多时开销明显；它使用 `===`，所以不能去掉重复的 `NaN`。
+
+### 数组扁平化有哪些常见方式？
+
+数组扁平化题不要只背 `flat()`。面试里常要求同时说出原生 API、递归、非递归和字符串类 hack；回答时要说明展开深度、类型保留、递归栈和中间数组开销。
+
+| 排序 | 方式 | 复杂度 / 成本 | 适合场景 | 边界 |
+| --- | --- | --- | --- | --- |
+| 1 | `flat(depth)` / `flat(Infinity)` | O(n)，空间 O(n)，n 为访问到的元素数 | 现代环境默认首选 | 只做数组展开；深度要明确 |
+| 2 | `flatMap()` | O(n + m)，m 为映射后展开的一层元素数 | 先映射，再展开一层 | 只展开一层，不等于深度扁平化 |
+| 3 | 递归 + `for...of` | O(n)，空间 O(n)，另有递归栈 O(depth) | 手写 `flat`、完全拍平 | 嵌套过深可能调用栈溢出 |
+| 4 | 带深度递归 | O(n)，空间 O(n)，另有递归栈 O(depth) | 手写 `flat(depth)` | 深度很大时可能栈溢出 |
+| 5 | 显式栈迭代 | O(n)，空间 O(n) | 避免递归栈溢出 | 代码更长，需要反转或维护顺序 |
+| 6 | `reduce` + 递归 | 通常高于 O(n)，`concat` 会反复复制 | 函数式写法展示 | 大数组性能差，仍有递归栈问题 |
+| 7 | `while` + `some` + 展开 | 约 O(n × depth)，多次扫描和复制 | 不写递归的面试写法 | 层数多时代价明显 |
+| 8 | `JSON.stringify` + 替换 + `split` | O(n) 序列化 + 字符串替换 + 拆分成本 | 旧题 hack | 返回字符串数组，类型信息丢失 |
+| 9 | `JSON.stringify` + 替换 + `JSON.parse` | O(n) 序列化 + 字符串替换 + 解析成本 | 只处理简单 JSON 值的旧题 hack | 受 JSON 序列化限制，复杂值不可用 |
+| 10 | `toString` + `split` | O(n) 字符串化成本 | 只适合演示为什么不推荐 | 会把所有值变成字符串，复杂值不可用 |
+
+1. `flat()` / `flat(Infinity)`
+
+```js
+function flattenByFlat(list, depth = 1) {
+  return list.flat(depth)
+}
+
+flattenByFlat([1, [2, [3]]], 2) // [1, 2, 3]
+flattenByFlat([1, [2, [3]]], Infinity) // [1, 2, 3]
+```
+
+点评：现代环境首选。`flat()` 默认只展开一层；完全拍平用 `Infinity`，但仍要注意数据规模。
+
+2. `flatMap()`
+
+```js
+function duplicateAndFlattenOneLevel(list) {
+  return list.flatMap((value) => [value, value * 2])
+}
+
+duplicateAndFlattenOneLevel([1, 2]) // [1, 2, 2, 4]
+```
+
+点评：`flatMap()` 等于先 `map()` 再展开一层，不是深度扁平化。
+
+3. 递归 + `for...of`
+
+```js
+function flattenByForOf(list) {
+  const result = []
+
+  for (const item of list) {
+    if (Array.isArray(item)) {
+      result.push(...flattenByForOf(item))
+    } else {
+      result.push(item)
+    }
+  }
+
+  return result
+}
+
+flattenByForOf([1, [2, [3]]]) // [1, 2, 3]
+```
+
+点评：递归写法可读性强，能保留元素类型和顺序，整体会访问每个元素一次；缺点是很深的嵌套可能触发调用栈限制，且这个版本默认完全拍平。
+
+4. 带深度的递归版
+
+```js
+function flattenWithDepth(list, depth = 1) {
+  const result = []
+
+  for (const item of list) {
+    if (Array.isArray(item) && depth > 0) {
+      result.push(...flattenWithDepth(item, depth === Infinity ? Infinity : depth - 1))
+    } else {
+      result.push(item)
+    }
+  }
+
+  return result
+}
+
+flattenWithDepth([1, [2, [3]]], 2) // [1, 2, 3]
+```
+
+点评：这更接近手写 `Array.prototype.flat(depth)` 的核心逻辑，能控制展开层数并保留顺序；缺点仍是递归深度过大时可能栈溢出。
+
+5. 显式栈迭代
+
+```js
+function flattenDeep(list) {
+  const stack = [...list]
+  const result = []
+
+  while (stack.length) {
+    const item = stack.pop()
+
+    if (Array.isArray(item)) {
+      stack.push(...item)
+    } else {
+      result.push(item)
+    }
+  }
+
+  return result.reverse()
+}
+```
+
+点评：显式栈版本避免递归调用栈过深，但代码更长。它适合非常深的嵌套数组或算法题扩展。
+
+6. `reduce` + 递归
+
+```js
+function flattenByReduce(list) {
+  return list.reduce((result, item) => {
+    return result.concat(Array.isArray(item) ? flattenByReduce(item) : item)
+  }, [])
+}
+
+flattenByReduce([1, [2, [3]]]) // [1, 2, 3]
+```
+
+点评：`reduce` 版本表达紧凑，但 `concat` 会不断创建新数组，大数组下性能通常不如手动 `push`；它同样有递归栈过深的问题。
+
+7. `while` + `some` + 展开运算符
+
+```js
+function flattenBySpread(list) {
+  let result = [...list]
+
+  while (result.some(Array.isArray)) {
+    result = [].concat(...result)
+  }
+
+  return result
+}
+
+flattenBySpread([1, [2, [3]]]) // [1, 2, 3]
+```
+
+点评：每轮只展开一层，所以需要循环。层数多或数组很大时，会产生较多中间数组。
+
+8. `JSON.stringify` + 替换 + `split`
+
+```js
+function flattenByJsonSplit(list) {
+  return JSON.stringify(list).replace(/\[|\]/g, '').split(',')
+}
+
+flattenByJsonSplit([1, [2, [3]]]) // ['1', '2', '3']
+```
+
+点评：返回值仍然是字符串数组；如果数组里本来有字符串、对象或特殊值，结果很容易不可靠。
+
+9. `JSON.stringify` + 替换 + `JSON.parse`
+
+```js
+function flattenByJsonParse(list) {
+  const content = JSON.stringify(list).replace(/\[|\]/g, '')
+  return JSON.parse(`[${content}]`)
+}
+
+flattenByJsonParse([1, [2, [3]]]) // [1, 2, 3]
+```
+
+点评：这个版本能保留简单数字类型，但仍会受 JSON 序列化限制：`undefined`、函数、Symbol、循环引用和包含方括号的字符串都可能出问题。
+
+10. `toString` + `split`
+
+```js
+function flattenByToString(list) {
+  return String(list).split(',')
+}
+
+flattenByToString([1, [2, [3]]]) // ['1', '2', '3']
+```
+
+点评：这类写法看起来短，但质量最低；它会把数字变成字符串，也无法可靠处理对象、字符串里的逗号、稀疏数组和复杂嵌套，不适合作为正式实现。
 
 ### `['1', '2', '3'].map(parseInt)` 为什么得到 `[1, NaN, NaN]`？
 
@@ -441,6 +834,8 @@ console.log(source) // ['a', 'x', 'd']
 - [MDN: Nullish coalescing operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing)
 - [MDN: Logical OR assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_OR_assignment)
 - [MDN: Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
+- [MDN: Array.prototype.flat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat)
+- [MDN: Array.prototype.flatMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap)
 - [MDN: Array.prototype.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)
 - [MDN: Number.EPSILON](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/EPSILON)
 - [MDN: Object.assign](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
