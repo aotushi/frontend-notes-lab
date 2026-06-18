@@ -73,6 +73,62 @@ typeof (() => {}) // 'function'
 
 跨 iframe、不同 realm、手动改原型链时，`instanceof` 的结果可能不符合“业务类型”直觉。数组优先用 `Array.isArray()`。
 
+`instanceof` 的核心实现就是沿着左侧值的原型链，查找右侧构造函数的 `prototype`：
+
+```js
+function myInstanceof(left, right) {
+  // 1. instanceof 右边必须是函数
+  // 例如：obj instanceof Person
+  // Person 通常是构造函数
+  if (typeof right !== 'function') {
+    throw new TypeError('Right-hand side of instanceof is not callable')
+  }
+
+  // 2. 原始值不可能有原型链
+  // 例如：123 instanceof Number -> false
+  // 注意：函数也是对象，所以 function 要保留
+  if (left === null || (typeof left !== 'object' && typeof left !== 'function')) {
+    return false
+  }
+
+  // 3. 取出右边构造函数的 prototype
+  // 例如：Person.prototype
+  const targetPrototype = right.prototype
+
+  // 4. 从 left 的原型开始往上找
+  // 例如：
+  // obj -> Person.prototype -> Object.prototype -> null
+  let currentPrototype = Object.getPrototypeOf(left)
+
+  // 5. 一直沿着原型链向上查找
+  while (currentPrototype !== null) {
+    // 如果某一层原型正好等于 right.prototype
+    // 说明 left 是 right 的实例
+    if (currentPrototype === targetPrototype) {
+      return true
+    }
+
+    // 继续向上一层原型查找
+    currentPrototype = Object.getPrototypeOf(currentPrototype)
+  }
+
+  // 6. 找到原型链顶端 null 都没找到
+  // 说明 left 不是 right 的实例
+  return false
+}
+
+function Person(name) {
+  this.name = name
+}
+
+const p = new Person('Tom')
+
+console.log(myInstanceof(p, Person)) // true
+console.log(myInstanceof(p, Object)) // true
+console.log(myInstanceof(p, Array)) // false
+console.log(myInstanceof(123, Number)) // false
+```
+
 ### `==`、`===`、`Object.is()` 怎么选？
 
 `===` 不做大多数类型转换，是日常比较的默认选择。`==` 会触发抽象相等比较，只有在刻意利用 `x == null` 同时匹配 `null` 和 `undefined` 时才建议使用。`Object.is()` 和 `===` 很像，但能区分 `+0` 与 `-0`，并认为 `NaN` 等于自身。
