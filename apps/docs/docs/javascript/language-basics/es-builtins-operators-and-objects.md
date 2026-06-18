@@ -2,13 +2,13 @@
 
 ## 问题
 
-`Symbol`、`Map`、`Set`、`WeakMap`、`WeakSet`、Iterator、Generator、数组方法、`Object.assign`、JSON、RegExp、ArrayBuffer、TypedArray 和常见表达式题应该如何归类和回答？为什么有些题看起来像手写题，本质却在考内置对象语义？
+`Symbol`、`Map`、`Set`、`WeakMap`、`WeakSet`、Iterator、Generator、数组方法、`Object.assign`、JSON、RegExp、ArrayBuffer、TypedArray、相等运算、可选链、空值合并和常见表达式题应该如何归类和回答？为什么有些题看起来像手写题，本质却在考内置对象语义？
 
 ## 结论
 
 ### 理解路径
 
-内置对象题不要只背 API。先判断它解决的是唯一标识、集合、键值映射、迭代协议、序列化、文本匹配、二进制数据还是时间/数学计算，再说明和普通对象、数组、手写实现之间的边界。
+内置对象题不要只背 API。先判断它解决的是唯一标识、集合、键值映射、迭代协议、序列化、文本匹配、二进制数据、数值计算还是表达式求值，再说明和普通对象、数组、手写实现之间的边界。
 
 ### `Symbol` 是什么？适合解决什么问题？
 
@@ -117,6 +117,88 @@ function* ids() {
 }
 ```
 
+### 数组解构为什么要求可迭代对象？
+
+数组解构走的是迭代协议，而不是按属性名读取。右侧值必须是 iterable，也就是有 `Symbol.iterator` 方法并能返回 iterator。
+
+```js
+const source = { a: 1, b: 2 }
+
+const [a, b] = source
+// TypeError: source is not iterable
+```
+
+如果确实要让普通对象支持数组解构，可以给它实现 `Symbol.iterator`：
+
+```js
+const source = {
+  a: 1,
+  b: 2,
+  *[Symbol.iterator]() {
+    yield this.a
+    yield this.b
+  }
+}
+
+const [a, b] = source
+// a = 1, b = 2
+```
+
+实际业务里更常见也更清晰的是对象解构：
+
+```js
+const { a, b } = source
+```
+
+### `==` 和 `===` 有什么区别？
+
+`===` 是严格相等，比较时不做类型转换；`==` 是宽松相等，会先按抽象相等比较规则做类型转换，再比较结果。日常代码优先使用 `===`，因为它更容易预测。
+
+```js
+0 == false // true
+0 === false // false
+
+'' == false // true
+'' === false // false
+
+null == undefined // true
+null === undefined // false
+```
+
+`NaN` 不等于自身，`+0` 和 `-0` 在 `===` 下相等。需要处理这些边界时使用 `Object.is()` 更明确：
+
+```js
+NaN === NaN // false
+Object.is(NaN, NaN) // true
+
++0 === -0 // true
+Object.is(+0, -0) // false
+```
+
+`x == null` 是少数有明确语义的宽松相等用法，它只同时匹配 `null` 和 `undefined`。如果团队规范禁止 `==`，也可以显式写成 `x === null || x === undefined`。
+
+### 可选链、空值合并和逻辑赋值有什么边界？
+
+可选链 `?.` 只在左侧为 `null` 或 `undefined` 时短路，不会把 `0`、`''`、`false` 当成缺失值。空值合并 `??` 也只在左侧为 `null` 或 `undefined` 时使用默认值。
+
+```js
+const user = { profile: { age: 0, name: '' } }
+
+user.profile?.age ?? 18 // 0
+user.profile?.name ?? 'Anonymous' // ''
+user.settings?.theme ?? 'light' // 'light'
+```
+
+逻辑赋值运算符是短路逻辑和赋值的组合：
+
+```js
+options.timeout ||= 3000 // 左侧 falsy 时赋值
+options.count ??= 0 // 左侧是 null 或 undefined 时赋值
+options.enabled &&= normalize(options.enabled) // 左侧 truthy 时赋值
+```
+
+`||=` 会把 `0`、`''`、`false` 当成需要覆盖的值；如果这些值是有效业务值，应使用 `??=`。
+
 ### 数组方法怎么分类？
 
 | 类别 | 常见方法 | 是否改变原数组 |
@@ -165,6 +247,23 @@ list // [1, 'x', 4]
 ```
 
 比较函数返回负数表示 `a` 排在 `b` 前，返回正数表示 `a` 排在 `b` 后，返回 `0` 表示顺序相等。现代规范要求 `Array.prototype.sort` 是稳定排序。
+
+### `0.1 + 0.2 === 0.3` 为什么是 `false`？
+
+JavaScript 的 `Number` 使用 IEEE 754 双精度浮点数。很多十进制小数无法用二进制浮点数精确表示，`0.1 + 0.2` 的结果是一个接近 `0.3` 的值，而不是精确的 `0.3`。
+
+```js
+0.1 + 0.2 // 0.30000000000000004
+0.1 + 0.2 === 0.3 // false
+```
+
+比较小数时不要直接用严格相等判断，可以用误差范围：
+
+```js
+Math.abs(0.1 + 0.2 - 0.3) < Number.EPSILON // true
+```
+
+如果涉及金额，优先用整数最小单位、定点数方案或专门的 decimal 库，避免直接用浮点数累加。
 
 ### 数组去重和扁平化有哪些常见方式？
 
@@ -261,6 +360,19 @@ JSON.stringify([undefined, () => {}]) // '[null,null]'
 /abc/ === /abc/ // false
 ```
 
+### 如何写一个基础 email 正则？
+
+email 规则比表面上复杂，完整校验通常应交给业务约束、后端校验和确认邮件流程。前端只需要做输入提示时，可以使用覆盖常见地址形态的基础正则：
+
+```js
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+emailPattern.test('ada@example.com') // true
+emailPattern.test('ada@example') // false
+```
+
+不要用过度复杂的正则假装完整实现 RFC 级校验；也不要只靠前端正则决定账号、支付、权限等关键流程。
+
 ### ArrayBuffer、TypedArray 和 DataView 有什么区别？
 
 `ArrayBuffer` 表示一段原始二进制内存，本身不负责解释数据。TypedArray 是带元素类型的视图，例如 `Uint8Array`、`Float32Array`；`DataView` 可以在同一段 buffer 上按不同类型和字节序读写。
@@ -323,8 +435,14 @@ console.log(source) // ['a', 'x', 'd']
 - [MDN: WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap)
 - [MDN: Iteration protocols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)
 - [MDN: Generator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator)
+- [MDN: Equality comparisons and sameness](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Equality_comparisons_and_sameness)
+- [MDN: Object.is](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is)
+- [MDN: Optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
+- [MDN: Nullish coalescing operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing)
+- [MDN: Logical OR assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_OR_assignment)
 - [MDN: Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
 - [MDN: Array.prototype.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)
+- [MDN: Number.EPSILON](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/EPSILON)
 - [MDN: Object.assign](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
 - [MDN: JSON.stringify](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)
 - [MDN: RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp)
