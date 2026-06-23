@@ -1,11 +1,5 @@
 # 原型链与继承
 
-## 问题
-
-JavaScript 的原型、原型链、构造函数、`new`、`class`、继承和 `instanceof` 分别是什么？ES5 组合继承、寄生组合继承和 ES6 `class extends` 有什么关系？
-
-## 结论
-
 ### 理解路径
 
 JavaScript 对象复用的基础是原型委托。对象本身没有某个属性时，会沿 `[[Prototype]]` 链继续查找。构造函数、`new` 和 `class` 都是在这套原型机制之上的语法和约定。
@@ -505,8 +499,6 @@ function myInstanceof(value, ctor) {
 
 封装可以通过闭包、模块、私有字段和对象边界实现；继承主要通过原型委托和 `class extends` 实现；多态来自动态派发，即不同对象暴露同名方法并在运行时调用。
 
-## Demo
-
 ### 寄生组合继承
 
 ```js
@@ -540,6 +532,129 @@ class Child extends Parent {
   constructor(name, age) {
     super(name)
     this.age = age
+  }
+}
+```
+
+### 原型修改与重写
+
+```js
+function Person(name) { this.name = name }
+
+// 修改原型（添加属性）
+Person.prototype.getName = function() {}
+var p = new Person('hello')
+console.log(p.__proto__ === Person.prototype) // true
+console.log(p.__proto__ === p.constructor.prototype) // true
+
+// 重写原型（直接赋值对象）
+Person.prototype = { getName: function() {} }
+var p2 = new Person('hello')
+console.log(p2.__proto__ === Person.prototype)        // true
+console.log(p2.__proto__ === p2.constructor.prototype) // false
+// constructor 丢失，需要手动修复
+p2.constructor = Person
+```
+
+重写原型后，`constructor` 会指向 `Object`（根构造函数），需要手动指回来。
+
+### 原型链指向
+
+```js
+// 以 Person 构造函数为例
+p.__proto__                            // Person.prototype
+Person.prototype.__proto__             // Object.prototype
+p.__proto__.__proto__                  // Object.prototype
+p.__proto__.constructor                // Person
+Person.prototype.constructor           // Person
+Object.prototype.__proto__             // null（原型链终点）
+```
+
+### 原型链的终点是什么？如何打印出原型链的终点？
+
+原型链的终点是 `null`。
+
+所有对象最终都继承自 `Object.prototype`，而 `Object.prototype.__proto__ === null`，因此 `null` 是原型链的终点。
+
+```js
+// 打印出原型链
+function printChain(obj) {
+  let cur = obj
+  while (cur !== null) {
+    console.log(cur)
+    cur = Object.getPrototypeOf(cur)
+  }
+}
+```
+
+### 如何获得对象非原型链上的属性？
+
+使用 `hasOwnProperty()` 方法来判断属性是否是对象自身的属性（而非继承自原型链）：
+
+```js
+function iterate(obj) {
+  const res = []
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      res.push(key + ': ' + obj[key])
+    }
+  }
+  return res
+}
+```
+
+### 对象创建的方式有哪些？
+
+1. **工厂模式**：用函数封装对象创建，可复用，但无法识别对象类型。
+2. **构造函数模式**：通过 `new` 调用，可识别类型，但每次创建实例都会新建函数对象，浪费内存。
+3. **原型模式**：在 `prototype` 上定义方法，方法复用，但引用类型属性被所有实例共享。
+4. **组合模式（推荐）**：构造函数定义属性 + 原型定义方法，最常见。
+5. **动态原型模式**：将原型方法的赋值放在构造函数内部，首次调用时才初始化。
+6. **寄生构造函数模式**：基于已有类型扩展实例，不修改原构造函数。
+
+```js
+// 组合模式示例
+function Person(name, age) {
+  this.name = name
+  this.age = age
+}
+Person.prototype.greet = function() {
+  return 'Hi, I am ' + this.name
+}
+```
+
+### 实现 call、apply 及 bind 函数
+
+```js
+// 实现 call
+Function.prototype.myCall = function(context, ...args) {
+  if (typeof this !== 'function') throw new TypeError('Error')
+  context = context || window
+  context.fn = this
+  const result = context.fn(...args)
+  delete context.fn
+  return result
+}
+
+// 实现 apply
+Function.prototype.myApply = function(context, args) {
+  if (typeof this !== 'function') throw new TypeError('Error')
+  context = context || window
+  context.fn = this
+  const result = args ? context.fn(...args) : context.fn()
+  delete context.fn
+  return result
+}
+
+// 实现 bind
+Function.prototype.myBind = function(context, ...args) {
+  if (typeof this !== 'function') throw new TypeError('Error')
+  const fn = this
+  return function Fn(...innerArgs) {
+    return fn.apply(
+      this instanceof Fn ? this : context,
+      args.concat(innerArgs)
+    )
   }
 }
 ```

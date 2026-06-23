@@ -58,6 +58,38 @@ $brand: #168a7a;
 
 CSS 预处理器是在构建期扩展 CSS 写法，最后输出普通 CSS。它能提供变量、嵌套、mixin、函数和模块拆分等能力。现代 CSS 已经补齐了很多能力，所以新项目要看团队和复杂度选择；如果只是变量和简单嵌套，原生 CSS 可能够用，如果有大量 mixin、函数和历史代码，Sass/Less 仍然有价值。
 
+### 对 CSS 工程化的理解
+
+CSS 工程化是为了解决以下问题：
+
+1. **宏观设计**：CSS 代码如何组织、如何拆分、模块结构怎样设计？
+2. **编码优化**：怎样写出更好的 CSS？
+3. **构建**：如何处理 CSS，使打包结果最优？
+4. **可维护性**：如何降低后续变更成本？
+
+**三个核心方向：**
+
+**（1）预处理器（Less、Sass 等）**
+
+解决传统 CSS 不支持变量、嵌套、函数、循环、模块拆分的问题，让样式代码更结构化。
+
+**（2）PostCSS**
+
+对 CSS 本身进行 AST 解析和处理：
+- `Autoprefixer`：自动添加浏览器私有前缀；
+- `cssnano`：压缩 CSS；
+- 支持编写面向未来的 CSS 语法（postcss-preset-env）。
+
+与预处理器的区别：预处理器处理"类 CSS"语法，PostCSS 直接处理 CSS，插件化扩展能力更强。
+
+**（3）Webpack/Vite Loader**
+
+- `css-loader`：解析 CSS 中的 `@import` 和 `url()`，把 CSS 编译成 JS 模块；
+- `style-loader`：创建 `<style>` 标签，把 CSS 注入 DOM；
+- 注意：`css-loader` 必须在 `style-loader` 前执行（Webpack loader 从右往左执行）。
+
+**现代方案还包括：** CSS Modules（作用域隔离）、原子类框架（Tailwind CSS）、CSS-in-JS（styled-components）、CSS 自定义属性（设计 token）。
+
 ## 参考来源
 
 - [Sass: Documentation](https://sass-lang.com/documentation/)

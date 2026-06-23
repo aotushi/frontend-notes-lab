@@ -77,6 +77,36 @@ ARIA 的原则是“少用、正确用”。如果原生元素已经能表达语
   height="980"
 />
 
+## 常见问题
+
+### label 的作用是什么？如何使用？
+
+`label` 用来定义表单控件的关联关系：当用户点击 `label` 时，浏览器会自动把焦点转移到它关联的表单控件上。这扩大了控件的可点击区域，也为辅助技术提供控件的可访问名称。
+
+两种使用方式：
+
+**方式一：通过 `for` 属性显式关联（推荐）**
+
+```html
+<label for="mobile">手机号：</label>
+<input type="text" id="mobile" name="mobile">
+```
+
+`for` 属性值与控件的 `id` 对应，两个元素可以不相邻。
+
+**方式二：包裹控件隐式关联**
+
+```html
+<label>
+  日期：
+  <input type="text" name="date">
+</label>
+```
+
+隐式关联不需要 `id`，但布局灵活性稍差。
+
+不带 `for` 的 `label` 不会产生关联效果，也无法被辅助技术正确识别。复选框和单选按钮尤其依赖 `label` 来扩大点击范围。
+
 ## 参考来源
 
 - [MDN: HTML accessibility](https://developer.mozilla.org/en-US/docs/Learn/Accessibility/HTML)

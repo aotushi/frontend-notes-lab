@@ -4,4 +4,4 @@
 
 ## 已整理问题
 
-暂无已整理问题。
+- [transform、transition 与 animation 的区别](/css/animation-interaction/transform-transition-animation)：三者职责区分，动画为何优先用 transform / opacity。

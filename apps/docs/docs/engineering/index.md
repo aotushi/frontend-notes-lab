@@ -4,7 +4,9 @@
 
 ## 已迁移知识点
 
-暂无。后续从 `raw-notes/12_前端工程化.md` 逐条迁入。
+### 架构
+
+- [Monorepo 与包管理器](/engineering/monorepo-and-package-manager)
 
 ## 主题组规划
 

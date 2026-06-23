@@ -101,7 +101,8 @@ export default defineConfig({
           { text: '移动端', link: '/mobile/' },
           { text: '小程序', link: '/mini-program/' },
           { text: '项目经验', link: '/project/' },
-          { text: 'DevOps', link: '/devops/' }
+          { text: 'DevOps', link: '/devops/' },
+          { text: '算法', link: '/algorithm/' }
         ]
       }
     ],
@@ -279,7 +280,8 @@ export default defineConfig({
             {
               text: '动画、变换与交互',
               items: [
-                { text: '分类说明', link: '/css/animation-interaction/' }
+                { text: '分类说明', link: '/css/animation-interaction/' },
+                { text: 'transform、transition 与 animation 的区别', link: '/css/animation-interaction/transform-transition-animation' }
               ]
             },
             {
@@ -309,6 +311,7 @@ export default defineConfig({
               items: [
                 { text: '变量声明与基础类型', link: '/javascript/language-basics/declaration-and-types' },
                 { text: 'ES 基础、内置对象与常见表达式题', link: '/javascript/language-basics/es-builtins-operators-and-objects' },
+                { text: '数组方法与迭代', link: '/javascript/language-basics/array-and-iteration' },
                 { text: 'Proxy 是什么', link: '/javascript/language-basics/proxy' }
               ]
             },
@@ -328,6 +331,7 @@ export default defineConfig({
             {
               text: '异步编程',
               items: [
+                { text: '异步编程基础', link: '/javascript/async/async-programming-basics' },
                 { text: 'Promise 与 async/await', link: '/javascript/async/promise-async-await' },
                 { text: '事件循环、并发控制与 Web Worker', link: '/javascript/async/event-loop-workers-and-concurrency' }
               ]
@@ -389,9 +393,51 @@ export default defineConfig({
           items: [
             { text: '分类首页', link: '/browser/' },
             {
+              text: '进程与线程',
+              items: [
+                { text: '浏览器进程与线程', link: '/browser/processes/browser-processes-and-threads' }
+              ]
+            },
+            {
               text: '渲染机制',
               items: [
                 { text: '浏览器内核与渲染引擎', link: '/browser/rendering/browser-kernel' }
+              ]
+            },
+            {
+              text: '缓存机制',
+              items: [
+                { text: '浏览器缓存策略', link: '/browser/cache/browser-cache' }
+              ]
+            },
+            {
+              text: '本地存储',
+              items: [
+                { text: 'Cookie / localStorage / IndexedDB', link: '/browser/storage/local-storage' }
+              ]
+            },
+            {
+              text: '事件与异步',
+              items: [
+                { text: '事件循环、事件委托与异步模型', link: '/browser/events/event-loop-and-delegation' }
+              ]
+            },
+            {
+              text: '安全',
+              items: [
+                { text: 'XSS、CSRF 与前端安全', link: '/browser/security/xss-csrf-and-security' }
+              ]
+            },
+            {
+              text: '跨域',
+              items: [
+                { text: '同源策略、跨域与 Nginx', link: '/browser/cors/same-origin-and-cross-origin' }
+              ]
+            },
+            {
+              text: '垃圾回收',
+              items: [
+                { text: 'V8 垃圾回收与内存泄漏', link: '/browser/gc/v8-garbage-collection' }
               ]
             },
             {
@@ -411,7 +457,16 @@ export default defineConfig({
             {
               text: 'HTTP 基础',
               items: [
-                { text: 'Ajax、CORS 与浏览器缓存', link: '/network/http/ajax-cors-cache' }
+                { text: 'Ajax、CORS 与浏览器缓存', link: '/network/http/ajax-cors-cache' },
+                { text: 'HTTP 基础：分层、长短连接与状态码', link: '/network/http/protocol-basics' },
+                { text: 'HTTP 各版本特性与协议细节', link: '/network/http/http-versions-and-features' },
+                { text: 'HTTPS 与 TLS/SSL', link: '/network/http/https-and-tls' }
+              ]
+            },
+            {
+              text: '传输协议与基础设施',
+              items: [
+                { text: 'TCP、UDP 与 DNS', link: '/network/protocol/tcp-udp-and-dns' }
               ]
             },
             {
@@ -442,9 +497,44 @@ export default defineConfig({
           items: [
             { text: '分类首页', link: '/vue/' },
             {
+              text: '概念与对比',
+              items: [
+                { text: 'MVVM 模式与 Vue / React 对比', link: '/vue/concepts/mvvm-and-framework-comparison' },
+                { text: 'Vue 2 与 Vue 3 的区别', link: '/vue/concepts/vue2-vs-vue3' },
+                { text: 'SPA、SSR 与性能优化', link: '/vue/concepts/spa-ssr' }
+              ]
+            },
+            {
+              text: '核心机制',
+              items: [
+                { text: '响应式原理与核心机制', link: '/vue/core/reactivity' }
+              ]
+            },
+            {
               text: '渲染机制',
               items: [
-                { text: 'Vue Virtual DOM', link: '/vue/rendering/virtual-dom' }
+                { text: 'Vue Virtual DOM', link: '/vue/rendering/virtual-dom' },
+                { text: 'Vue diff 算法与 key', link: '/vue/rendering/diff-and-key' }
+              ]
+            },
+            {
+              text: '组件',
+              items: [
+                { text: 'Vue 生命周期', link: '/vue/component/lifecycle' },
+                { text: 'Vue 指令与组件特性', link: '/vue/component/directives-and-features' },
+                { text: 'Vue 组件通信', link: '/vue/component/component-communication' }
+              ]
+            },
+            {
+              text: '路由',
+              items: [
+                { text: 'Vue Router', link: '/vue/router/vue-router' }
+              ]
+            },
+            {
+              text: '状态管理',
+              items: [
+                { text: 'Vuex 状态管理', link: '/vue/state/vuex' }
               ]
             }
           ]
@@ -456,9 +546,36 @@ export default defineConfig({
           items: [
             { text: '分类首页', link: '/react/' },
             {
+              text: '组件',
+              items: [
+                { text: '类组件与函数组件', link: '/react/components/class-and-function' },
+                { text: '组件通信', link: '/react/components/communication' }
+              ]
+            },
+            {
               text: '渲染机制',
               items: [
-                { text: 'React Virtual DOM', link: '/react/rendering/virtual-dom' }
+                { text: 'React Virtual DOM 与 diff', link: '/react/rendering/virtual-dom' },
+                { text: 'React 生命周期', link: '/react/rendering/lifecycle' }
+              ]
+            },
+            {
+              text: '状态管理',
+              items: [
+                { text: 'state 与 props', link: '/react/state/state-and-props' },
+                { text: 'Redux', link: '/react/state/redux' }
+              ]
+            },
+            {
+              text: 'Hooks',
+              items: [
+                { text: 'React Hooks', link: '/react/hooks/react-hooks' }
+              ]
+            },
+            {
+              text: '路由',
+              items: [
+                { text: 'React Router', link: '/react/router/react-router' }
               ]
             },
             {
@@ -479,6 +596,12 @@ export default defineConfig({
               text: 'JavaScript 构建',
               items: [
                 { text: 'JavaScript 构建、模块与代码组织', link: '/build-tools/javascript-build-and-modules' }
+              ]
+            },
+            {
+              text: 'Webpack',
+              items: [
+                { text: 'Webpack 核心概念与优化', link: '/build-tools/webpack' }
               ]
             }
           ]
@@ -505,13 +628,65 @@ export default defineConfig({
             {
               text: '加载性能',
               items: [
-                { text: '页面加载、渲染、白屏与进度反馈', link: '/performance/loading/page-loading-rendering-and-progress' }
+                { text: '页面加载、渲染、白屏与进度反馈', link: '/performance/loading/page-loading-rendering-and-progress' },
+                { text: 'CDN、懒加载与图片优化', link: '/performance/loading/cdn-and-image-optimization' }
               ]
             }
           ]
         }
       ],
-      '/nodejs/': categorySidebar('Node.js', '/nodejs/'),
+      '/nodejs/': [
+        {
+          text: 'Node.js',
+          items: [
+            { text: '分类首页', link: '/nodejs/' },
+            {
+              text: '运行时',
+              items: [
+                { text: '异步 IO 模型与进程', link: '/nodejs/runtime/async-io-and-process' }
+              ]
+            },
+            {
+              text: '服务端框架',
+              items: [
+                { text: '服务端框架与中间件', link: '/nodejs/server/middleware-and-framework' }
+              ]
+            },
+            {
+              text: '部署与运维',
+              items: [
+                { text: '部署与运维', link: '/nodejs/deployment/deploy-and-ops' }
+              ]
+            },
+            {
+              text: '调试与工具',
+              items: [
+                { text: '调试与抓包工具', link: '/nodejs/debugging/debugging-and-tools' }
+              ]
+            }
+          ]
+        }
+      ],
+      '/algorithm/': [
+        {
+          text: '算法',
+          items: [
+            { text: '分类首页', link: '/algorithm/' },
+            {
+              text: '动态规划',
+              items: [
+                { text: '斐波那契与动态规划', link: '/algorithm/dynamic-programming/fibonacci-and-dp' }
+              ]
+            },
+            {
+              text: '数组与查找',
+              items: [
+                { text: '二分查找与洗牌算法', link: '/algorithm/array-and-search/binary-search-and-shuffle' }
+              ]
+            }
+          ]
+        }
+      ],
       '/mobile/': [
         {
           text: '移动端',

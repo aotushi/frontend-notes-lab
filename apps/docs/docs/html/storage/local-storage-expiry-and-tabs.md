@@ -63,6 +63,18 @@ channel.onmessage = (event) => {
 channel.postMessage({ type: 'theme-change', theme: 'dark' });
 ```
 
+按天去重是「时效性」的一个常见应用：用 `toDateString()` 作为当天标记，同一天只触发一次（比如弹窗一天只弹一个）。
+
+```js
+function showPopupOncePerDay() {
+  const today = new Date().toDateString();
+  if (localStorage.getItem('popupDate') === today) return; // 今天已弹过
+
+  displayPopup();
+  localStorage.setItem('popupDate', today); // 记录当天日期
+}
+```
+
 注意：`localStorage` 是同步 API，频繁读写大数据会阻塞主线程；敏感信息也不应保存在 `localStorage` 中。
 
 ## Demo

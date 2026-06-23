@@ -1,31 +1,32 @@
 # React
 
-React 分类收录组件、Hooks、状态管理、渲染模型、性能优化和生态实践。
+React 分类收录组件、Hooks、状态管理、渲染模型、路由和事件。
 
 ## 已迁移知识点
 
-### 渲染机制
+### 组件
 
-- [React Virtual DOM](/react/rendering/virtual-dom)
-
-### 事件
-
-- [React 事件机制](/react/events/react-events)
-
-## 主题组规划
-
-### 组件与 Hooks
-
-组件模型、useState、useEffect、useMemo、useCallback、自定义 Hooks。
+- [类组件与函数组件](/react/components/class-and-function) — 类 vs 函数、PureComponent、HOC、受控/非受控、ref、Fiber
+- [组件通信](/react/components/communication) — props/回调/Context/发布订阅
 
 ### 渲染机制
 
-Fiber、协调、批处理、并发渲染。
+- [React Virtual DOM 与 diff](/react/rendering/virtual-dom) — Fiber、diff 三策略、key
+- [React 生命周期](/react/rendering/lifecycle) — 挂载/更新/卸载/错误、废弃钩子、getDerivedStateFromProps
 
 ### 状态管理
 
-Context、Redux、Zustand、服务端状态。
+- [state 与 props](/react/state/state-and-props) — setState 异步批量、state vs props
+- [Redux](/react/state/redux) — 工作流、异步中间件（thunk/saga）、connect
 
-### 性能优化
+### Hooks
 
-memo、懒加载、列表优化、渲染分析。
+- [React Hooks](/react/hooks/react-hooks) — 解决的问题、使用限制、useEffect vs useLayoutEffect
+
+### 路由
+
+- [React Router](/react/router/react-router) — BrowserRouter vs HashRouter、Link vs a、路由参数
+
+### 事件
+
+- [React 事件机制](/react/events/react-events) — 合成事件委托、执行顺序、清理副作用

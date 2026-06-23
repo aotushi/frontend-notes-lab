@@ -56,6 +56,25 @@ Application Cache 和普通浏览器 HTTP 缓存不同：
 - 简单小状态：localStorage/sessionStorage。
 - HTTP 层缓存：`Cache-Control`、`ETag`、CDN。
 
+## 常见问题
+
+### 浏览器是如何对 HTML5 离线储存资源进行管理和加载的？
+
+**在线情况下：**
+
+浏览器发现 HTML 头部有 `manifest` 属性后，会请求该 manifest 文件：
+
+- 如果是第一次访问页面，浏览器根据 manifest 文件内容下载对应资源并进行离线存储。
+- 如果已经访问过并已离线存储，浏览器先使用离线资源加载页面，再对比新旧 manifest 文件：
+  - 文件未变化：不做任何操作。
+  - 文件有变化：重新下载 manifest 中列出的资源并更新离线存储。
+
+**离线情况下：**
+
+浏览器直接使用离线存储的资源渲染页面，不发起网络请求。
+
+这也是 Application Cache 的主要问题之一：资源更新必须依赖 manifest 文件本身发生变化，否则用户会一直看到旧版本。这是它被废弃的重要原因之一。
+
 ## Demo
 
 Service Worker 注册：

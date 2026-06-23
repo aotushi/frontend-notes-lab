@@ -7,6 +7,7 @@
 ### HTTP 基础
 
 - [Ajax、CORS 与浏览器缓存](/network/http/ajax-cors-cache)
+- [HTTP 基础：分层、长短连接、GET/POST 与状态码](/network/http/protocol-basics)
 
 ### WebSocket
 

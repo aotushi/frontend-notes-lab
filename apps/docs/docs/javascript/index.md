@@ -8,6 +8,7 @@ JavaScript 部分按语言本身和浏览器宿主能力分组：先掌握语法
 
 - [变量声明与基础类型](/javascript/language-basics/declaration-and-types)
 - [ES 基础、内置对象与常见表达式题](/javascript/language-basics/es-builtins-operators-and-objects)
+- [数组方法与迭代](/javascript/language-basics/array-and-iteration)
 - [Proxy 是什么](/javascript/language-basics/proxy)
 
 ### 执行模型
@@ -21,6 +22,7 @@ JavaScript 部分按语言本身和浏览器宿主能力分组：先掌握语法
 
 ### 异步模型
 
+- [异步编程基础](/javascript/async/async-programming-basics)
 - [Promise 与 async/await](/javascript/async/promise-async-await)
 - [事件循环、并发控制与 Web Worker](/javascript/async/event-loop-workers-and-concurrency)
 

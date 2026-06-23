@@ -103,6 +103,35 @@ function setTheme(theme) {
 }
 ```
 
+### 常见的图片格式及使用场景
+
+| 格式 | 类型 | 特点 | 适用场景 |
+| --- | --- | --- | --- |
+| **BMP** | 无损点阵 | 几乎无压缩，文件体积大 | 基本不用于 Web |
+| **GIF** | 无损索引色 | 支持动画、透明，仅支持 8bit 索引色 | 简单动画、图标 |
+| **JPEG** | 有损直接色 | 颜色丰富，压缩比高，不支持透明 | 照片、色彩丰富的图片 |
+| **PNG-8** | 无损索引色 | 比 GIF 体积更小，支持透明度调节 | 小图标、Logo（无动画需求） |
+| **PNG-24** | 无损直接色 | 高质量，体积比 JPEG/GIF 大 | 需要透明背景的高质量图片 |
+| **SVG** | 无损矢量 | 任意缩放不失真，文件小，可 CSS 控制 | Logo、图标、插图 |
+| **WebP** | 有损/无损 | 同质量下比 JPEG 小 25%~34%，比 PNG 小 26%，支持透明和动画 | 现代项目中替代 JPEG/PNG 的通用格式 |
+
+选择原则：照片优先 WebP/JPEG；图标/Logo 优先 SVG；需要透明背景用 PNG 或 WebP；动画用 GIF 或 WebP（动图）；追求最广兼容性时 JPEG/PNG 仍是保底方案。
+
+### 对 CSS Sprites 的理解
+
+CSS Sprites（精灵图）：将多张小图合并到一张大图，利用 `background-image`、`background-position`、`background-repeat` 组合定位来显示指定图片区域。
+
+**优点：**
+- 减少 HTTP 请求数，提升页面加载性能（HTTP/1.1 下效果明显）；
+- 合并后总体积通常小于各图之和（元数据共享）。
+
+**缺点：**
+- 制作和维护成本高，需要精确测量每个图标的坐标；
+- 高分辨率（Retina）屏适配麻烦；
+- 改动一个图标需要重新生成整张精灵图。
+
+**现代替代方案：** SVG Sprite（`<symbol>` + `<use>`）、图标字体（Icon Font）、内联 SVG。HTTP/2 多路复用使得多图请求开销大幅降低，CSS Sprites 不再是首选优化手段。
+
 ## 参考来源
 
 - [MDN: Using CSS custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascading_variables/Using_CSS_custom_properties)

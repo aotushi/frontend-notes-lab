@@ -344,6 +344,47 @@
 
 `100svh` 适合做不被移动端浏览器 UI 遮挡的基础高度；弹出的面板如果需要跟随可见视口变化，可以在支持时使用 `dvh`。
 
+### 画一条 0.5px 的线
+
+移动端 Retina 屏上，CSS 的 1px 对应多个物理像素，导致边框看起来较粗。要实现视觉上的 0.5px，常用以下方案：
+
+**方式一：transform: scale**
+
+```css
+.line {
+  height: 1px;
+  background: #333;
+  transform: scaleY(0.5);
+  transform-origin: top;
+}
+```
+
+**方式二：伪元素放大后缩小（兼容性好）**
+
+```css
+.border-bottom::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: #333;
+  transform: scaleY(0.5);
+  transform-origin: bottom;
+}
+```
+
+**方式三：meta viewport 缩放（影响全局，慎用）**
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=0.5, minimum-scale=0.5, maximum-scale=0.5">
+```
+
+直接把整页缩放为 0.5 倍，CSS 1px 变成半个物理像素，但文字和图片也会同比缩小，副作用大，通常不推荐。
+
+实际项目中，`transform: scaleY(0.5)` 或伪元素方案是最常用的可靠写法。
+
 ## 参考来源
 
 - [MDN: Responsive web design](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Responsive_Design)

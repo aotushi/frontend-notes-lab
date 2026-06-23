@@ -335,6 +335,76 @@ requestAnimationFrame(() => {
 
 图片加载前先有稳定比例，加载后不会突然把后续内容推开。
 
+### CSS 优化和提高性能的方法有哪些
+
+**加载性能：**
+- CSS 文件压缩打包，减小体积；
+- 关键 CSS 内联到 `<style>` 标签，非关键 CSS 延迟加载；
+- 使用 `<link>` 而非 `@import`，避免阻塞并行加载；
+- 合理拆分 CSS，避免加载无用样式（配合代码分割）。
+
+**选择器性能：**
+- 避免过深的选择器嵌套（超过 3 层），浏览器从右向左匹配，关键选择器越简单越快；
+- 避免通配符 `*{}`，开销大；
+- 优先用 `class` 而非标签选择器；
+- 了解哪些属性可以继承，避免重复声明。
+
+**渲染性能：**
+- 尽量减少重排（reflow）：避免频繁读写 `offsetWidth`、`clientHeight` 等触发布局的属性，改用读写分离（先读后写）；
+- 尽量减少重绘（repaint）：优先用 `transform`、`opacity` 做动画，不用 `top`/`left`/`margin`；
+- 去除空规则 `{}`，减少文件体积；
+- 谨慎使用 `float`、`position: absolute/fixed`；
+- 不滥用 Web Fonts，避免渲染阻塞；
+- 使用 `will-change` 提前告知浏览器哪些元素需要硬件加速（仅对频繁变化的元素使用）。
+
+**可维护性：**
+- 相同属性抽离为复用类；
+- 样式与内容分离，CSS 写在外部文件。
+
+### 如何判断元素是否到达可视区域
+
+常用方式：
+
+**方式一：scrollTop + offsetTop 计算**
+
+```js
+// img.offsetTop < 可视区域底部（滚动距离 + 窗口高度）
+function isInViewport(el) {
+  const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+  const windowHeight = window.innerHeight
+  return el.offsetTop < scrollTop + windowHeight
+}
+```
+
+**方式二：getBoundingClientRect**
+
+```js
+function isInViewport(el) {
+  const rect = el.getBoundingClientRect()
+  return rect.top < window.innerHeight && rect.bottom > 0
+}
+```
+
+`getBoundingClientRect().top` 返回元素顶部相对于视口顶部的距离，小于视口高度且底部大于 0 时即在可视区域内。
+
+**方式三：IntersectionObserver（推荐）**
+
+```js
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      // 元素进入可视区域
+      loadImage(entry.target)
+      observer.unobserve(entry.target) // 加载后取消观察
+    }
+  })
+})
+
+document.querySelectorAll('img[data-src]').forEach(img => observer.observe(img))
+```
+
+`IntersectionObserver` 是浏览器原生 API，异步回调，性能优于滚动事件监听，是图片懒加载的现代推荐方案。
+
 ## 参考来源
 
 - [web.dev: Rendering performance](https://web.dev/articles/rendering-performance)
@@ -347,4 +417,5 @@ requestAnimationFrame(() => {
 - [MDN: `will-change`](https://developer.mozilla.org/en-US/docs/Web/CSS/will-change)
 - [MDN: `contain`](https://developer.mozilla.org/en-US/docs/Web/CSS/contain)
 - [MDN: `content-visibility`](https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility)
+- [MDN: IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver)
 - [MDN: `text-size-adjust`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-size-adjust)

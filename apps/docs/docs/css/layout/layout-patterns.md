@@ -177,6 +177,35 @@
 }
 ```
 
+同一道「左固定右自适应」题，面试常要求说出多种实现，理解每种成立的原理：
+
+```css
+/* 1. Flex：最常用，右栏 flex: 1 吃掉剩余空间 */
+.flex .main { min-width: 0; flex: 1; }
+
+/* 2. Grid：左列定宽，右列 minmax(0, 1fr) */
+.grid {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+}
+
+/* 3. float + BFC：左栏浮动，右栏 overflow 触发 BFC 不与浮动重叠 */
+.float .aside { float: left; width: 200px; }
+.float .main { overflow: hidden; }
+
+/* 4. 绝对定位：左栏 absolute，右栏 margin-left 留出空间 */
+.absolute { position: relative; }
+.absolute .aside { position: absolute; left: 0; width: 200px; }
+.absolute .main { margin-left: 200px; }
+
+/* 5. table：容器 table，两栏 table-cell，右栏自动撑满 */
+.table { display: table; width: 100%; }
+.table .aside { display: table-cell; width: 200px; }
+.table .main { display: table-cell; }
+```
+
+现代项目优先 Flex 或 Grid；float + BFC、绝对定位、`table` 属于历史方案，了解原理即可。
+
 两边固定、中间自适应：
 
 ```css
@@ -264,6 +293,101 @@
 - Grid 同一行网格项也能天然拉伸到同一行高度。
 - 表格布局能等高，但不应为了布局滥用语义表格。
 - 旧方案里的超大 padding + 负 margin、假背景图等只需要知道历史原因，不建议作为现代首选。
+
+### 实现"品"字布局
+
+"品"字布局：上方一个元素居中，下方两个元素并排居中。
+
+**Flex 实现（推荐）：**
+
+```html
+<div class="pin">
+  <div class="pin__top">1</div>
+  <div class="pin__row">
+    <div>2</div>
+    <div>3</div>
+  </div>
+</div>
+```
+
+```css
+.pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pin__top {
+  width: 100px;
+  height: 100px;
+}
+
+.pin__row {
+  display: flex;
+  gap: 0;
+}
+
+.pin__row > div {
+  width: 100px;
+  height: 100px;
+}
+```
+
+**浮动实现（旧方案，了解原理）：**
+
+```css
+/* 上方第一个块水平居中 */
+.div1 { margin: 0 auto; width: 100px; height: 100px; }
+/* 下方两个向左浮动，利用负 margin 控制位置 */
+.div2 { float: left; margin-left: 50%; }
+.div3 { float: left; margin-left: -200px; }
+```
+
+### 实现九宫格布局
+
+**Grid 实现（推荐）：**
+
+```html
+<div class="grid9">
+  <div>1</div><div>2</div><div>3</div>
+  <div>4</div><div>5</div><div>6</div>
+  <div>7</div><div>8</div><div>9</div>
+</div>
+```
+
+```css
+.grid9 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.grid9 > div {
+  aspect-ratio: 1;
+  background: skyblue;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+```
+
+**Flex 实现：**
+
+```css
+.grid9 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.grid9 > div {
+  /* (100% - 2*gap) / 3，这里用固定宽度示例 */
+  width: calc((100% - 16px) / 3);
+  aspect-ratio: 1;
+  background: skyblue;
+}
+```
 
 ## Demo
 

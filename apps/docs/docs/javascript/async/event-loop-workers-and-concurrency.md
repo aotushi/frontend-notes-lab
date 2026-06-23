@@ -1,11 +1,5 @@
 # 事件循环、并发控制与 Web Worker
 
-## 问题
-
-JavaScript 单线程为什么还能处理异步任务？宏任务、微任务、渲染、`setTimeout`、Promise、`requestAnimationFrame`、`requestIdleCallback`、Web Worker 和并发控制之间是什么关系？
-
-## 结论
-
 ### 理解路径
 
 JavaScript 执行线程一次只能执行一段同步代码；异步能力来自宿主环境。宿主负责计时器、网络、事件、渲染和 Worker 等能力，JavaScript 引擎通过事件循环不断取任务执行，并在任务之间清空微任务队列。
@@ -20,7 +14,7 @@ JavaScript 执行线程一次只能执行一段同步代码；异步能力来自
 4. 浏览器在合适时机更新渲染。
 5. 进入下一个 task。
 
-微任务优先级高不是“永远先于宏任务”，而是在当前 task 结束后、下一个 task 之前执行。
+微任务优先级高不是"永远先于宏任务"，而是在当前 task 结束后、下一个 task 之前执行。
 
 ### `Promise` 和 `setTimeout(fn, 0)` 谁先执行？
 
@@ -92,8 +86,6 @@ async function mapLimit(items, limit, mapper) {
 2. 不要说 `async/await` 开了新线程，它只是 Promise 语法。
 3. 不要说微任务一定比所有计时器先执行，要说明它在当前 task 结束后清空。
 4. 不要把 Node.js 事件循环阶段直接套到浏览器题上。
-
-## Demo
 
 ### 执行顺序
 

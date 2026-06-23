@@ -172,6 +172,40 @@ CSS 最终样式优先级可以先分成两大类记忆：一类是**继承(Inhe
 
 **注**：通配符选择器 (`*`) 和组合符 (`+`, `>`, `~`, 空格) 不会影响优先级。`:not()`、`:is()`、`:has()` 这些伪类自身不增加权重，但括号里的选择器会参与计算；`:where()` 无论参数多复杂，权重都是 `0`。
 
+### 伪元素和伪类的区别和作用
+
+**伪类**：对已有元素在特定状态下添加样式，不生成新元素。常用伪类：
+
+```css
+a:hover { color: #FF00FF; }       /* 鼠标悬停 */
+p:first-child { color: red; }     /* 第一个子元素 */
+input:focus { outline: 2px solid blue; }
+li:nth-child(2n) { background: #f0f0f0; }
+```
+
+**伪元素**：在元素内容前后插入"虚拟"元素，不在 DOM 中存在，只在页面中可见。常用伪元素：
+
+```css
+p::before { content: "第一章："; }   /* 在内容前插入 */
+p::after { content: "Hot!"; }         /* 在内容后插入 */
+p::first-line { background: red; }   /* 第一行文字 */
+p::first-letter { font-size: 30px; } /* 首字母 */
+```
+
+**区别总结：**
+
+| | 伪类 | 伪元素 |
+| --- | --- | --- |
+| 语法 | 单冒号 `:` | 双冒号 `::` |
+| 作用 | 描述元素的特殊状态 | 创建虚拟子元素或选中元素的一部分 |
+| DOM 中是否存在 | 不创建新元素 | 不在 DOM 中，只在页面可见 |
+
+### ::before 和 :after 双冒号与单冒号的区别
+
+- 单冒号（`:`）用于 CSS2 伪类，双冒号（`::`）用于 CSS3 伪元素。
+- `::before`、`::after` 作为子元素存在于元素内容之前/之后，不在 DOM 中，只在页面中可见。
+- `:before`、`:after` 是 CSS2.1 的旧写法（单冒号），CSS3 将伪元素语法改为双冒号。现代浏览器两种写法均可识别，但推荐使用双冒号以区分伪类和伪元素。
+
 ## Demo
 
 <DemoFrame src="/demos/css-specificity-cascade/index.html" title="选择器优先级与层叠验证" height="720" />

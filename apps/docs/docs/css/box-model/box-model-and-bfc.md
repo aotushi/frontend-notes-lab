@@ -113,6 +113,34 @@ html {
 
 CSS 盒模型由内容区、内边距、边框和外边距组成。默认的 `content-box` 下，`width` 和 `height` 只控制内容区，所以元素最终占用空间还要加上 `padding` 和 `border`。`border-box` 下，声明的宽高就是边框盒尺寸，`padding` 和 `border` 包含在里面，因此更适合组件化布局。注意 `margin` 永远在盒子外部，不参与 `box-sizing` 的宽高计算。
 
+### margin 和 padding 的使用场景
+
+- 需要在 `border` **外侧**添加空白，且空白处**不需要背景色**时，使用 `margin`；
+- 需要在 `border` **内侧**添加空白，且空白处**需要背景色**时，使用 `padding`。
+
+其他区别：
+- `margin` 可以为负值，`padding` 不能为负值；
+- `margin` 在垂直方向会发生折叠（margin collapse），`padding` 不会；
+- 点击区域（事件响应区域）包含 `padding`，不包含 `margin`。
+
+### 替换元素的概念及计算规则
+
+**替换元素**：通过修改某个属性值就可以替换呈现内容的元素，如 `<img>`、`<video>`、`<input>`、`<iframe>`。
+
+替换元素的特性：
+- 内容外观不受页面 CSS 影响（在 CSS 作用域之外）；
+- 有自己的固有尺寸（默认 300×150 像素）；
+- `vertical-align` 等属性的解释方式不同；
+- 默认属于行内水平元素（可与文字同行显示）。
+
+**尺寸计算优先级（从低到高）：**
+
+1. 固有尺寸（元素本身的宽高，如图片原始大小）；
+2. HTML 尺寸（`width`、`height` 属性）；
+3. CSS 尺寸（`width`、`height`、`max-width` 等）。
+
+规则：CSS 尺寸 > HTML 尺寸 > 固有尺寸。若有固有宽高比，只设置一边时按比例缩放。
+
 ## 参考来源
 
 - [MDN: CSS box model](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Box_model)
@@ -120,3 +148,4 @@ CSS 盒模型由内容区、内边距、边框和外边距组成。默认的 `co
 - [MDN: box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/box-sizing)
 - [MDN: HTMLElement.offsetWidth](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetWidth)
 - [MDN: margin](https://developer.mozilla.org/en-US/docs/Web/CSS/margin)
+- [MDN: Replaced elements](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_images/Replaced_element)

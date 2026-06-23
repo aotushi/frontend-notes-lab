@@ -9,6 +9,7 @@ apps/worker/.wrangler/
 .scratch/
 worker.*.log
 vitepress.*.log
+temp/
 .env
 .env.*
 !.env.example
