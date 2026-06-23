@@ -30,7 +30,10 @@ JavaScript 部分按语言本身和浏览器宿主能力分组：先掌握语法
 
 ### 浏览器宿主 API
 
-- [DOM/BOM 事件、存储与页面通信](/javascript/dom-bom/events-and-storage)
+- [DOM 事件与节点操作](/javascript/dom-bom/dom-events-and-nodes)
+- [BOM 与页面生命周期](/javascript/dom-bom/bom-and-page-lifecycle)
+- [浏览器存储](/javascript/dom-bom/browser-storage)
+- [页面通信](/javascript/dom-bom/page-communication)
 
 ### 运行时性能
 

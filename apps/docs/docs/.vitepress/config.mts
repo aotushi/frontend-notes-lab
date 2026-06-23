@@ -341,7 +341,10 @@ export default defineConfig({
             {
               text: 'DOM / BOM',
               items: [
-                { text: 'DOM/BOM 事件、存储与页面通信', link: '/javascript/dom-bom/events-and-storage' }
+                { text: 'DOM 事件与节点操作', link: '/javascript/dom-bom/dom-events-and-nodes' },
+                { text: 'BOM 与页面生命周期', link: '/javascript/dom-bom/bom-and-page-lifecycle' },
+                { text: '浏览器存储', link: '/javascript/dom-bom/browser-storage' },
+                { text: '页面通信', link: '/javascript/dom-bom/page-communication' }
               ]
             },
             {
