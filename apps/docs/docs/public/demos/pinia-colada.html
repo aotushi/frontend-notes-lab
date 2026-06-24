@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="importmap">
+  {
+    "imports": {
+      "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+      "pinia": "https://esm.sh/pinia?external=vue",
+      "@pinia/colada": "https://esm.sh/@pinia/colada?external=vue,pinia"
+    }
+  }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; font-size: 13px; padding: 16px; color: #374151; }
+    input {
+      display: block;
+      width: 100%;
+      border: 1px solid #d1d5db;
+      padding: 5px 8px;
+      border-radius: 4px;
+      margin: 6px 0 10px;
+      font-size: 13px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button:hover { background: #2563eb; }
+    .label { font-weight: 600; margin-bottom: 4px; }
+    .row { margin-bottom: 4px; }
+    .pending { color: #f59e0b; }
+    .success { color: #10b981; }
+    .error { color: #ef4444; }
+    .child {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed #e5e7eb;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: #eff6ff;
+      color: #3b82f6;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { createApp, ref } from 'vue'
+    import { createPinia } from 'pinia'
+    import { PiniaColada, defineQuery, defineMutation, useQuery, useMutation } from '@pinia/colada'
+
+    // 模拟请求
+    const test = (str) =>
+      new Promise((res) => setTimeout(() => res({ name: '结果为: ' + str }), 1000))
+
+    // GET 请求封装（单例）
+    const useQueryUser = defineQuery(() => {
+      const paramsRef = ref({ str: '' })
+      const query = useQuery({
+        key: () => ['user', paramsRef.value.str],
+        query: () => test(paramsRef.value.str),
+      })
+      return { paramsRef, ...query }
+    })
+
+    // 写操作封装
+    const useMutateUser = defineMutation(() => {
+      const queryUser = useQueryUser()
+      return useMutation({
+        mutation: (id) =>
+          test(id).then(() => queryUser.refresh()),
+      })
+    })
+
+    const Child = {
+      setup() {
+        const queryUser = useQueryUser()
+        const mutateUser = useMutateUser()
+        async function handleUpdate() {
+          await mutateUser.mutateAsync('来自Child')
+        }
+        return { queryUser, handleUpdate }
+      },
+      template: `
+        <div class="child">
+          <div class="tag">Child 组件（与 Parent 共享同一份数据）</div>
+          <div class="row">结果: {{ queryUser.data.value?.name ?? '—' }}</div>
+          <div class="row" :class="queryUser.status.value">状态: {{ queryUser.status.value }}</div>
+          <button @click="handleUpdate">触发更新操作</button>
+        </div>
+      `
+    }
+
+    const Parent = {
+      components: { Child },
+      setup() {
+        const queryUser = useQueryUser()
+        return { queryUser }
+      },
+      template: `
+        <div>
+          <div class="tag">Parent 组件</div>
+          <div class="label">输入查询条件（参数变化自动重新请求）</div>
+          <input v-model="queryUser.paramsRef.value.str" placeholder="输入后等待 1s..." />
+          <div class="row">结果: {{ queryUser.data.value?.name ?? '—' }}</div>
+          <div class="row" :class="queryUser.status.value">状态: {{ queryUser.status.value }}</div>
+          <Child />
+        </div>
+      `
+    }
+
+    const app = createApp(Parent)
+    app.use(createPinia())
+    app.use(PiniaColada)
+    app.mount('#app')
+  </script>
+</body>
+</html>

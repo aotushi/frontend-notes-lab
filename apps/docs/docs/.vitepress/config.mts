@@ -534,7 +534,8 @@ export default defineConfig({
             {
               text: '状态管理',
               items: [
-                { text: 'Vuex 状态管理', link: '/vue/state/vuex' }
+                { text: 'Vuex 状态管理', link: '/vue/state/vuex' },
+                { text: 'Pinia', link: '/vue/state/pinia' }
               ]
             }
           ]

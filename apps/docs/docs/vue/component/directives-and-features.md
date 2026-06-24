@@ -123,23 +123,65 @@ export default {
 
 ### 插槽
 
-| 类型 | 语法（组件内） | 使用方 | 用途 |
+**三种类型对比**：
+
+| 类型 | 子组件写法 | 父组件写法 | 父组件能访问子组件数据 |
 | --- | --- | --- | --- |
-| 默认插槽 | `<slot>默认内容</slot>` | 组件标签内的内容 | 内容占位 |
-| 具名插槽 | `<slot name="header">` | `<template v-slot:header>` | 多个位置 |
-| 作用域插槽 | `<slot :item="item">` | `<template v-slot="{ item }">` | 父组件访问子组件数据 |
+| 默认插槽 | `<slot>` | 直接写内容 | 否 |
+| 具名插槽 | `<slot name="x">` | `<template #x>` | 否 |
+| 作用域插槽 | `<slot :data="val">` | `<template #x="{ data }">` | 是 |
 
 ```html
-<!-- 子组件 -->
-<template>
-  <slot :user="currentUser">默认内容</slot>
-</template>
+<!-- 作用域插槽：子组件暴露数据，父组件控制渲染 -->
+
+<!-- 子组件 DataList.vue -->
+<ul>
+  <li v-for="item in items" :key="item.id">
+    <slot :item="item" />
+  </li>
+</ul>
 
 <!-- 父组件 -->
-<Child v-slot="{ user }">
-  <span>{{ user.name }}</span>
-</Child>
+<DataList>
+  <template #default="{ item }">
+    <span>{{ item.name }}</span>
+  </template>
+</DataList>
 ```
+
+**作用域插槽的原理**
+
+作用域插槽本质上是一个**函数**。模板编译后，父组件侧的插槽内容被编译成一个以 slot props 为参数、返回 VNode 的函数，传给子组件；子组件渲染时调用这个函数，同时把自己的数据作为参数传入：
+
+```js
+// 父组件编译产物（伪代码）
+h(DataList, null, {
+  default: ({ item }) => h('span', item.name)  // 父定义函数
+})
+
+// 子组件调用插槽时传入数据
+slots.default({ item: this.currentItem })
+```
+
+所以父组件能访问子组件数据，不是"反向取值"，而是子组件主动把数据作为参数"推送"给父组件定义的函数。
+
+**Vue 2 → Vue 3 API 变化**
+
+| | Vue 2（旧） | Vue 2.6+ / Vue 3 |
+| --- | --- | --- |
+| 具名插槽 | `slot="header"` | `#header` / `v-slot:header` |
+| 作用域插槽 | `slot-scope="{ item }"` | `#default="{ item }"` |
+| JS 访问插槽 | `$slots`（VNode 数组）+ `$scopedSlots`（函数） | `$slots` 统一为函数，`$scopedSlots` 已移除 |
+
+Vue 3 中所有插槽都是函数，访问方式统一为 `this.$slots.default()`（注意加括号调用）。
+
+**Vue 3 插槽改为函数的性能提升**
+
+Vue 2 的普通插槽是预渲染的 VNode 数组，父组件重渲染时会强制子组件也重渲染。Vue 3 将所有插槽改为函数后：
+
+1. **懒执行**：插槽只在子组件渲染时才调用，父组件渲染阶段不求值
+2. **依赖归属子组件**：插槽内容的响应式依赖由子组件收集，数据变化只触发子组件更新，不影响父组件
+3. **父组件重渲染不污染子组件**：只要插槽函数引用稳定，子组件可跳过更新
 
 ### v-model 原理
 
@@ -157,15 +199,57 @@ export default {
 <MyInput :modelValue="msg" @update:modelValue="msg = $event">
 ```
 
-自定义组件实现 `v-model`（Vue 3）：
+自定义组件实现 `v-model`（Vue 3）——完整父子示例：
 
-```js
-// 子组件接收 modelValue，emit update:modelValue
-const props = defineProps(['modelValue'])
+```vue
+<!-- 子组件 MyInput.vue -->
+<template>
+  <input
+    :value="modelValue"
+    @input="emit('update:modelValue', $event.target.value)"
+  />
+</template>
+
+<script setup>
+defineProps(['modelValue'])
 const emit = defineEmits(['update:modelValue'])
+</script>
+```
 
-// 输入时
-emit('update:modelValue', newValue)
+```vue
+<!-- 父组件 -->
+<template>
+  <p>当前值：{{ username }}</p>
+  <MyInput v-model="username" />
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import MyInput from './MyInput.vue'
+
+const username = ref('张三')
+</script>
+```
+
+父组件写 `v-model="username"` 等价于：
+
+```html
+<MyInput :modelValue="username" @update:modelValue="username = $event" />
+```
+
+子组件用 `:value` 绑定显示值，输入时通过 `emit('update:modelValue', ...)` 通知父组件更新，数据始终由父组件持有，符合单向数据流。
+
+**多个 v-model（Vue 3 支持）**：
+
+```vue
+<!-- 父组件 -->
+<UserForm v-model:name="name" v-model:age="age" />
+
+<!-- 子组件 UserForm.vue -->
+<script setup>
+defineProps(['name', 'age'])
+const emit = defineEmits(['update:name', 'update:age'])
+</script>
 ```
 
 ### 子组件能否直接修改父组件数据
@@ -348,69 +432,333 @@ methods: {
 
 ### 如何保存页面的当前状态
 
-分两种情况：组件会被卸载 vs 不会被卸载。
+按场景选方案：
 
-**组件会被卸载时**：
-1. **LocalStorage / SessionStorage**：在 `beforeDestroy` 钩子中把状态序列化存入 Storage，组件重建时读取恢复。需要加 `flag` 字段控制是否读取缓存（避免从其他页面进入时读到旧数据）。
-2. **路由 state 传参**：`router.push({ state: { ... } })` 携带数据，通过 `history.state` 读取，不污染 URL，支持 Date/RegExp 等复杂类型。
+| 场景 | 推荐方案 |
+| --- | --- |
+| 同一 session 内来回切换，不需要刷新后保留 | `keep-alive` |
+| 状态需要出现在 URL、可分享/可书签 | URL query 参数 |
+| 跨页面共享、刷新后仍保留 | Pinia + 持久化插件 |
+| 组件级别简单持久化 | `useStorage`（VueUse） |
 
-**组件不会被卸载时**：
-
-用 `<keep-alive>` 包裹路由组件，切换时保留状态，通过 `activated` / `deactivated` 钩子处理刷新逻辑：
+**1. keep-alive（首选，适合列表/表单来回跳转）**
 
 ```html
-<keep-alive>
-  <router-view v-if="$route.meta.keepAlive" />
-</keep-alive>
+<!-- App.vue 或布局组件 -->
+<router-view v-slot="{ Component, route }">
+  <keep-alive :include="cachedViews">
+    <component :is="Component" :key="route.path" />
+  </keep-alive>
+</router-view>
 ```
 
 ```js
-// 路由配置
+// 路由 meta 标记哪些页面需要缓存
 { path: '/list', component: List, meta: { keepAlive: true } }
 ```
 
-> keep-alive 适合回来无需重新请求的列表页；localStorage 适合跨会话持久化；路由 state 适合仅从前一页跳转时传递数据。
+```js
+// 组件内用 onActivated / onDeactivated 处理缓存激活逻辑
+import { onActivated } from 'vue'
+
+onActivated(() => {
+  // 从缓存恢复时执行（例如检查数据是否需要刷新）
+})
+```
+
+**2. URL query 参数（状态可分享、可书签）**
+
+```js
+// 把筛选条件、分页等同步到 URL
+const router = useRouter()
+const route = useRoute()
+
+// 写入
+router.replace({ query: { page: 2, keyword: 'vue' } })
+
+// 读取（刷新后仍能恢复）
+const page = computed(() => Number(route.query.page) || 1)
+const keyword = computed(() => route.query.keyword || '')
+```
+
+适合搜索页、列表筛选等需要支持分享链接或浏览器回退的场景。
+
+**3. Pinia + pinia-plugin-persistedstate（跨页面持久化）**
+
+```js
+// stores/list.js
+import { defineStore } from 'pinia'
+
+export const useListStore = defineStore('list', {
+  state: () => ({ scrollY: 0, filters: {} }),
+  persist: true  // 自动同步到 localStorage
+})
+```
+
+```js
+// 组件内
+const store = useListStore()
+
+onBeforeUnmount(() => {
+  store.scrollY = window.scrollY  // 离开前保存滚动位置
+})
+
+onMounted(() => {
+  window.scrollTo(0, store.scrollY)  // 回来时恢复
+})
+```
+
+**4. useStorage（VueUse，轻量单组件持久化）**
+
+```js
+import { useStorage } from '@vueuse/core'
+
+// 自动读写 localStorage，ref 用法完全一致
+const filters = useStorage('list-filters', { status: 'all', page: 1 })
+```
+
+值变化时自动写入 localStorage，页面刷新后自动读取恢复，无需手动监听。
 
 ### 自定义指令
 
-当需要对普通 DOM 元素进行底层操作时，可以使用自定义指令。组件是 Vue 代码复用的主要形式，自定义指令是对组件的有效补充，适合直接操作 DOM 展示的场景（不建议在指令内修改数据）。
+除了 `v-model`、`v-show` 等内置指令，Vue 允许注册自定义指令，适合需要**直接操作 DOM** 的底层场景（自动聚焦、权限控制、一键复制等）。推荐只用来操作 DOM 展示，不在指令内修改组件数据。
 
-**定义方式：**
+#### 指令的几种用法
+
+```html
+<div v-xxx />                            <!-- 实例化指令，无参数无值 -->
+<div v-xxx="value" />                    <!-- 传入变量值 -->
+<div v-xxx="'string'" />                 <!-- 传入字符串字面量 -->
+<div v-xxx:arg="value" />               <!-- 传参数（arg），如 v-bind:class -->
+<div v-xxx:arg.modifier="value" />      <!-- 传参数 + 修饰符 -->
+```
+
+**传对象值：**
+
+```html
+<div v-demo="{ color: 'white', text: 'hello!' }"></div>
+```
 
 ```js
-// 全局定义
+Vue.directive('demo', function(el, binding) {
+  console.log(binding.value.color)  // "white"
+  console.log(binding.value.text)   // "hello!"
+})
+```
+
+#### 注册方式
+
+**全局注册（Vue 2）：**
+
+```js
+// 对象写法（推荐，可精细控制每个钩子）
 Vue.directive('focus', {
   inserted(el) { el.focus() }
 })
 
-// 局部定义（组件选项）
+// 函数简写（等同于同时设置 bind 和 update）
+Vue.directive('color', function(el, binding) {
+  el.style.color = binding.value
+})
+```
+
+**全局注册（Vue 3）：**
+
+```js
+// Vue 3 通过 app 实例注册，更符合模块化设计
+app.directive('focus', {
+  mounted(el) { el.focus() }
+})
+
+// 函数简写（等同于同时设置 mounted 和 updated）
+app.directive('color', (el, binding) => {
+  el.style.color = binding.value
+})
+```
+
+**局部注册（Options API）：**
+
+```js
 export default {
   directives: {
     focus: {
-      inserted(el) { el.focus() }
+      inserted(el) { el.focus() }  // Vue 2
+      // mounted(el) { el.focus() }  // Vue 3
     }
   }
 }
 ```
 
-**Vue 2 钩子函数（5 个）：**
+**局部注册（Vue 3 script setup）：**
 
-| 钩子 | 触发时机 |
+```vue
+<script setup>
+// 以 v 开头的变量自动被识别为指令，无需显式注册
+const vFocus = {
+  mounted(el) { el.focus() }
+}
+</script>
+
+<template>
+  <input v-focus />
+</template>
+```
+
+**批量注册（Vue.use 插件模式）：**
+
+```js
+// directives/index.js
+import copy from './copy'
+import permission from './permission'
+import throttle from './throttle'
+
+const directives = { copy, permission, throttle }
+
+export default {
+  install(Vue) {
+    Object.keys(directives).forEach(key => {
+      Vue.directive(key, directives[key])
+    })
+  }
+}
+```
+
+```js
+// main.js
+import Directives from './directives'
+Vue.use(Directives)  // 一次注册所有自定义指令
+```
+
+#### 钩子函数（Vue 2 → Vue 3）
+
+| Vue 2 | Vue 3 | 触发时机 |
+| --- | --- | --- |
+| —— | `created` | Vue 3 新增，元素属性/事件绑定前 |
+| `bind` | `beforeMount` | 指令绑定到元素，DOM 还未插入 |
+| `inserted` | `mounted` | 元素已插入父节点 |
+| `update` | `beforeUpdate` | 组件 VNode 更新前（Vue 3 拆分自 update） |
+| `componentUpdated` | `updated` | 组件及子组件 VNode 全部更新后 |
+| `unbind` | `unmounted` | 指令与元素解绑 |
+
+Vue 3 钩子名与组件生命周期对齐，Vue 2 的 `update` 被拆分为 `beforeUpdate` + `updated`。
+
+#### 钩子参数详解
+
+所有钩子函数接收同样的参数（**除 `el` 外其余参数均为只读**）：
+
+```js
+app.directive('demo', {
+  mounted(el, binding, vnode) {
+    el          // 指令绑定的 DOM 元素，可直接操作
+    binding.name        // 指令名称，不含 v- 前缀，如 "demo"
+    binding.value       // 绑定值，如 v-demo="1+1" 则为 2
+    binding.oldValue    // 更新前的值，仅 beforeUpdate/updated 中可用
+    binding.expression  // 字符串形式的表达式，如 "1+1"（Vue 2 only）
+    binding.arg         // 传给指令的参数，如 v-demo:top 则为 "top"
+    binding.modifiers   // 修饰符对象，如 v-demo.foo.bar 则为 { foo: true, bar: true }
+    binding.instance    // Vue 3 新增，指向组件实例（替代 Vue 2 的 vnode.context）
+  }
+})
+```
+
+> 如需在钩子之间共享数据，建议通过 `el.dataset` 存储，而非直接在 `el` 上挂属性。
+
+#### Vue 2 vs Vue 3 主要差异
+
+| 差异点 | Vue 2 | Vue 3 |
+| --- | --- | --- |
+| 全局注册 | `Vue.directive()` | `app.directive()` |
+| 钩子名称 | bind / inserted / update / componentUpdated / unbind | beforeMount / mounted / beforeUpdate / updated / unmounted（新增 created） |
+| 钩子参数 | `(el, binding, vnode, oldVnode)` | `(el, binding, vnode)` — 移除 oldVnode，binding 新增 instance |
+| 局部注册 | `directives: {}` 选项 | 同左 + script setup 中 `vXxx` 变量 |
+| 函数简写 | 对应 `bind + update` | 对应 `mounted + updated` |
+
+#### 实战示例：一键复制（v-copy）
+
+使用 `textarea` 降级方案，兼容不支持 `navigator.clipboard` 的环境：
+
+```js
+const vCopy = {
+  bind(el, { value }) {
+    el.$value = value
+    el.handler = () => {
+      if (!el.$value) return
+      const textarea = document.createElement('textarea')
+      textarea.readOnly = 'readonly'
+      textarea.style.cssText = 'position:absolute;left:-9999px'
+      textarea.value = el.$value
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('Copy')
+      document.body.removeChild(textarea)
+      console.log('复制成功：', el.$value)
+    }
+    el.addEventListener('click', el.handler)
+  },
+  componentUpdated(el, { value }) {
+    el.$value = value  // 值更新时同步
+  },
+  unbind(el) {
+    el.removeEventListener('click', el.handler)
+  }
+}
+```
+
+```html
+<button v-copy="shareUrl">一键复制</button>
+```
+
+#### 实战示例：防止表单重复提交（v-throttle）
+
+```js
+Vue.directive('throttle', {
+  bind(el, binding) {
+    const delay = binding.value || 2000
+    let timer = null
+    el.addEventListener('click', event => {
+      if (timer) {
+        event.stopImmediatePropagation()  // 阻止后续处理器执行
+        return
+      }
+      timer = setTimeout(() => { timer = null }, delay)
+    }, true)  // 捕获阶段处理，优先于业务事件
+  }
+})
+```
+
+```html
+<button v-throttle="1000" @click="submitForm">提交</button>
+```
+
+#### 实战示例：权限控制（v-permission）
+
+```js
+app.directive('permission', {
+  mounted(el, binding) {
+    const userRoles = store.state.user.roles
+    if (!userRoles.includes(binding.value)) {
+      el.parentNode?.removeChild(el)  // 无权限直接移除 DOM
+    }
+  }
+})
+```
+
+```html
+<button v-permission="'admin'">删除用户</button>
+```
+
+#### 使用场景
+
+| 场景 | 指令 |
 | --- | --- |
-| `bind` | 指令第一次绑定到元素时，只调用一次（做初始化设置） |
-| `inserted` | 被绑定元素插入父节点时（父节点存在但不一定在文档中） |
-| `update` | 所在组件的 VNode 更新时（值可能未变，可比较前后值忽略不必要更新） |
-| `componentUpdated` | 指令所在组件 VNode 及子 VNode 全部更新后 |
-| `unbind` | 指令与元素解绑时，只调用一次 |
-
-> Vue 3 将钩子名称改为 `created`、`beforeMount`、`mounted`、`beforeUpdate`、`updated`、`beforeUnmount`、`unmounted`，与组件生命周期对齐。
-
-**钩子参数：**`el`（绑定元素）、`binding`（对象，含 `name`/`value`/`oldValue`/`expression`/`arg`/`modifiers`）、`vnode`、`oldVnode`
-
-**使用场景：**
-- 鼠标自动聚焦、下拉菜单控制、相对时间转换、滚动动画
-- 图片懒加载（IntersectionObserver 配合自定义指令）
-- 集成需要直接操作 DOM 的第三方插件
+| 自动聚焦输入框 | `v-focus` |
+| 表单防重复提交 | `v-throttle` |
+| 一键复制文本 | `v-copy` |
+| 按钮权限控制 | `v-permission` |
+| 图片懒加载 | `v-lazy`（IntersectionObserver） |
+| 水印添加 | `v-watermark` |
+| 长按触发事件 | `v-longpress` |
+| 集成第三方 DOM 插件 | 任意自定义指令 |
 
 ## 参考来源
 

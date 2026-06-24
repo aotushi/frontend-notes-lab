@@ -17,6 +17,75 @@ this.$route.params.id     // 动态路由参数
 this.$route.query.keyword // 查询参数
 ```
 
+### 路由定义常用字段
+
+```js
+const routes = [
+  {
+    path: '/user/:id',          // 路径，支持动态参数
+    name: 'User',               // 命名路由，编程式导航可用 name 跳转
+    component: () => import('@/views/User.vue'),  // 懒加载
+    meta: { requiresAuth: true, keepAlive: false }, // 路由元信息，守卫/缓存控制
+    props: true,                // 将 params 作为 props 传入组件
+    redirect: '/login',         // 重定向（也可以是对象或函数）
+    alias: '/u/:id',            // 别名，访问 /u/1 等同于 /user/1
+    children: [                 // 嵌套路由
+      { path: 'profile', component: Profile }
+    ]
+  }
+]
+```
+
+`meta` 常见约定字段：`requiresAuth`（需要登录）、`keepAlive`（是否缓存）、`title`（页面标题）、`roles`（需要的角色）。
+
+### 声明式导航 vs 编程式导航
+
+| | 声明式 | 编程式 |
+| --- | --- | --- |
+| 方式 | `<router-link :to="...">` | `this.$router.push/replace/go` |
+| 适用 | 模板中固定链接 | JS 逻辑中动态跳转（如登录成功后跳转） |
+| 渲染结果 | 默认渲染为 `<a>` 标签 | 无 DOM 产出 |
+
+**声明式导航：**
+
+```html
+<router-link to="/home">首页</router-link>
+<router-link :to="{ name: 'User', params: { id: 1 } }">用户</router-link>
+<router-link :to="{ path: '/search', query: { q: 'vue' } }">搜索</router-link>
+<!-- replace 属性：替换当前历史记录而不是新增 -->
+<router-link :to="'/login'" replace>登录</router-link>
+```
+
+**编程式导航（`$router` 方法汇总）：**
+
+```js
+// push — 新增历史记录（可后退）
+this.$router.push('/home')
+this.$router.push({ path: '/home' })
+this.$router.push({ name: 'User', params: { id: 1 } })   // 命名路由 + params
+this.$router.push({ path: '/search', query: { q: 'vue' } }) // path + query
+
+// replace — 替换当前记录（不可后退）
+this.$router.replace('/login')
+
+// go — 在历史栈中移动
+this.$router.go(1)   // 前进一步
+this.$router.go(-1)  // 后退一步，等同于 back()
+
+// back / forward
+this.$router.back()
+this.$router.forward()
+```
+
+> ⚠️ `push` 使用 `path` 时 `params` 会被忽略，必须改用 `name` 或将参数拼入 `path`：
+> ```js
+> // ❌ params 不生效
+> router.push({ path: '/user', params: { id: 1 } })
+> // ✅ 正确做法
+> router.push({ name: 'User', params: { id: 1 } })
+> router.push({ path: `/user/1` })
+> ```
+
 ### 路由传参方式
 
 **1. 动态路由参数（params）**
@@ -54,6 +123,60 @@ router.push({ path: '/order', state: { orderId: 123 } })
 // 通过 history.state 访问，不显示在 URL 中
 ```
 
+### 路由 props 传参（解耦组件与路由）
+
+默认情况下组件内用 `this.$route.params.id` 读取参数，与路由强耦合。通过路由 `props` 选项可将参数解耦为组件 props：
+
+**布尔模式**（将 `params` 映射为同名 props）：
+
+```js
+{ path: '/user/:id', component: User, props: true }
+
+// 组件内直接用 props 接收，无需 $route
+export default { props: ['id'] }
+```
+
+**对象模式**（传入静态固定值）：
+
+```js
+{ path: '/about', component: About, props: { from: 'navbar' } }
+```
+
+**函数模式**（自由组合 params、query 或自定义值）：
+
+```js
+{
+  path: '/search/:keyword',
+  component: Search,
+  props: route => ({
+    keyword: route.params.keyword,
+    page: route.query.page,
+    extra: 'static'
+  })
+}
+```
+
+### params 和 query 的区别
+
+| 对比 | params | query |
+| --- | --- | --- |
+| 引入方式 | 必须用 `name` 跳转，不能用 `path` | `path` 或 `name` 均可 |
+| URL 表现 | 不显示在 URL 中（`/user/123`，需路由定义 `:id`） | 显示在 URL 问号后（`/user?id=123`） |
+| 刷新后 | **丢失**（URL 中无对应参数时） | **不丢失**（参数在 URL 中） |
+| 类比 | 类似 HTTP POST | 类似 HTTP GET |
+
+```js
+// params：必须用 name，URL 不含参数键名
+router.push({ name: 'User', params: { id: 123 } })
+this.$route.params.id
+
+// query：path/name 均可，URL 显示参数
+router.push({ path: '/user', query: { id: 123 } })
+this.$route.query.id
+```
+
+> 如果参数需要在页面刷新后保留，用 `query`；如果只是页面跳转传参且不想暴露在 URL 中，用 `params`（但要注意刷新丢失问题）。
+
 ### hash vs history 路由模式
 
 | 对比 | hash 模式 | history 模式 |
@@ -63,6 +186,14 @@ router.push({ path: '/order', state: { orderId: 123 } })
 | 服务端配置 | 无需配置（`#` 后的内容不发给服务器） | 需要将所有路径返回 `index.html` |
 | SEO | 不友好（搜索引擎不抓 hash 部分） | 友好 |
 | 刷新行为 | 正常（hash 不触发页面请求） | 直接访问 `/user/1` 需服务端配合 |
+
+**`pushState` 相比直接修改 hash 的优势：**
+
+1. `pushState()` 可以设置与当前同源的**任意路径**，hash 只能修改 `#` 后的部分
+2. `pushState()` 可以设置与当前**完全相同的 URL** 也会入栈；hash 值必须变化才触发
+3. `pushState()` 通过 `stateObject` 可以携带**任意类型数据**；hash 只能附加字符串
+4. `pushState()` 可以额外设置 `title` 属性
+5. hash 模式下，`#` 前的 URL 才会发给服务器，后端未配置也不会返回 404；history 模式下前端 URL 必须与后端路由一致，否则刷新返回 404
 
 history 模式服务端配置（Nginx 示例）：
 
@@ -128,61 +259,141 @@ const Profile = () => import(/* webpackChunkName: "user" */ '@/views/Profile.vue
 
 ### 导航守卫
 
-导航守卫分三类，按触发范围不同选择：
+需要在路由跳转过程中插入逻辑（如登录验证、权限控制、页面标题更新）时使用导航守卫。分三类，按触发范围不同选择。
 
-**1. 全局守卫**（`router.*`）
+**守卫参数说明：**
+
+每个守卫接收三个参数：
+- `to`：即将进入的目标路由对象（含 `path/name/params/query/meta` 等）
+- `from`：当前正要离开的路由对象
+- `next`：调用它才能继续导航（不调用则导航中断）
+  - `next()` — 确认，继续导航
+  - `next('/login')` / `next({ name: 'Login' })` — 跳转到另一个地址
+  - `next(false)` — 中断导航，返回 `from` 对应的 URL
+
+> Vue Router 4 中组件内守卫可直接 `return` 替代 `next()`，全局守卫仍推荐 `next()`。
+
+---
+
+**1. 全局守卫**（作用于所有路由）
+
+全局有三个钩子：`beforeEach`、`beforeResolve`、`afterEach`
 
 ```js
-// 前置守卫 — 最常用，做登录拦截
+// beforeEach — 全局前置守卫，最常用，做登录权限拦截
 router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !isLoggedIn()) {
-    next('/login')
+  const userInfo = sessionStorage.getItem('userData')
+  if (!userInfo) {
+    // 未登录：是登录页则放行，否则跳转登录
+    if (to.path === '/login') {
+      next()
+    } else {
+      next('/login')
+    }
   } else {
     next()
   }
 })
+```
 
-// 后置钩子 — 无 next，常用于切换后滚动到顶部
-router.afterEach((to, from) => {
-  window.scrollTo(0, 0)
+```js
+// beforeResolve — 全局解析守卫（2.5.0+）
+// 在 beforeRouteEnter 调用之后、导航确认之前调用
+// 适合需要确保异步组件和守卫都已解析完成的场景
+router.beforeResolve((to, from, next) => {
+  next()
 })
 ```
 
-**2. 路由独享守卫**（`beforeEnter`）
-
 ```js
-{
-  path: '/admin',
-  component: Admin,
-  beforeEnter: (to, from, next) => {
-    // 只对这条路由生效
-    next()
-  }
-}
+// afterEach — 全局后置钩子，无 next 参数，导航已完成
+// 常用：切换后滚动条回到顶部、更新页面 title
+router.afterEach((to, from) => {
+  window.scrollTo(0, 0)
+  document.title = to.meta.title || '默认标题'
+})
 ```
 
-**3. 组件内守卫**
+---
+
+**2. 路由独享守卫**（`beforeEnter`，只对单条路由生效）
+
+```js
+const routes = [
+  {
+    path: '/admin',
+    name: 'admin',
+    component: Admin,
+    beforeEnter: (to, from, next) => {
+      // 只在进入这条路由时触发，不影响其他路由
+      const role = sessionStorage.getItem('role')
+      if (role === 'admin') {
+        next()
+      } else {
+        next('/403')
+      }
+    }
+  }
+]
+```
+
+---
+
+**3. 组件内守卫**（在组件选项中定义，有三个）
 
 ```js
 export default {
+  // 进入组件前触发
+  // ⚠️ 此时组件实例尚未创建，无法访问 this
+  // 需要通过 next(vm => {}) 回调才能访问组件实例
   beforeRouteEnter(to, from, next) {
-    // 进入前，此时组件实例尚未创建，无法用 this
-    next(vm => { /* 通过回调访问 vm */ })
+    next(vm => {
+      // vm 就是组件实例
+      if (from.path === '/order') {
+        vm.isFromOrder = true
+      }
+    })
   },
+
+  // 当前路由改变但组件被复用时触发
+  // 典型场景：动态路由 /user/:id，从 /user/1 跳到 /user/2
+  // 组件不会重新挂载，但需要响应参数变化
   beforeRouteUpdate(to, from, next) {
-    // 当前路由改变但组件被复用（如 /user/1 → /user/2）
+    this.userId = to.params.id
+    this.fetchUser(this.userId)
     next()
   },
+
+  // 离开当前组件前触发
+  // 常用于：表单未保存时提示"确认离开？"
   beforeRouteLeave(to, from, next) {
-    // 离开前，可用于提示"确认离开？"
-    next()
+    if (this.hasUnsavedChanges) {
+      const confirmed = window.confirm('有未保存的内容，确认离开？')
+      confirmed ? next() : next(false)
+    } else {
+      next()
+    }
   }
 }
 ```
 
+---
+
+**守卫速查表：**
+
+| 守卫 | 类型 | 有 `next` | 能访问 `this` | 用途 |
+| --- | --- | --- | --- | --- |
+| `beforeEach` | 全局 | ✅ | ❌ | 登录验证、权限拦截 |
+| `beforeResolve` | 全局 | ✅ | ❌ | 确保异步守卫/组件都已解析 |
+| `afterEach` | 全局 | ❌ | ❌ | 滚动顶部、更新标题 |
+| `beforeEnter` | 路由独享 | ✅ | ❌ | 单路由的特殊权限 |
+| `beforeRouteEnter` | 组件内 | ✅（回调） | ❌（用回调） | 进入前预加载数据 |
+| `beforeRouteUpdate` | 组件内 | ✅ | ✅ | 动态参数变化时刷新数据 |
+| `beforeRouteLeave` | 组件内 | ✅ | ✅ | 离开前保存/确认提示 |
+
 ### 完整导航解析顺序
 
-从 A 组件离开、第一次进入 B 组件时，钩子触发顺序：
+**情境一：从 A 组件离开、第一次进入 B 组件**
 
 1. `beforeRouteLeave`（A 的组件内守卫）
 2. `beforeEach`（全局前置）
@@ -195,6 +406,58 @@ export default {
 9. `afterEach`（全局后置）
 10. 触发 DOM 更新（`beforeCreate` → `created` → `beforeMount` → `mounted`）
 11. 调用 `beforeRouteEnter` 传给 `next` 的回调
+
+**情境二：结合 keep-alive 的触发顺序**
+
+路由组件被 `<keep-alive>` 包裹时，切换不会销毁组件，生命周期有所不同：
+
+```
+// 首次进入（与普通相同）
+beforeRouteEnter → beforeCreate → created → mounted → activated
+
+// 离开（不销毁，触发 deactivated）
+beforeRouteLeave → deactivated
+
+// 再次进入（跳过 created/mounted，直接激活）
+beforeRouteEnter → activated
+```
+
+> `beforeDestroy` / `destroyed` 不会触发，因为组件被缓存而非销毁。`activated` 适合做"每次进入时刷新数据"的场景。
+
+配合 `meta.keepAlive` 按路由控制是否缓存：
+
+```vue
+<!-- App.vue -->
+<keep-alive>
+  <router-view v-if="$route.meta.keepAlive" />
+</keep-alive>
+<router-view v-if="!$route.meta.keepAlive" />
+```
+
+```js
+// 路由配置
+{ path: '/list', component: List, meta: { keepAlive: true } }
+```
+
+**情境三：导航行为被触发到导航完成的完整过程（含组件生命周期）**
+
+假设从 A 组件离开，第一次进入 B 组件：
+
+1. 导航行为被触发，导航未被确认
+2. `beforeRouteLeave`（A 的组件内守卫，可取消路由离开）
+3. `beforeEach`（全局前置守卫，可用于登录验证、全局 loading）
+4. `beforeRouteUpdate`（在重用的组件里调用，2.2+）
+5. `beforeEnter`（路由独享守卫）
+6. 解析异步路由组件
+7. `beforeRouteEnter`（B 的组件内守卫，此时组件实例未创建）
+8. `beforeResolve`（全局解析守卫，2.5+，标示解析阶段完成）
+9. 导航被确认
+10. `afterEach`（全局后置钩子）
+11. B 组件生命周期：`beforeCreate` → `created` → `beforeMount`
+12. `deactivated`（若 A 是 keep-alive 缓存组件，触发 deactivated 而非 destroyed）
+13. `mounted`（B 组件挂载完成）
+14. `activated`（若 B 是 keep-alive 缓存组件）
+15. 执行 `beforeRouteEnter` 传给 `next` 的回调函数
 
 ### `$router.push` vs `location.href`
 

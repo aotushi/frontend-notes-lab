@@ -82,7 +82,13 @@
 
 ## 组件维护
 
-- VitePress 自定义组件放在 `apps/docs/docs/.vitepress/theme/components/`。
+组件位置按使用范围决定，不默认放同一目录：
+
+- **全局组件**（多个主题复用，或需要在任意 Markdown 直接写标签）：放 `apps/docs/docs/.vitepress/theme/components/`，并在 `index.ts` 里 `app.component()` 注册。
+- **局部组件**（仅属于某个主题的一两个页面）：放在对应主题目录下的 `components/` 子目录，例如 `apps/docs/docs/vue/components/`；在 Markdown 里用 `<script setup>` 局部引入，不注册到全局。
+
+新增组件前先判断范围，优先局部引入，避免污染全局命名空间。
+
 - 新增或修改 Vue 组件时使用 Vue 3 Composition API 和 `<script setup lang="ts">`。
 - 公共组件优先复用和扩展，避免为单个页面复制一套交互。
 - 自定义组件应支持键盘操作和可访问名称；弹层至少支持关闭按钮、遮罩关闭和 Esc 关闭。
