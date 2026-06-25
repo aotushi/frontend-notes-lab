@@ -507,7 +507,8 @@ export default defineConfig({
             {
               text: '核心机制',
               items: [
-                { text: '响应式原理与核心机制', link: '/vue/core/reactivity' }
+                { text: '响应式原理与核心机制', link: '/vue/core/reactivity' },
+                { text: 'Vue 3 组合式 API', link: '/vue/core/composition-api' }
               ]
             },
             {
@@ -522,7 +523,8 @@ export default defineConfig({
               items: [
                 { text: 'Vue 生命周期', link: '/vue/component/lifecycle' },
                 { text: 'Vue 指令与组件特性', link: '/vue/component/directives-and-features' },
-                { text: 'Vue 组件通信', link: '/vue/component/component-communication' }
+                { text: 'Vue 组件通信', link: '/vue/component/component-communication' },
+                { text: 'Vue 组件封装', link: '/vue/component/component-design' }
               ]
             },
             {

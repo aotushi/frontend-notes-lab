@@ -13,6 +13,7 @@ Vue / Nuxt 分类收录 Vue 2、Vue 3、组合式 API、响应式、路由、状
 ### 核心机制
 
 - [响应式原理与核心机制](/vue/core/reactivity)
+- [Vue 3 组合式 API](/vue/core/composition-api)
 
 ### 渲染机制
 
@@ -24,6 +25,7 @@ Vue / Nuxt 分类收录 Vue 2、Vue 3、组合式 API、响应式、路由、状
 - [Vue 生命周期](/vue/component/lifecycle)
 - [Vue 指令与组件特性](/vue/component/directives-and-features)
 - [Vue 组件通信](/vue/component/component-communication)
+- [Vue 组件封装](/vue/component/component-design)
 
 ### 路由
 
@@ -32,6 +34,7 @@ Vue / Nuxt 分类收录 Vue 2、Vue 3、组合式 API、响应式、路由、状
 ### 状态管理
 
 - [Vuex 状态管理](/vue/state/vuex)
+- [Pinia 状态管理](/vue/state/pinia)
 
 ## 主题组规划
 

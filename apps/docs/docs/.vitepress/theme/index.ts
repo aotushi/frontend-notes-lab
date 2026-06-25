@@ -9,6 +9,8 @@ import HeightPercentDiagram from './components/HeightPercentDiagram.vue'
 import LayoutPatternsPlayground from './components/LayoutPatternsPlayground.vue'
 import PositionPlayground from './components/PositionPlayground.vue'
 import TimelineTrace from './components/TimelineTrace.vue'
+import DemoSplit from './components/DemoSplit.vue'
+import ReplBox from './components/ReplBox.vue'
 import './custom.css'
 
 export default {
@@ -23,5 +25,7 @@ export default {
     app.component('LayoutPatternsPlayground', LayoutPatternsPlayground)
     app.component('PositionPlayground', PositionPlayground)
     app.component('TimelineTrace', TimelineTrace)
+    app.component('DemoSplit', DemoSplit)
+    app.component('ReplBox', ReplBox)
   }
 } satisfies Theme

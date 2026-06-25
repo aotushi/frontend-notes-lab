@@ -8,5 +8,9 @@
     "build": "vitepress build docs",
     "preview": "vitepress preview docs --host 127.0.0.1",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@vue/repl": "^4.7.2",
+    "monaco-editor": "^0.55.1"
   }
 }

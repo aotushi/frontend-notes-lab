@@ -86,6 +86,34 @@ this.$router.forward()
 > router.push({ path: `/user/1` })
 > ```
 
+### 编程式导航重复跳转报错
+
+Vue Router 3.1+ 起 `push` / `replace` 返回 Promise。当跳转目标与当前路由**完全相同**时，导航被判定为冗余而中止，Promise 被 reject，控制台抛出 `NavigationDuplicated`（"Avoided redundant navigation to current location"）。声明式 `<router-link>` 内部已处理，不会报这个错。
+
+**Vue Router 3 的处理方式：**
+
+```js
+// 方式 1：单次调用 catch 掉
+this.$router.push('/same').catch(() => {})
+
+// 方式 2：全局重写 push / replace，统一吞掉重复导航错误
+const originalPush = VueRouter.prototype.push
+VueRouter.prototype.push = function (location) {
+  return originalPush.call(this, location).catch(err => err)
+}
+```
+
+**Vue Router 4：** 重复导航默认**静默失败**，不再抛错，无需特殊处理。如需感知失败原因，用返回值判断：
+
+```js
+import { isNavigationFailure, NavigationFailureType } from 'vue-router'
+
+const failure = await router.push('/same')
+if (isNavigationFailure(failure, NavigationFailureType.duplicated)) {
+  // 重复导航被忽略
+}
+```
+
 ### 路由传参方式
 
 **1. 动态路由参数（params）**
