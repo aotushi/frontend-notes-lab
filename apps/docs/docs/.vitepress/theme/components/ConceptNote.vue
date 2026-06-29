@@ -6,6 +6,12 @@ interface ConceptSection {
   body?: string
   items?: string[]
   code?: string
+  links?: ConceptLink[]
+}
+
+interface ConceptLink {
+  label: string
+  href: string
 }
 
 interface Props {
@@ -103,6 +109,11 @@ onBeforeUnmount(() => {
                     <li v-for="item in section.items" :key="item">{{ item }}</li>
                   </ul>
                   <pre v-if="section.code"><code>{{ section.code }}</code></pre>
+                  <ul v-if="section.links?.length" class="concept-note__links">
+                    <li v-for="link in section.links" :key="link.href">
+                      <a :href="link.href" target="_blank" rel="noreferrer">{{ link.label }}</a>
+                    </li>
+                  </ul>
                 </section>
               </template>
               <p v-else-if="props.details">{{ props.details }}</p>
@@ -268,6 +279,17 @@ onBeforeUnmount(() => {
   color: var(--vp-c-brand-1);
 }
 
+.concept-note__body :deep(a) {
+  color: var(--vp-c-brand-1);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.concept-note__body :deep(a:hover) {
+  color: var(--vp-c-brand-2);
+}
+
 .concept-note__section {
   margin: 14px 0;
 }
@@ -284,25 +306,54 @@ onBeforeUnmount(() => {
   margin-bottom: 4px;
 }
 
-.concept-note__body ul {
+.concept-note__body :deep(ul) {
   margin: 8px 0 0;
   padding-left: 20px;
 }
 
-.concept-note__body li + li {
+.concept-note__body :deep(li + li) {
   margin-top: 4px;
 }
 
-.concept-note__body pre {
+.concept-note__body :deep(pre) {
   overflow: auto;
   margin: 8px 0 0;
   padding: 10px 12px;
   border-radius: 6px;
   background: var(--vp-code-block-bg);
+  line-height: 1.65;
 }
 
-.concept-note__body code {
+.concept-note__body :deep(pre code) {
+  padding: 0;
+  background: transparent;
   font-size: 0.92em;
+}
+
+.concept-note__body :deep(:not(pre) > code) {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--vp-code-bg);
+  font-size: 0.92em;
+}
+
+.concept-note__body :deep(div[class*='language-']) {
+  margin: 8px 0 0;
+  border-radius: 6px;
+  background: var(--vp-code-block-bg);
+}
+
+.concept-note__body :deep(div[class*='language-'] pre) {
+  margin: 0;
+}
+
+.concept-note__body :deep(div[class*='language-'] > span.lang) {
+  top: 6px;
+  right: 8px;
+}
+
+.concept-note__links {
+  list-style: disc;
 }
 
 .concept-note-panel-enter-active,

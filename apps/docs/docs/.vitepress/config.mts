@@ -192,7 +192,8 @@ export default defineConfig({
             {
               text: '移动端',
               items: [
-                { text: 'meta viewport', link: '/html/viewport/meta-viewport' }
+                { text: 'meta viewport', link: '/html/viewport/meta-viewport' },
+                { text: '移动端视口案例', link: '/html/viewport/mobile-viewport-cases' }
               ]
             },
             {
@@ -259,7 +260,8 @@ export default defineConfig({
             {
               text: '响应式与条件规则',
               items: [
-                { text: '分类说明', link: '/css/responsive/' }
+                { text: '分类说明', link: '/css/responsive/' },
+                { text: '响应式适配案例', link: '/css/responsive/responsive-adaptation-cases' }
               ]
             },
             {
