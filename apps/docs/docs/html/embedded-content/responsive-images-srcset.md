@@ -6,102 +6,125 @@
 
 ## 结论
 
-`srcset` 告诉浏览器“有哪些候选图片”，`sizes` 告诉浏览器“这张图片在当前布局里大约会占多宽”。浏览器会结合视口、媒体条件、设备像素比 DPR、网络和缓存状态，选择一个合适的候选资源；开发者不能把它理解成固定的 `if/else` 下载规则。
+- **`srcset` 提供候选资源**：每个图片地址后面的描述符说明它适合的像素密度，或者说明文件本身的固有宽度。
+- **`sizes` 描述预计显示宽度**：它告诉浏览器图片在当前布局中会占据多宽的槽位，不会像 CSS 一样直接设置图片宽度。
+- **浏览器负责最终选择**：浏览器会结合槽位宽度、设备像素比（DPR，即一个 CSS 像素对应多少设备像素）、缓存和网络状态选择资源，因此不能把选图过程理解成固定的 `if/else`。
 
-`srcset` 有两种常见描述符：
+`srcset` 的两类描述符不能混用：
 
-| 写法 | 适合场景 | 是否需要 `sizes` | 例子 |
+| 描述符 | 适合场景 | 与 `sizes` 的关系 | 示例 |
 | --- | --- | --- | --- |
-| `1x`、`2x` 密度描述符 | 图标、头像、固定 CSS 尺寸的图片 | 通常不需要 | `avatar.png 1x, avatar@2x.png 2x` |
-| `400w`、`800w` 宽度描述符 | 会随视口变化的大图、内容图、封面图 | 通常需要 | `hero-400.jpg 400w, hero-800.jpg 800w` |
+| `1x`、`2x` 密度描述符 | 显示尺寸固定的图标、头像 | 不使用 `sizes` | `avatar.png 1x, avatar@2x.png 2x` |
+| `400w`、`800w` 宽度描述符 | 宽度随布局变化的内容图、封面图 | 应准确填写 `sizes` | `hero-400.jpg 400w, hero-800.jpg 800w` |
 
-使用宽度描述符时，`sizes` 描述的是图片的渲染槽位宽度，也就是 CSS 像素里的显示宽度，不是图片文件真实宽度。例如：
+当 `srcset` 使用 `w` 描述符时，浏览器的选择过程是：
 
-```html
-<img
-  src="/images/hero-800.jpg"
-  srcset="
-    /images/hero-400.jpg 400w,
-    /images/hero-800.jpg 800w,
-    /images/hero-1200.jpg 1200w
-  "
-  sizes="(max-width: 640px) 100vw, (max-width: 960px) 60vw, 640px"
-  alt="产品仪表盘截图"
-  width="1200"
-  height="675"
->
-```
+1. 从左到右检查 `sizes`，采用第一个命中的媒体条件；最后一项通常不写条件，作为默认值。
+2. 根据命中的值，得到图片预计占据的槽位宽度。
+3. 将槽位宽度与 DPR 结合，估算需要的图片像素宽度。
+4. 从 `srcset` 中选择合适的候选资源。浏览器可以根据缓存、网络等情况调整选择，开发者不能保证它一定下载某个文件。
 
-浏览器的大致判断过程是：
+实例中会同时出现三种“宽度”，需要先区分：
 
-1. 解析 `sizes`，从左到右找到第一个命中的媒体条件。
-2. 得到当前图片的槽位宽度，比如 `100vw`、`60vw` 或 `640px`。
-3. 用槽位宽度乘以当前 DPR，得到更接近真实显示需求的资源宽度。
-4. 在 `srcset` 候选列表里选择一个合适资源。
-5. 如果候选资源已经在缓存里，或者浏览器基于网络情况做优化，实际选择可能和手算结果略有差异。
+| 写法 | 属于哪里 | 表示什么 |
+| --- | --- | --- |
+| `width="1280"` | `<img>` 的 HTML 属性 | 图片的固有宽度是 1280 像素；HTML 尺寸属性只写整数，不带 `px` |
+| `hero-480.jpg 480w` | `srcset` 的候选资源 | `hero-480.jpg` 文件自身宽 480 像素；`w` 是宽度描述符，不是 CSS 单位 |
+| `100vw`、`50vw`、`640px` | `sizes` 的槽位宽度 | 图片在对应页面布局中预计显示多宽 |
 
-如果没有写 `sizes`，并且 `srcset` 使用的是 `w` 宽度描述符，浏览器会按默认 `sizes="100vw"` 处理。这是很多页面下载过大图片的原因：图片实际只占容器一半，但浏览器以为它会占满整个视口。
+`width="1280"` 不负责选择 `1280w` 图片，也不代表图片最终一定显示为 `1280px` 宽。它与 `height="720"` 一起声明最大候选图的固有尺寸和 `16:9` 比例，让浏览器在图片下载前预留空间；最终显示宽度由 CSS 决定。
 
-`src` 仍然必须保留。它是旧浏览器和 `srcset` 解析失败时的回退地址，也是图片的基础资源地址。
+下面的完整实例把布局分为三档，并让 CSS 与 `sizes` 一一对应：
 
-`srcset/sizes` 主要解决“同一张图在不同显示尺寸下加载更合适的文件”。如果需要根据屏幕宽度切换不同裁剪、不同构图，或者按浏览器支持切换 AVIF/WebP/JPEG，更适合使用 `<picture>` 和 `<source>`。
-
-## Demo
-
-这个 Demo 使用本地 400w、800w、1200w 三个候选资源。打开新窗口后调整浏览器宽度，观察 `currentSrc`、视口宽度、DPR、槽位宽度和图片实际显示宽度。下调窗口后浏览器可能继续使用已缓存的大图，想重新观察选择过程可以刷新页面并查看 DevTools Network。
-
-<DemoFrame
-  src="/demos/responsive-images-srcset/index.html"
-  title="img srcset 与 sizes 选择验证"
-  height="760"
-/>
-
-关键代码：
+- 视口不超过 `600px`：图片宽度为 `100vw`，即整个视口宽度。
+- 视口在 `601px`～`1024px`：图片宽度为 `50vw`，即视口宽度的一半。
+- 视口超过 `1024px`：图片固定显示为 `640px` 宽。
 
 ```html
-<img
-  id="responsive-image"
-  src="/demos/responsive-images-srcset/hero-800.svg"
-  srcset="
-    /demos/responsive-images-srcset/hero-400.svg 400w,
-    /demos/responsive-images-srcset/hero-800.svg 800w,
-    /demos/responsive-images-srcset/hero-1200.svg 1200w
-  "
-  sizes="(max-width: 640px) 100vw, (max-width: 960px) 60vw, 640px"
-  alt="响应式图片候选资源示意图"
-  width="1200"
-  height="675"
->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>响应式图片实例</title>
+
+    <style>
+      body {
+        margin: 0;
+      }
+
+      .hero {
+        display: block;
+        width: 640px;
+        max-width: 640px;
+        height: auto;
+      }
+
+      /* 平板：图片占视口宽度的一半 */
+      @media (max-width: 1024px) {
+        .hero {
+          width: 50vw;
+        }
+      }
+
+      /* 手机：这条规则写在后面，覆盖上面的 50vw */
+      @media (max-width: 600px) {
+        .hero {
+          width: 100vw;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <!--
+        480w、800w、1280w 分别是三个图片文件的真实宽度，
+        不是显示宽度，也不是屏幕断点。
+      -->
+      <img
+        class="hero"
+        src="/images/hero-800.jpg"
+        srcset="
+          /images/hero-480.jpg 480w,
+          /images/hero-800.jpg 800w,
+          /images/hero-1280.jpg 1280w
+        "
+        sizes="
+          (max-width: 600px) 100vw,
+          (max-width: 1024px) 50vw,
+          640px
+        "
+        alt="产品数据仪表盘"
+        width="1280"
+        height="720"
+      >
+    </main>
+  </body>
+</html>
 ```
 
-常见错误：
+`sizes` 是**从左到右匹配，命中后停止**。最后的 `640px` 没有条件，负责覆盖前面条件都不成立的屏幕：
 
-```html
-<!-- 错误：用了 w 描述符，但没有写 sizes，浏览器会按 100vw 估算 -->
-<img
-  src="/images/card-800.jpg"
-  srcset="/images/card-400.jpg 400w, /images/card-800.jpg 800w"
-  alt="文章配图"
->
+| 当前环境 | `sizes` 得到的槽位宽度 | 结合 DPR 后的需求 | 浏览器可能选择 |
+| --- | --- | --- | --- |
+| `390px` 宽手机，DPR 为 `1` | `100vw = 390px` | 约 `390px` | `480w` |
+| `800px` 宽平板，DPR 为 `2` | `50vw = 400px` | 约 `800px` | `800w` |
+| `1440px` 宽桌面，DPR 为 `2` | 默认值 `640px` | 约 `1280px` | `1280w` |
 
-<!-- 错误：同一个 srcset 里不能混用 w 和 x 描述符 -->
-<img
-  src="/images/photo.jpg"
-  srcset="/images/photo-400.jpg 400w, /images/photo@2x.jpg 2x"
-  alt="照片"
->
-```
+因此，`sizes` 先回答“页面准备把图片显示多宽”，`srcset` 再回答“有哪些文件可供浏览器选择”。`480w` 不表示“视口为 480px 时使用”，浏览器也不要求槽位宽度必须与候选文件宽度完全相等。
 
-性能和稳定性上还要注意：给图片写 `width` 和 `height`，让浏览器在图片下载前保留比例空间，减少布局偏移；首屏关键图可以考虑 `fetchpriority="high"`，非首屏图片通常配合 `loading="lazy"`。
+还需要注意：
 
-## 面试回答
-
-`srcset` 提供候选图片，`sizes` 描述图片在当前布局中的显示槽位。浏览器先根据 `sizes` 命中媒体条件，算出 CSS 像素里的槽位宽度，再结合 DPR 到 `srcset` 里挑一个合适资源。`1x/2x` 适合固定尺寸图片，`400w/800w` 适合响应式大图，并且通常要配合 `sizes`。`src` 不能省，它是回退资源。`srcset/sizes` 解决同一图片的尺寸选择；如果要换格式或换构图，应该用 `picture/source`。
+- `480w`、`800w`、`1280w` 必须与对应图片文件的真实固有宽度一致，同一个 `srcset` 不能混用 `w` 与 `x` 描述符。
+- 使用 `x` 描述符时，`src` 如果存在，会作为 `1x` 候选；使用 `w` 描述符时，现代浏览器不会把 `src` 纳入候选。语法只要求 `src` 和 `srcset` 至少存在一个，但实际项目通常仍保留 `src` 作为回退。
+- 使用 `w` 描述符却省略 `sizes` 时，默认值是 `100vw`。如果图片实际只占半栏，浏览器可能高估所需宽度。
+- 延迟加载的图片可以使用 `sizes="auto, 100vw"`，让浏览器在布局信息可用后根据实际宽度选图；`auto` 只适用于设置了 `loading="lazy"` 的图片，后面的值用于兼容不支持该特性的浏览器。
+- `srcset/sizes` 解决的是**同一内容、不同分辨率**的资源选择。需要切换裁剪、构图或 AVIF/WebP/JPEG 格式时，使用 [`<picture>` 和 `<source>`](/html/media-canvas-svg/images-picture-and-image-map)。
 
 ## 参考来源
 
-- [MDN: Responsive images](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images)
-- [MDN: `img` element - `srcset`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#srcset)
-- [MDN: `img` element - `sizes`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#sizes)
-- [web.dev: Responsive images](https://web.dev/learn/images/responsive-images/)
-- [web.dev: Image performance](https://web.dev/learn/performance/image-performance)
+- [MDN：使用 HTML 创建响应式图片](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images)
+- [MDN：`img` 元素的 `sizes`、`src` 和 `srcset`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img#attributes)
+- [WHATWG HTML：Responsive images](https://html.spec.whatwg.org/multipage/images.html#responsive-images)
+- [web.dev：Descriptive syntaxes](https://web.dev/learn/images/descriptive/)

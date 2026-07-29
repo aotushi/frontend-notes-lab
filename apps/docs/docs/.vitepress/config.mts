@@ -1,13 +1,7 @@
 import { defineConfig } from 'vitepress'
-import {
-  clampLinkScriptPositionDelay,
-  linkScriptPositionAssets
-} from '../../../worker/src/demos/linkScriptPositionAssets'
-import { clampDemoDelay, scriptAsyncDeferScripts } from '../../../worker/src/demos/scriptAsyncDeferScripts'
 
-function getDemoFile(url: URL) {
-  return decodeURIComponent(url.pathname.split('/').filter(Boolean).at(-1) || '')
-}
+const retiredLinkScriptPage = '/html/resource-loading/link-script-position'
+const scriptLoadingPage = '/html/resource-loading/script-async-defer'
 
 export default defineConfig({
   title: 'Frontend Notes Lab',
@@ -20,59 +14,24 @@ export default defineConfig({
     },
     plugins: [
       {
-        name: 'frontend-notes-lab-demo-api',
+        name: 'frontend-notes-lab-redirects',
         configureServer(server) {
-          server.middlewares.use('/api/demos/script-async-defer', async (req, res, next) => {
+          server.middlewares.use((req, res, next) => {
             if (!req.url) {
               next()
               return
             }
 
-            const url = new URL(req.url, 'http://localhost')
-            const file = getDemoFile(url)
-            const script = scriptAsyncDeferScripts[file]
+            const pathname = new URL(req.url, 'http://localhost').pathname.replace(/\/$/, '')
 
-            if (!script) {
-              res.statusCode = 404
-              res.setHeader('content-type', 'text/plain; charset=utf-8')
-              res.end('Not found')
-              return
-            }
-
-            const delay = clampDemoDelay(Number(url.searchParams.get('delay') || 0))
-
-            setTimeout(() => {
-              res.statusCode = 200
-              res.setHeader('content-type', 'text/javascript; charset=utf-8')
-              res.end(script)
-            }, delay)
-          })
-
-          server.middlewares.use('/api/demos/link-script-position', async (req, res, next) => {
-            if (!req.url) {
+            if (pathname !== retiredLinkScriptPage) {
               next()
               return
             }
 
-            const url = new URL(req.url, 'http://localhost')
-            const file = getDemoFile(url)
-            const asset = linkScriptPositionAssets[file]
-
-            if (!asset) {
-              res.statusCode = 404
-              res.setHeader('content-type', 'text/plain; charset=utf-8')
-              res.end('Not found')
-              return
-            }
-
-            const delay = clampLinkScriptPositionDelay(Number(url.searchParams.get('delay') || 0))
-
-            setTimeout(() => {
-              res.statusCode = 200
-              res.setHeader('cache-control', 'no-store')
-              res.setHeader('content-type', asset.contentType)
-              res.end(asset.body)
-            }, delay)
+            res.statusCode = 302
+            res.setHeader('location', scriptLoadingPage)
+            res.end()
           })
         }
       }
@@ -150,7 +109,6 @@ export default defineConfig({
             {
               text: '资源加载',
               items: [
-                { text: 'link 与 script 的位置', link: '/html/resource-loading/link-script-position' },
                 { text: 'head 标签中的内容顺序', link: '/html/resource-loading/head-content-order' },
                 { text: 'script async / defer / module', link: '/html/resource-loading/script-async-defer' },
                 { text: 'CSS 阻塞与 DOMContentLoaded', link: '/html/resource-loading/css-blocking-and-domcontentloaded' },
@@ -164,7 +122,7 @@ export default defineConfig({
               text: '嵌入资源',
               items: [
                 { text: 'img srcset 响应式图片', link: '/html/embedded-content/responsive-images-srcset' },
-                { text: 'href 与 src 区别', link: '/html/embedded-content/href-vs-src' },
+                { text: 'href、src 与 link 的职责', link: '/html/embedded-content/href-vs-src' },
                 { text: 'Data URL', link: '/html/embedded-content/data-url' }
               ]
             },

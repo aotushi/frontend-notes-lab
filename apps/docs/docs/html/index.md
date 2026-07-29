@@ -33,7 +33,6 @@ HTML 分类收录文档结构、资源加载、语义化、可访问性、表单
 
 ### 资源加载
 
-- [link 与 script 的位置](/html/resource-loading/link-script-position)
 - [head 标签中的内容顺序](/html/resource-loading/head-content-order)
 - [script async / defer / module](/html/resource-loading/script-async-defer)
 - [CSS 阻塞与 DOMContentLoaded](/html/resource-loading/css-blocking-and-domcontentloaded)
@@ -45,7 +44,7 @@ HTML 分类收录文档结构、资源加载、语义化、可访问性、表单
 ### 嵌入资源
 
 - [img srcset 响应式图片](/html/embedded-content/responsive-images-srcset)
-- [href 与 src 区别](/html/embedded-content/href-vs-src)
+- [href、src 与 link 的职责](/html/embedded-content/href-vs-src)
 - [Data URL](/html/embedded-content/data-url)
 
 ### 媒体、Canvas 与 SVG

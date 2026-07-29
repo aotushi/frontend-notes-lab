@@ -12,7 +12,7 @@ HTTPS 页面加载 HTTP 资源为什么会导致页面报错或资源加载失�
 
 解决方式是让页面和所有子资源都走 HTTPS，并从源头消除 HTTP URL。
 
-## Demo
+代码中的资源地址应统一使用 HTTPS；同源资源可以直接使用相对路径：
 
 ```html
 <!-- 不推荐：HTTPS 页面中加载 HTTP 脚本，通常会被阻止 -->
@@ -35,5 +35,5 @@ HTTPS 页面加载 HTTP 资源为什么会导致页面报错或资源加载失�
 
 ## 参考来源
 
-- [MDN：Mixed content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content)
+- [MDN：Mixed content](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Mixed_content)
 - [MDN：Content-Security-Policy upgrade-insecure-requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/upgrade-insecure-requests)
