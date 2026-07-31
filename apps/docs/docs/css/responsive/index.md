@@ -198,8 +198,7 @@ CSS 响应式负责的是下一层问题：在正确的布局视口上，如何�
 
 | 层次 | 负责什么 | 继续阅读 |
 | --- | --- | --- |
-| HTML 移动端基础 | 声明视口、解释布局视口 / 视觉视口 / 理想视口、DPR | [meta viewport](/html/viewport/meta-viewport) |
-| HTML 移动端案例 | 读取视口指标、安全区模板、错误 viewport 反例 | [移动端视口案例](/html/viewport/mobile-viewport-cases) |
+| HTML 移动端基础 | 声明视口、解释不同视口与 DPR、读取指标、安全区模板和错误反例 | [`meta viewport`](/html/viewport/meta-viewport) |
 | CSS 响应式适配 | 布局、断点、容器查询、单位、图片、安全区、视觉 `1px` | 本页和 [响应式适配案例](/css/responsive/responsive-adaptation-cases) |
 
 不建议默认写 `user-scalable=no`、`maximum-scale=1`。禁用缩放会影响低视力用户放大页面，通常也不是修复布局问题的正确方式。
@@ -279,7 +278,7 @@ CSS 响应式负责的是下一层问题：在正确的布局视口上，如何�
 - `vw + clamp()` 流式字号。
 - `srcset` / `sizes` 响应式图片。
 
-这些 CSS 案例默认页面已经正确设置 `meta viewport`。如果需要先理解布局视口、视觉视口、DPR 和安全区入口，见 [移动端视口案例](/html/viewport/mobile-viewport-cases)。
+这些 CSS 案例默认页面已经正确设置 `meta viewport`。如果需要先理解布局视口、视觉视口、DPR 和安全区入口，见 [`meta viewport`](/html/viewport/meta-viewport#viewport-cases)。
 
 ## 参考来源
 

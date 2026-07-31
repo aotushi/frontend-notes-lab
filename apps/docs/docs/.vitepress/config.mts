@@ -192,8 +192,7 @@ export default defineConfig({
             {
               text: '移动端',
               items: [
-                { text: 'meta viewport', link: '/html/viewport/meta-viewport' },
-                { text: '移动端视口案例', link: '/html/viewport/mobile-viewport-cases' }
+                { text: 'meta viewport', link: '/html/viewport/meta-viewport' }
               ]
             },
             {

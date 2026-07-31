@@ -1,6 +1,6 @@
 # 响应式适配案例
 
-本页沉淀 CSS 响应式与条件规则主题下的可复用案例。所有案例默认页面已经正确设置移动端基础视口；视口、DPR、安全区和反例见 [移动端视口案例](/html/viewport/mobile-viewport-cases)。
+本页沉淀 CSS 响应式与条件规则主题下的可复用案例。所有案例默认页面已经正确设置移动端基础视口；视口、DPR、安全区和反例见 [`meta viewport`](/html/viewport/meta-viewport#viewport-cases)。
 
 ## 问题
 
