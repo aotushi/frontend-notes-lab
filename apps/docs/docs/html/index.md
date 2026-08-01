@@ -17,6 +17,12 @@ HTML 分类收录文档结构、资源加载、语义化、可访问性、表单
 - [行内元素、块级元素与行内块](/html/document-structure/inline-block-elements)
 - [HTML 兼容、乱码、错误页与基础结构](/html/document-structure/html-compatibility-and-error-pages)
 
+### HTML5 平台能力与兼容策略
+
+- [Web Worker：后台线程与通信](/html/document-structure/html5-vs-html4#web-worker)
+- [HTML Drag API：拖放事件与顺序](/html/document-structure/html5-vs-html4#html-drag-api)
+- [渐进增强与优雅降级](/html/document-structure/web-standards#progressive-enhancement-vs-graceful-degradation)
+
 ### 链接、导航与 iframe
 
 - [a 标签、href、target 与 download](/html/links-navigation/a-link-basics)
@@ -73,6 +79,8 @@ HTML 分类收录文档结构、资源加载、语义化、可访问性、表单
 
 - [form 提交、编码与跨域](/html/forms/form-submission-and-encoding)
 - [input、button 与控件状态](/html/forms/input-controls-and-state)
+- [HTML5 原生表单类型与约束校验](/html/forms/native-form-types-and-validation)
+- [progress 与 meter 的区别](/html/forms/progress-and-meter)
 - [文件上传、自动完成与 textarea](/html/forms/file-upload-autocomplete-textarea)
 - [textarea 原格式输出与表单 target 下载](/html/forms/textarea-and-download-target)
 

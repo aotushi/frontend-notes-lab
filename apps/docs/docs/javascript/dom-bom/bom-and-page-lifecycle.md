@@ -21,6 +21,8 @@ BOM 通常指浏览器暴露给 JavaScript 的窗口和环境对象集合。它�
 
 `document` 经常和 BOM 一起出现，但它本身更准确地说属于 DOM API。
 
+<a id="history-api"></a>
+
 ### History API 能做什么？
 
 `history.pushState` 和 `history.replaceState` 可以修改地址栏而不刷新页面，`popstate` 可监听浏览器前进后退。SPA 路由通常基于这组能力实现。

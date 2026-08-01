@@ -136,6 +136,14 @@ export default defineConfig({
               ]
             },
             {
+              text: 'HTML5 平台能力与兼容策略',
+              items: [
+                { text: 'Web Worker：后台线程与通信', link: '/html/document-structure/html5-vs-html4#web-worker' },
+                { text: 'HTML Drag API：拖放事件与顺序', link: '/html/document-structure/html5-vs-html4#html-drag-api' },
+                { text: '渐进增强与优雅降级', link: '/html/document-structure/web-standards#progressive-enhancement-vs-graceful-degradation' }
+              ]
+            },
+            {
               text: '语义化',
               items: [
                 { text: 'HTML 语义化', link: '/html/semantics/semantic-html' }
@@ -200,6 +208,8 @@ export default defineConfig({
               items: [
                 { text: 'form 提交、编码与跨域', link: '/html/forms/form-submission-and-encoding' },
                 { text: 'input、button 与控件状态', link: '/html/forms/input-controls-and-state' },
+                { text: 'HTML5 原生表单类型与约束校验', link: '/html/forms/native-form-types-and-validation' },
+                { text: 'progress 与 meter 的区别', link: '/html/forms/progress-and-meter' },
                 { text: '文件上传、自动完成与 textarea', link: '/html/forms/file-upload-autocomplete-textarea' },
                 { text: 'textarea 原格式输出与表单 target 下载', link: '/html/forms/textarea-and-download-target' }
               ]

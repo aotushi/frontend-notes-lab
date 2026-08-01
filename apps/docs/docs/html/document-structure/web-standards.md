@@ -45,6 +45,8 @@ Web 标准不是某一条固定规则，而是一组由标准组织、浏览器�
 
 ## 常见问题
 
+<a id="progressive-enhancement-vs-graceful-degradation"></a>
+
 ### 渐进增强与优雅降级有什么区别？
 
 两者都是跨浏览器兼容的策略，出发点相反：

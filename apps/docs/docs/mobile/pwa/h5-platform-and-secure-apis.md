@@ -2,7 +2,7 @@
 
 ## 问题
 
-为什么说 H5 是开放平台？哪些 H5 能力需要 HTTPS？Service Worker、SharedWorker、Application Cache、录屏、电子签名怎么回答？
+为什么说 H5 是开放平台？哪些 H5 能力需要 HTTPS？Geolocation、Service Worker、SharedWorker、Application Cache、录屏、电子签名怎么回答？
 
 ## 结论
 
@@ -19,6 +19,73 @@ H5 可以理解为浏览器提供的一组开放平台能力：语义化 HTML、
 - 部分存储、权限和传感器能力
 
 Application Cache 已废弃，不应作为新项目方案。离线能力应使用 Service Worker + Cache API。SharedWorker 可以让同源多个页面共享一个 worker 上下文，适合多标签页共享连接、协调状态等，但兼容和生命周期要实测。
+
+<a id="geolocation"></a>
+
+## Geolocation 怎么使用？
+
+Geolocation API 通过 `navigator.geolocation` 请求用户当前位置。它只能在安全上下文中使用，通常要求 HTTPS；本地开发时 `localhost` 也属于可信来源。浏览器会向用户请求定位权限，用户可以拒绝，系统也可能因为超时、信号或设备能力而无法返回位置。
+
+使用原则：
+
+- 只在功能确实需要时请求，并在用户点击“获取位置”等明确动作后触发。
+- 请求前说明用途，不要在页面刚打开时突然弹出权限提示。
+- 同时处理成功、拒绝、不可用和超时，不把定位当成一定成功的能力。
+- 默认不启用高精度；只有导航等确有需要的场景才使用 `enableHighAccuracy: true`，因为它可能更慢、更耗电。
+- `getCurrentPosition()` 获取一次位置；持续导航才使用 `watchPosition()`，结束后调用 `clearWatch()`。
+- 经纬度属于敏感数据，只收集业务必需的信息，并通过 HTTPS 传输。
+
+```html
+<button id="locate" type="button">获取当前位置</button>
+<p id="location-status" role="status">尚未请求定位</p>
+
+<script>
+  const button = document.querySelector('#locate');
+  const status = document.querySelector('#location-status');
+
+  button.addEventListener('click', () => {
+    if (!window.isSecureContext) {
+      status.textContent = '定位需要 HTTPS 或 localhost。';
+      return;
+    }
+
+    if (!('geolocation' in navigator)) {
+      status.textContent = '当前浏览器不支持定位。';
+      return;
+    }
+
+    button.disabled = true;
+    status.textContent = '正在请求定位权限…';
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        status.textContent =
+          `纬度 ${latitude.toFixed(5)}，经度 ${longitude.toFixed(5)}，` +
+          `精度约 ${Math.round(accuracy)} 米。`;
+        button.disabled = false;
+      },
+      (error) => {
+        const messages = {
+          1: '用户拒绝了定位权限。',
+          2: '当前无法获得位置信息。',
+          3: '定位请求超时。'
+        };
+
+        status.textContent = messages[error.code] ?? '定位失败。';
+        button.disabled = false;
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  });
+</script>
+```
+
+`accuracy` 表示以米为单位的估计精度，不代表返回坐标绝对准确。业务需要地址名称时，还要把经纬度交给合规的逆地理编码服务处理。
 
 ## Demo
 
@@ -55,10 +122,12 @@ iOS WebApp 全屏通常依赖 PWA 添加到主屏幕，以及相关 Apple meta �
 
 面试回答：
 
-> H5 是浏览器开放能力集合，不只是几个标签。现代 H5 能力很多要求安全上下文，例如 Service Worker、摄像头麦克风、定位、剪贴板和传感器。Application Cache 已废弃，离线用 Service Worker。电子签名适合 Canvas，录屏用 `getDisplayMedia` 和 `MediaRecorder`，但要 HTTPS、权限和兼容性兜底。
+> H5 是浏览器开放能力集合，不只是几个标签。现代 H5 能力很多要求安全上下文，例如 Service Worker、摄像头麦克风、定位、剪贴板和传感器。Geolocation 应在用户明确操作后请求，并处理拒绝、不可用和超时。Application Cache 已废弃，离线用 Service Worker。电子签名适合 Canvas，录屏用 `getDisplayMedia` 和 `MediaRecorder`，但要 HTTPS、权限和兼容性兜底。
 
 ## 参考来源
 
 - [MDN: Secure contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts)
+- [MDN: Geolocation API](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)
+- [MDN: `getCurrentPosition()`](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition)
 - [MDN: Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
 - [MDN: MediaDevices.getDisplayMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia)

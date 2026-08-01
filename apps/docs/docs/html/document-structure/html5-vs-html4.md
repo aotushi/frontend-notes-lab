@@ -13,8 +13,20 @@
 - doctype 简化为 `<!doctype html>`。
 - 新增或强化语义结构元素：`header`、`nav`、`main`、`article`、`section`、`aside`、`footer`。
 - 媒体和图形能力：`audio`、`video`、`canvas`、`svg`。
-- 表单控件增强：`email`、`url`、`date`、`search` 等输入类型。
+- 表单控件增强：`email`、`url`、`date`、`search` 等输入类型，以及原生约束校验。
+- 状态元素：`progress` 表示任务进度，`meter` 表示已知范围内的度量值。
 - 本地能力和 Web API：`localStorage`、`sessionStorage`、History、Worker、WebSocket 等。
+
+这些能力不必全部挤在同一篇 HTML 概览里。按主题继续阅读：
+
+| 主题 | 详细内容 |
+| --- | --- |
+| 原生输入类型与校验 | [HTML5 原生表单类型与约束校验](/html/forms/native-form-types-and-validation) |
+| 任务进度与范围度量 | [progress 与 meter 的区别](/html/forms/progress-and-meter) |
+| 会话历史与 SPA 路由 | [History API](/javascript/dom-bom/bom-and-page-lifecycle#history-api) |
+| 后台线程 | [Web Worker](#web-worker) |
+| 双向实时通信 | [WebSocket 与服务端推送](/network/realtime/server-push-options) |
+| 用户定位 | [Geolocation 与安全上下文](/mobile/pwa/h5-platform-and-secure-apis#geolocation) |
 
 HTML5 移除了或不再推荐一批纯表现或可用性差的元素，例如 `font`、`center`、`big`、`strike`、`tt`、`frame`、`frameset`。现代页面应使用 CSS 负责表现，用语义元素负责结构。
 
@@ -55,6 +67,8 @@ HTML5 语义结构：
 
 ## 常见问题
 
+<a id="web-worker"></a>
+
 ### Web Worker 是什么？如何使用？
 
 Web Worker 让 JavaScript 可以在后台线程运行，不阻塞主线程和页面渲染。适合处理 CPU 密集型任务，例如大数组计算、图像处理、复杂数据转换等。
@@ -92,6 +106,8 @@ self.addEventListener('message', (e) => {
 ```
 
 Worker 无法访问 DOM、`window`、`document`。需要频繁通信或传递大量数据时注意拷贝成本，可使用 Transferable Objects（如 ArrayBuffer）转移所有权避免复制。
+
+<a id="html-drag-api"></a>
 
 ### HTML5 drag API 有哪些事件？
 
