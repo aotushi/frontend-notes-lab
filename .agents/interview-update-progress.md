@@ -1,14 +1,14 @@
 # 面试题更新进度
 
-最后更新：2026-06-17
+最后更新：2026-08-01
 
 ## 当前锚点
 
-- 当前阶段：CSS 面试题整理。
-- 当前模块：CSS 响应式与条件规则模块。
-- 线上页面：https://questions.9shi.cc/css/responsive/
-- 本地页面：`apps/docs/docs/css/responsive/index.md`
-- 当前状态：已审计响应式分类页原内容，并补充媒体查询、容器查询、`@supports`、视口单位、移动端适配、`1px`、安全区和等比缩放相关候选题。
+- 当前阶段：CSS 面试题迁移复核。
+- 当前模块：CSS 基础、布局、视觉、动画、响应式与渲染综合复核。
+- 线上页面：https://questions.9shi.cc/css/
+- 本地页面：`apps/docs/docs/css/`
+- 当前状态：已逐题复核语雀 CSS 篇的 58 个一级问题；补齐 display、三栏、“品”字和九宫格的多方案内容，修正 requestAnimationFrame、替换元素、CSS 模块演进、图片格式和性能优化的过时或不准确表述，并补充 CSS 到 HTML 显示类型、DPR 和响应式图片主题的入口。
 
 ## 当前布局模块页面
 
@@ -33,17 +33,17 @@
 
 | 模块 | 状态 | 说明 |
 | --- | --- | --- |
-| 基础语法与层叠 | organized | 已进入 CSS 导航和侧栏。 |
-| 选择器与伪类 | organized | 已进入 CSS 导航和侧栏。 |
-| 值、单位与函数 | organized | 已进入 CSS 导航和侧栏。 |
-| 盒模型与格式化上下文 | organized | 已进入 CSS 导航和侧栏。 |
-| 布局 | organized | 已推进 Flex、Grid、position、经典布局案例。 |
-| 响应式与条件规则 | organized | 已审计空分类页，补充响应式布局、媒体查询、容器查询、视口单位和移动端适配综合问答。 |
-| 文本、字体与排版 | todo | 布局模块后续候选。 |
-| 颜色、背景与视觉效果 | todo | 布局模块后续候选。 |
-| 动画、变换与交互 | todo | 布局模块后续候选。 |
+| 基础语法与层叠 | verified | 已复核语雀 CSS 基础题，并按模块化演进方式更新“CSS3”历史问法。 |
+| 选择器与伪类 | verified | 已覆盖选择器、优先级、伪类和伪元素相关题。 |
+| 值、单位与函数 | verified | 已覆盖常见单位、相对单位和百分比相关题。 |
+| 盒模型与格式化上下文 | verified | 已覆盖盒模型、BFC、浮动、margin 折叠和替换元素，并修正替换元素定义与尺寸边界。 |
+| 布局 | verified | 已覆盖 display、Flex、Grid、position 和经典布局；多方案题保留完整有效实现。 |
+| 响应式与条件规则 | verified | 已覆盖响应式、条件规则、视口单位、DPR、高清资源、移动端适配和视觉 `1px`。 |
+| 文本、字体与排版 | verified | 已覆盖行高、溢出、省略和行内间隙相关题。 |
+| 颜色、背景与视觉效果 | verified | 已覆盖形状、图片格式和 CSS Sprites，并补充 AVIF、APNG 与格式回退。 |
+| 动画、变换与交互 | verified | 已覆盖 transform、transition、animation 和 requestAnimationFrame，并修正事件循环与掉帧表述。 |
 | 分页、打印与特殊媒介 | todo | 布局模块后续候选。 |
-| CSSOM、渲染与性能 | todo | 布局模块后续候选。 |
+| CSSOM、渲染与性能 | verified | 已覆盖渲染、显隐、可视区域和性能优化，并改为以测量结果驱动选择器优化。 |
 
 ## 继续工作规则
 

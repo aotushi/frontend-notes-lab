@@ -105,17 +105,39 @@ function setTheme(theme) {
 
 ### 常见的图片格式及使用场景
 
-| 格式 | 类型 | 特点 | 适用场景 |
-| --- | --- | --- | --- |
-| **BMP** | 无损点阵 | 几乎无压缩，文件体积大 | 基本不用于 Web |
-| **GIF** | 无损索引色 | 支持动画、透明，仅支持 8bit 索引色 | 简单动画、图标 |
-| **JPEG** | 有损直接色 | 颜色丰富，压缩比高，不支持透明 | 照片、色彩丰富的图片 |
-| **PNG-8** | 无损索引色 | 比 GIF 体积更小，支持透明度调节 | 小图标、Logo（无动画需求） |
-| **PNG-24** | 无损直接色 | 高质量，体积比 JPEG/GIF 大 | 需要透明背景的高质量图片 |
-| **SVG** | 无损矢量 | 任意缩放不失真，文件小，可 CSS 控制 | Logo、图标、插图 |
-| **WebP** | 有损/无损 | 同质量下比 JPEG 小 25%~34%，比 PNG 小 26%，支持透明和动画 | 现代项目中替代 JPEG/PNG 的通用格式 |
+先分清矢量图和位图：SVG 用几何描述图形，适合需要任意缩放的图标与图表；JPEG、PNG、WebP、AVIF 等位图由像素组成，更适合照片、截图和复杂纹理。
 
-选择原则：照片优先 WebP/JPEG；图标/Logo 优先 SVG；需要透明背景用 PNG 或 WebP；动画用 GIF 或 WebP（动图）；追求最广兼容性时 JPEG/PNG 仍是保底方案。
+| 格式 | 压缩与能力 | 适用场景 | 主要边界 |
+| --- | --- | --- | --- |
+| **JPEG** | 有损压缩，不支持透明和动画 | 照片、兼容性回退 | 文字边缘和透明图不适合反复有损压缩 |
+| **PNG** | 无损压缩，支持 Alpha 透明 | UI 截图、需要精确像素或透明背景的图片 | 照片通常比现代有损格式大 |
+| **WebP** | 支持有损、无损、透明和动画 | 照片、缩略图、透明位图、动图 | 具体体积取决于编码参数，不能用固定百分比概括 |
+| **AVIF** | 支持有损、无损、透明、动画、高位深和 HDR | 对体积与画质要求较高的现代图片 | 编码成本可能较高；面向旧环境时需要回退 |
+| **SVG** | 矢量，可缩放，可由 CSS 控制部分样式 | Logo、图标、图表、简单插图 | 不适合像素复杂的照片；外部来源需考虑脚本与链接安全 |
+| **GIF** | 无损压缩但每帧最多 256 色，支持动画和简单透明 | 兼容历史内容或非常简单的动画 | 照片和高质量动画体积、画质都不理想 |
+| **APNG** | 无损全彩动画，支持 Alpha 透明 | 需要清晰透明边缘的短 UI 动画 | 通常比有损动画格式大 |
+| **BMP / ICO** | BMP 通常体积大；ICO 可封装多尺寸图标 | BMP 基本不用于页面内容；ICO 主要用于站点图标兼容 | 不属于常规内容图片首选 |
+
+选择时按下面的顺序判断：
+
+1. Logo、图标和图表优先考虑 SVG；照片通常从 AVIF、WebP 或 JPEG 中选择；需要无损细节和透明像素时考虑 PNG。
+2. 不根据格式名称假设体积，使用真实素材和目标质量参数比较编码结果。
+3. 同一张图片需要多种格式回退时使用 `<picture>`，把现代格式放在前面，最后保留普通 `<img>`：
+
+```html
+<picture>
+  <source srcset="cover.avif" type="image/avif">
+  <source srcset="cover.webp" type="image/webp">
+  <img
+    src="cover.jpg"
+    alt="文章封面"
+    width="1200"
+    height="675"
+  >
+</picture>
+```
+
+不同显示尺寸和像素密度下如何选择图片资源，继续阅读 [`srcset` 与 `sizes`](/html/embedded-content/responsive-images-srcset)。
 
 ### 对 CSS Sprites 的理解
 
@@ -137,4 +159,6 @@ CSS Sprites（精灵图）：将多张小图合并到一张大图，利用 `back
 - [MDN: Using CSS custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascading_variables/Using_CSS_custom_properties)
 - [MDN: `prefers-color-scheme`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme)
 - [MDN: `color-scheme`](https://developer.mozilla.org/en-US/docs/Web/CSS/color-scheme)
+- [MDN: Image file type and format guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types)
+- [MDN: `<picture>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/picture)
 - [WCAG: Contrast minimum](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)

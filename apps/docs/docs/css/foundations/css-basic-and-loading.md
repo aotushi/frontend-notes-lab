@@ -64,27 +64,30 @@ CSS 可以通过行内样式、`<style>`、`<link rel="stylesheet">` 和 `@impor
 
 记忆思路：**视觉呈现类**（尺寸、边框、背景、定位）不继承；**文字排版类**（字体、颜色、行高、对齐）可继承。
 
-### CSS3 中有哪些新特性
+### “CSS3 新特性”在今天应该如何理解
 
-CSS3 新增主要特性：
+“CSS3 新特性”是历史面试题的常见说法。CSS 从 Level 3 开始改为**按模块独立演进**：选择器、颜色、布局、动画等模块可以分别处于 Level 1、Level 3、Level 4 或更高阶段，因此不能把后来出现的所有能力都统一称为“CSS3”，也不存在覆盖整门语言的统一“CSS4 版本”。
 
-- **新增选择器**：`:not()`、`:nth-child()`、`[attr^=val]` 等属性选择器
-- **圆角**：`border-radius`
-- **阴影**：`box-shadow`、`text-shadow`
-- **渐变**：`linear-gradient()`、`radial-gradient()`
-- **变换**：`transform`（平移、旋转、缩放、倾斜）
-- **过渡**：`transition`
-- **动画**：`animation` + `@keyframes`
-- **弹性布局**：`display: flex`
-- **网格布局**：`display: grid`
-- **媒体查询**：`@media`
-- **自定义属性（CSS 变量）**：`--color: red; color: var(--color)`
-- **多列布局**：`column-count`、`column-width`
-- **滤镜**：`filter`
-- **混合模式**：`mix-blend-mode`
+可以把相关能力分成两层理解：
+
+| 分类 | 代表能力 | 说明 |
+| --- | --- | --- |
+| CSS Level 3 阶段广泛引入或完善 | `border-radius`、多背景与渐变、阴影、媒体查询、新选择器、多列、2D/3D 变换、过渡、动画 | 这是传统“CSS3 新特性”问题主要想考察的内容 |
+| 后续独立模块 | Flexbox、Grid、自定义属性、级联层、容器查询、逻辑属性、新颜色空间 | 应按具体模块和浏览器支持讨论，不继续笼统归入 CSS3 |
+
+现代项目中常见的组合包括：
+
+- **布局**：Flexbox、Grid、`gap`、`minmax()`、`subgrid`；
+- **响应式**：媒体查询、容器查询、`clamp()`、动态视口单位；
+- **级联与复用**：自定义属性、`@layer`、`:is()`、`:where()`、`:has()`；
+- **视觉与交互**：渐变、滤镜、混合模式、变换、过渡、关键帧动画；
+- **书写方向与主题**：逻辑属性、`color-scheme`、现代颜色函数。
+
+回答这类问题时，重点不是背一个固定版本清单，而是说明 CSS 已经模块化演进，并能按布局、响应式、级联和视觉能力举出当前常用特性。
 
 ## 参考来源
 
 - [MDN: `<link>`: The External Resource Link element](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/link)
 - [MDN: `@import`](https://developer.mozilla.org/en-US/docs/Web/CSS/@import)
 - [MDN: Cascade and inheritance](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Handling_conflicts)
+- [W3C: CSS Snapshot 2025 - CSS Levels](https://www.w3.org/TR/css-2025/#css-levels)

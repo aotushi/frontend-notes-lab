@@ -33,23 +33,94 @@
 
 ### 常见 CSS 选择器有哪些？
 
-常见选择器可以按“选中条件”分类记忆：
+选择器用于描述“哪些元素应该应用这条 CSS 规则”。按照 [Selectors Level 4 的结构定义](https://www.w3.org/TR/selectors-4/#structure)，可以依次从**选择条件**、**元素关系**和**完整结构**三个层次理解，而不是把所有概念放在同一张表中。
 
-| 类型 | 示例 | 说明 |
+#### 1. 选择条件
+
+##### 1.1 基础选择器
+
+| 子项 | 示例 | 说明 |
 | --- | --- | --- |
-| 类型选择器 | `button` | 按元素名选择 |
-| 类选择器 | `.primary` | 按 `class` 选择 |
-| ID 选择器 | `#app` | 按 `id` 选择 |
-| 通配选择器 | `*` | 匹配任意元素 |
-| 属性选择器 | `[disabled]`、`[type="email"]` | 按属性存在或属性值选择 |
-| 后代组合器 | `.card p` | 匹配某个祖先内部的后代 |
-| 子代组合器 | `.menu > li` | 只匹配直接子元素 |
-| 相邻兄弟组合器 | `h2 + p` | 匹配紧接在前一个元素后的兄弟 |
-| 通用兄弟组合器 | `h2 ~ p` | 匹配后续同级兄弟 |
-| 伪类 | `:hover`、`:focus-visible`、`:nth-child(2n)` | 匹配状态或结构 |
-| 伪元素 | `::before`、`::after`、`::marker` | 匹配元素的一部分或生成内容 |
+| 类型选择器 | `button` | 选择指定标签名的元素 |
+| 通配选择器 | `*` | 选择任意元素 |
+| 类选择器 | `.primary` | 选择 `class` 列表中包含指定类名的元素 |
+| ID 选择器 | `#app` | 选择具有指定 `id` 的元素 |
 
-面试时不要只背名字，还要能说明它们对优先级的影响：ID 权重高于类、属性和伪类；类、属性和伪类高于元素和伪元素；通配符和组合器本身不增加权重。
+##### 1.2 属性选择器
+
+| 子项 | 示例 | 说明 |
+| --- | --- | --- |
+| 属性存在 | `[disabled]` | 具有该属性即可，不关心属性值 |
+| 值完全相等 | `[type="email"]` | 属性值必须完全相等 |
+| 单词列表包含 | `[class~="card"]` | 空格分隔的值列表中包含完整单词 |
+| 值或连字符前缀 | `[lang\|="zh"]` | 匹配 `zh` 或以 `zh-` 开头的值 |
+| 字符串前缀 | `[href^="https"]` | 属性值以指定字符串开头 |
+| 字符串后缀 | `[href$=".pdf"]` | 属性值以指定字符串结尾 |
+| 包含子字符串 | `[href*="/docs/"]` | 属性值包含指定字符串 |
+| 忽略 ASCII 大小写 | `[type="email" i]` | 在结束方括号前使用 `i` 标志 |
+
+##### 1.3 伪类
+
+伪类使用单冒号 `:`，根据元素的状态、位置或关系进一步筛选元素。
+
+| 分类 | 常见子项 | 用途 |
+| --- | --- | --- |
+| 链接与目标 | `:link`、`:visited`、`:any-link`、`:target` | 匹配链接状态或当前 URL 片段指向的元素 |
+| 用户交互 | `:hover`、`:active`、`:focus`、`:focus-visible`、`:focus-within` | 匹配鼠标、键盘或焦点状态 |
+| 树结构 | `:root`、`:empty`、`:first-child`、`:last-child`、`:nth-child()` | 按文档树中的位置筛选 |
+| 表单状态 | `:enabled`、`:disabled`、`:checked`、`:required`、`:valid`、`:invalid`、`:user-invalid` | 匹配控件能力、选择状态或校验状态 |
+| 逻辑与关系 | `:is()`、`:where()`、`:not()`、`:has()` | 合并、排除或根据相关元素进行筛选 |
+| 语言与方向 | `:lang()`、`:dir()` | 按内容语言或书写方向筛选 |
+| 界面状态 | `:fullscreen`、`:modal`、`:popover-open` | 匹配浏览器管理的界面状态 |
+
+##### 1.4 伪元素
+
+伪元素使用双冒号 `::`，表示文档树中不能直接用普通元素选择器表示的实体，例如首行、选中文本、列表标记或生成内容。
+
+| 分类 | 常见子项 | 用途 |
+| --- | --- | --- |
+| 生成内容 | `::before`、`::after` | 在元素内容的开头或结尾生成伪元素 |
+| 排版片段 | `::first-letter`、`::first-line` | 选择首字母或首行 |
+| 文本状态 | `::selection`、`::target-text` | 选择用户选中的文本或 URL 指向的文本 |
+| 表单与列表 | `::placeholder`、`::file-selector-button`、`::marker` | 选择占位文本、文件按钮或列表标记 |
+| 顶层与组件 | `::backdrop`、`::part()`、`::slotted()` | 选择顶层背景或 Web Component 暴露的部分 |
+
+::: tip
+`::before` 和 `::after` 会生成类似子元素的盒子，但不能因此把所有伪元素都理解成“虚拟子元素”。例如 `::first-line` 和 `::selection` 选中的是内容片段。
+:::
+
+#### 2. 元素关系：组合器
+
+组合器连接前后的选择条件，表达元素之间的结构关系。
+
+| 子项 | 示例 | 说明 |
+| --- | --- | --- |
+| 后代组合器 | `.card p` | 选择 `.card` 内任意层级的 `p` |
+| 子代组合器 | `.menu > li` | 只选择 `.menu` 的直接 `li` 子元素 |
+| 相邻兄弟组合器 | `h2 + p` | 选择紧跟在 `h2` 后面的第一个同级 `p` |
+| 后续兄弟组合器 | `h2 ~ p` | 选择 `h2` 后面的所有同级 `p` |
+
+#### 3. 完整选择器结构
+
+简单选择器组合后，还需要区分下面几种完整结构：
+
+| 结构 | 示例 | 含义 |
+| --- | --- | --- |
+| 简单选择器 | `.primary` | 单一选择条件 |
+| 复合选择器 | `button.primary[disabled]:hover` | 没有组合器，所有条件同时作用于同一个元素 |
+| 复杂选择器 | `.dialog > form input:invalid` | 使用组合器连接多个复合选择器 |
+| 选择器列表 | `h1, h2, h3` | 用逗号让多个选择器共享同一组声明 |
+| 相对选择器 | `:has(> img)` 中的 `> img` | 从一个隐含的锚点元素开始描述关系，常用于 `:has()` |
+
+`.dialog > form input:invalid` 可以拆成：
+
+```css
+.dialog > form input:invalid
+/* .dialog、form、input:invalid 是三个选择器片段
+   > 表示直接子代，空格表示任意层级后代 */
+```
+
+记忆优先级时再把它们归入三个权重列：ID 选择器进入 ID 列；类、属性和伪类进入 CLASS 列；类型和伪元素进入 TYPE 列。通配选择器和组合器本身不增加权重，具体规则见后文“选择器权重计算”。
 
 ### css 如何匹配前 N 个子元素及最后 N 个子元素
 
@@ -174,37 +245,47 @@ CSS 最终样式优先级可以先分成两大类记忆：一类是**继承(Inhe
 
 ### 伪元素和伪类的区别和作用
 
-**伪类**：对已有元素在特定状态下添加样式，不生成新元素。常用伪类：
+**伪类**描述元素自身的状态、位置或关系，不会创建新的可选择实体。**伪元素**表示文档树中不能直接表示的实体，可能是元素的一部分、特定状态下的文本，也可能是生成内容。
 
 ```css
-a:hover { color: #FF00FF; }       /* 鼠标悬停 */
-p:first-child { color: red; }     /* 第一个子元素 */
-input:focus { outline: 2px solid blue; }
-li:nth-child(2n) { background: #f0f0f0; }
+button:hover {
+  background: #1d4ed8;
+}
+
+input:user-invalid {
+  border-color: #dc2626;
+}
+
+p::first-line {
+  font-weight: 700;
+}
+
+li::marker {
+  color: #2563eb;
+}
 ```
 
-**伪元素**：在元素内容前后插入"虚拟"元素，不在 DOM 中存在，只在页面中可见。常用伪元素：
-
-```css
-p::before { content: "第一章："; }   /* 在内容前插入 */
-p::after { content: "Hot!"; }         /* 在内容后插入 */
-p::first-line { background: red; }   /* 第一行文字 */
-p::first-letter { font-size: 30px; } /* 首字母 */
-```
-
-**区别总结：**
-
-| | 伪类 | 伪元素 |
+| 对比项 | 伪类 | 伪元素 |
 | --- | --- | --- |
 | 语法 | 单冒号 `:` | 双冒号 `::` |
-| 作用 | 描述元素的特殊状态 | 创建虚拟子元素或选中元素的一部分 |
-| DOM 中是否存在 | 不创建新元素 | 不在 DOM 中，只在页面可见 |
+| 选择目标 | 已有元素的状态、位置或关系 | 普通文档树无法直接表示的实体或内容片段 |
+| 是否创建 DOM 节点 | 不创建 | 不创建；部分伪元素会生成渲染盒 |
+| 优先级 | 计入 CLASS 列 | 计入 TYPE 列 |
+| 示例 | `:hover`、`:nth-child()`、`:has()` | `::before`、`::first-line`、`::selection` |
 
-### ::before 和 :after 双冒号与单冒号的区别
+### `::before` 和 `:after` 双冒号与单冒号的区别
 
-- 单冒号（`:`）用于 CSS2 伪类，双冒号（`::`）用于 CSS3 伪元素。
-- `::before`、`::after` 作为子元素存在于元素内容之前/之后，不在 DOM 中，只在页面中可见。
-- `:before`、`:after` 是 CSS2.1 的旧写法（单冒号），CSS3 将伪元素语法改为双冒号。现代浏览器两种写法均可识别，但推荐使用双冒号以区分伪类和伪元素。
+- 现代语法使用单冒号表示伪类，使用双冒号表示伪元素。
+- 为兼容旧网页，浏览器仍接受 `:before`、`:after`、`:first-letter` 和 `:first-line` 这四种历史单冒号写法。
+- 新代码应写 `::before` 和 `::after`，让伪元素与伪类一眼可分。
+- `::before` 和 `::after` 会在来源元素内部生成第一个或最后一个伪元素，通常需要用 `content` 提供内容；它们不是 DOM 节点，也不适用于所有元素。
+
+```css
+.badge::after {
+  content: "New";
+  margin-inline-start: 0.5em;
+}
+```
 
 ## Demo
 
@@ -240,5 +321,10 @@ a:active {
 - [MDN: Cascade](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Introduction)
 - [MDN: Specificity](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Specificity)
 - [MDN: CSS selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors)
+- [MDN: CSS selector structure](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Selectors/Selector_structure)
+- [MDN: Attribute selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors)
+- [MDN: Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+- [MDN: Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+- [W3C: Selectors Level 4 — Structure and Terminology](https://www.w3.org/TR/selectors-4/#structure)
 - [MDN: `:nth-child()`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:nth-child)
 - [MDN: `:nth-last-child()`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:nth-last-child)

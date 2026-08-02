@@ -125,21 +125,41 @@ CSS 盒模型由内容区、内边距、边框和外边距组成。默认的 `co
 
 ### 替换元素的概念及计算规则
 
-**替换元素**：通过修改某个属性值就可以替换呈现内容的元素，如 `<img>`、`<video>`、`<input>`、`<iframe>`。
+**替换元素**的内容来自文档结构之外，浏览器把这个外部对象的呈现结果放进元素生成的盒子中。典型例子有 `<img>`、`<video>`、`<iframe>` 和 `<embed>`；`<input>` 不能整体归为替换元素，其中 `input[type="image"]` 才是明确的替换元素。
 
 替换元素的特性：
-- 内容外观不受页面 CSS 影响（在 CSS 作用域之外）；
-- 有自己的固有尺寸（默认 300×150 像素）；
-- `vertical-align` 等属性的解释方式不同；
-- 默认属于行内水平元素（可与文字同行显示）。
 
-**尺寸计算优先级（从低到高）：**
+- 外部内容不参与普通 CSS 盒内排版，但元素生成的盒子仍能设置 `width`、`height`、`margin`、`border`、`object-fit` 和 `object-position` 等样式；
+- 替换内容**通常**带有固有宽度、固有高度或固有宽高比，例如图片文件的像素尺寸，但并非所有替换元素都有完整的固有尺寸；
+- 是否作为行内级盒或块级盒参与布局仍由 `display` 决定，不能把所有替换元素都理解成固定的“行内元素”；
+- `vertical-align`、基线对齐和尺寸计算等规则与普通文本盒不同。
 
-1. 固有尺寸（元素本身的宽高，如图片原始大小）；
-2. HTML 尺寸（`width`、`height` 属性）；
-3. CSS 尺寸（`width`、`height`、`max-width` 等）。
+尺寸计算要结合三类信息，而不是机械套用一个固定的优先级公式：
 
-规则：CSS 尺寸 > HTML 尺寸 > 固有尺寸。若有固有宽高比，只设置一边时按比例缩放。
+| 信息 | 例子 | 作用 |
+| --- | --- | --- |
+| CSS 尺寸约束 | `width`、`height`、`min-*`、`max-*` | 直接控制或限制最终使用尺寸 |
+| HTML 尺寸属性 | `<img width="800" height="450">` | 为图片等元素提供尺寸提示，并可提前保留比例空间 |
+| 固有尺寸与固有比例 | 图片原始宽高、视频比例 | 未明确设置 CSS 尺寸时参与计算；只确定一边时可推导另一边 |
+
+```html
+<img
+  src="cover.jpg"
+  alt="文章封面"
+  width="800"
+  height="450"
+  class="cover"
+>
+```
+
+```css
+.cover {
+  width: min(100%, 40rem);
+  height: auto;
+}
+```
+
+HTML 的 `width` 和 `height` 提供 `800 / 450` 的比例提示；CSS 把显示宽度限制在容器内，`height: auto` 再依据固有比例计算高度。若替换内容缺少某类固有信息，浏览器会按对应元素和 CSS Sizing 规则使用其它已知尺寸或默认对象尺寸，不能概括成“所有元素默认 `300×150`”。
 
 ## 参考来源
 
@@ -148,4 +168,5 @@ CSS 盒模型由内容区、内边距、边框和外边距组成。默认的 `co
 - [MDN: box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/box-sizing)
 - [MDN: HTMLElement.offsetWidth](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetWidth)
 - [MDN: margin](https://developer.mozilla.org/en-US/docs/Web/CSS/margin)
-- [MDN: Replaced elements](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_images/Replaced_element)
+- [MDN: Replaced elements](https://developer.mozilla.org/en-US/docs/Glossary/Replaced_elements)
+- [MDN: Sizing replaced elements](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_images/Replaced_element)

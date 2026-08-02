@@ -212,7 +212,7 @@ CSS 响应式负责的是下一层问题：在正确的布局视口上，如何�
 | 视觉 `1px` | 分隔线、边框的视觉粗细 | 伪元素、浅色线、阴影或按 DPR 缩放，不把改 viewport 当通用方案 |
 | 安全区 | 刘海屏、圆角屏、底部手势区域 | `viewport-fit=cover` + `env(safe-area-inset-*)` |
 | 等比缩放 | 图片、视频、卡片媒体区域比例 | `aspect-ratio` + `object-fit` |
-| 响应式图片 | 下载哪一张图片资源 | HTML 的 `srcset` / `sizes` / `<picture>` |
+| 响应式图片 | 下载哪一张图片资源 | HTML 的 [`srcset` / `sizes`](/html/embedded-content/responsive-images-srcset) / `<picture>` |
 
 移动端 `1px` 问题来自 CSS 像素和物理像素不是一回事。`1px` CSS 边框在高 DPR 屏幕上可能由多个物理像素绘制，看起来偏粗。现在优先从视觉需求出发：如果只是分隔线，可以用更浅颜色、阴影、渐变或伪元素缩放；不要为了所有边框都强行做物理 1 像素。
 
@@ -266,6 +266,20 @@ CSS 响应式负责的是下一层问题：在正确的布局视口上，如何�
 ```
 
 如果图片是内容图片，还要从 HTML 层面处理响应式资源，使用 `srcset` / `sizes` 或 `<picture>`，让浏览器按显示尺寸和设备像素密度选择合适文件；CSS 只负责展示尺寸和裁剪，不负责减少下载体积。
+
+`@2x`、`@3x` 只是常见的文件命名约定，真正告诉浏览器像素密度的是 `srcset` 中的 `2x`、`3x` 描述符。它适合头像、图标等 **CSS 显示尺寸固定**、只需按 DPR 切换清晰度的图片：
+
+```html
+<img
+  src="avatar.png"
+  srcset="avatar.png 1x, avatar@2x.png 2x, avatar@3x.png 3x"
+  alt="林晓的头像"
+  width="48"
+  height="48"
+>
+```
+
+浏览器会结合当前 DPR 选择合适资源，但图片在 CSS 布局中仍显示为 `48 × 48` CSS 像素。图片宽度还会随视口变化时，应改用 `400w`、`800w` 等宽度描述符并配合 `sizes`。完整选择过程见 [`srcset` 与 `sizes`](/html/embedded-content/responsive-images-srcset)。
 
 ## 案例入口
 

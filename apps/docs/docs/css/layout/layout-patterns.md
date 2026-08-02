@@ -208,15 +208,105 @@
 
 两边固定、中间自适应：
 
+现代项目优先使用 Grid 或 Flex。下面两种写法复用同一份 HTML，只需切换容器上的修饰类：
+
+```html
+<div class="three-column three-column--grid">
+  <aside class="left">左栏</aside>
+  <main class="main">中间内容</main>
+  <aside class="right">右栏</aside>
+</div>
+```
+
 ```css
-.layout {
+.three-column--grid {
   display: grid;
   grid-template-columns: 200px minmax(0, 1fr) 200px;
   gap: 16px;
 }
+
+.three-column--flex {
+  display: flex;
+  gap: 16px;
+}
+
+.three-column--flex > .left,
+.three-column--flex > .right {
+  flex: 0 0 200px;
+}
+
+.three-column--flex > .main {
+  min-width: 0;
+  flex: 1;
+}
 ```
 
-`minmax(0, 1fr)` 比简单的 `auto` 更稳：中间列会吃掉剩余空间，并允许长内容在空间不足时收缩。Flex 也能做三栏布局，但 Grid 对页面骨架更直观。
+`minmax(0, 1fr)` 比简单的 `auto` 更稳：中间列会吃掉剩余空间，并允许长内容在空间不足时收缩。Flex 更适合一维排列，Grid 对三栏页面骨架更直观。
+
+绝对定位也能实现，但容器需要明确最小高度，内容高度和侧栏定位的维护成本更高：
+
+```html
+<div class="three-column-absolute">
+  <aside class="left">左栏</aside>
+  <main class="main">中间内容</main>
+  <aside class="right">右栏</aside>
+</div>
+```
+
+```css
+.three-column-absolute {
+  position: relative;
+  min-height: 12rem;
+}
+
+.three-column-absolute > .left,
+.three-column-absolute > .right {
+  position: absolute;
+  inset-block: 0;
+  width: 200px;
+}
+
+.three-column-absolute > .left { inset-inline-start: 0; }
+.three-column-absolute > .right { inset-inline-end: 0; }
+
+.three-column-absolute > .main {
+  min-width: 0;
+  margin-inline: 200px;
+}
+```
+
+浮动方案需要让左右栏先于主栏出现，再由主栏的左右 margin 预留空间：
+
+```html
+<div class="three-column-float">
+  <aside class="left">左栏</aside>
+  <aside class="right">右栏</aside>
+  <main class="main">中间内容</main>
+</div>
+```
+
+```css
+.three-column-float {
+  display: flow-root;
+}
+
+.three-column-float > .left {
+  float: left;
+  width: 200px;
+}
+
+.three-column-float > .right {
+  float: right;
+  width: 200px;
+}
+
+.three-column-float > .main {
+  min-width: 0;
+  margin-inline: 200px;
+}
+```
+
+这两种都是有效的历史方案，但绝对定位会让侧栏脱离正常流，浮动方案又受 DOM 顺序和清除浮动影响。现代业务布局一般不以它们为首选。
 
 ### 上下固定、中间滚动怎么答
 
@@ -252,38 +342,99 @@
 | 圣杯布局 | 在外层容器上用左右 `padding` 预留空间 | 左右栏用负 margin 加 `position: relative` 位移 | 不需要额外包一层主内容 |
 | 双飞翼布局 | 在主内容内部用左右 `margin` 预留空间 | 左右栏主要用负 margin 归位 | 主内容通常多包一层 |
 
-现代答题可以先说明历史原理，再给现代实现。偏一维三栏时用 Flex：
+现代实现已经在上一节给出；下面保留完整浮动源码，用于说明两种经典布局为什么不同。
+
+**圣杯布局：容器 padding 预留侧栏空间。**
+
+```html
+<div class="holy-grail">
+  <main class="holy-grail__main">中间内容</main>
+  <aside class="holy-grail__left">左栏</aside>
+  <aside class="holy-grail__right">右栏</aside>
+</div>
+```
 
 ```css
-.layout {
-  display: flex;
-  gap: 16px;
+.holy-grail {
+  padding-inline: 200px;
 }
 
-.aside {
-  flex: 0 0 200px;
+.holy-grail::after {
+  content: "";
+  display: block;
+  clear: both;
 }
 
-.main {
-  min-width: 0;
-  flex: 1;
+.holy-grail__main,
+.holy-grail__left,
+.holy-grail__right {
+  float: left;
+}
+
+.holy-grail__main {
+  width: 100%;
+}
+
+.holy-grail__left {
+  position: relative;
+  left: -200px;
+  width: 200px;
+  margin-left: -100%;
+}
+
+.holy-grail__right {
+  position: relative;
+  right: -200px;
+  width: 200px;
+  margin-left: -200px;
 }
 ```
 
-偏页面骨架时用 Grid：
+**双飞翼布局：主内容内部 margin 预留侧栏空间。**
+
+```html
+<div class="double-wing">
+  <main class="double-wing__main">
+    <div class="double-wing__content">中间内容</div>
+  </main>
+  <aside class="double-wing__left">左栏</aside>
+  <aside class="double-wing__right">右栏</aside>
+</div>
+```
 
 ```css
-.layout {
-  display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) 200px;
+.double-wing::after {
+  content: "";
+  display: block;
+  clear: both;
 }
 
-.main {
-  grid-column: 2;
+.double-wing__main,
+.double-wing__left,
+.double-wing__right {
+  float: left;
+}
+
+.double-wing__main {
+  width: 100%;
+}
+
+.double-wing__content {
+  margin-inline: 200px;
+}
+
+.double-wing__left {
+  width: 200px;
+  margin-left: -100%;
+}
+
+.double-wing__right {
+  width: 200px;
+  margin-left: -200px;
 }
 ```
 
-如果面试官明确要求“写圣杯/双飞翼代码”，再写浮动版；如果只是问“如何实现三栏布局”，优先 Flex 或 Grid。
+两者都让主内容在 DOM 中靠前，但维护负 margin 和固定侧栏宽度比较脆弱。如果题目只要求实现三栏布局，优先选择上一节的 Flex 或 Grid；只有明确考察经典布局时才使用这些浮动写法。
 
 ### 等高列怎么答
 
@@ -335,13 +486,73 @@
 
 **浮动实现（旧方案，了解原理）：**
 
-```css
-/* 上方第一个块水平居中 */
-.div1 { margin: 0 auto; width: 100px; height: 100px; }
-/* 下方两个向左浮动，利用负 margin 控制位置 */
-.div2 { float: left; margin-left: 50%; }
-.div3 { float: left; margin-left: -200px; }
+```html
+<div class="pin-float">
+  <div class="pin-float__top">1</div>
+  <div class="pin-float__row">
+    <div>2</div>
+    <div>3</div>
+  </div>
+</div>
 ```
+
+```css
+.pin-float__top {
+  width: 100px;
+  height: 100px;
+  margin-inline: auto;
+}
+
+.pin-float__row {
+  display: flow-root;
+  width: 200px;
+  margin-inline: auto;
+}
+
+.pin-float__row > div {
+  float: left;
+  width: 100px;
+  height: 100px;
+}
+```
+
+**`inline-block` 实现（旧方案，注意源码空白）：**
+
+```html
+<div class="pin-inline">
+  <div class="pin-inline__top">1</div>
+  <div class="pin-inline__row">
+    <div>2</div>
+    <div>3</div>
+  </div>
+</div>
+```
+
+```css
+.pin-inline {
+  text-align: center;
+}
+
+.pin-inline__top {
+  width: 100px;
+  height: 100px;
+  margin-inline: auto;
+}
+
+.pin-inline__row {
+  font-size: 0;
+}
+
+.pin-inline__row > div {
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  font-size: 1rem;
+  vertical-align: top;
+}
+```
+
+`font-size: 0` 用来消除两个 `inline-block` 之间由换行和空格产生的间隙；子元素需要恢复正常字号。
 
 ### 实现九宫格布局
 
@@ -388,6 +599,97 @@
   background: skyblue;
 }
 ```
+
+**Float 实现（历史方案）：**
+
+```html
+<div class="grid9-float">
+  <div>1</div><div>2</div><div>3</div>
+  <div>4</div><div>5</div><div>6</div>
+  <div>7</div><div>8</div><div>9</div>
+</div>
+```
+
+```css
+.grid9-float {
+  display: flow-root;
+  width: 300px;
+}
+
+.grid9-float > div {
+  float: left;
+  box-sizing: border-box;
+  width: 100px;
+  height: 100px;
+  border: 1px solid CanvasText;
+}
+```
+
+**`inline-block` 实现（历史方案）：**
+
+```html
+<div class="grid9-inline">
+  <div>1</div><div>2</div><div>3</div>
+  <div>4</div><div>5</div><div>6</div>
+  <div>7</div><div>8</div><div>9</div>
+</div>
+```
+
+```css
+.grid9-inline {
+  width: 300px;
+  font-size: 0;
+}
+
+.grid9-inline > div {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 100px;
+  height: 100px;
+  border: 1px solid CanvasText;
+  font-size: 1rem;
+  vertical-align: top;
+}
+```
+
+**Table 布局实现（历史方案）：**
+
+```html
+<div class="grid9-table">
+  <div class="grid9-table__row">
+    <div>1</div><div>2</div><div>3</div>
+  </div>
+  <div class="grid9-table__row">
+    <div>4</div><div>5</div><div>6</div>
+  </div>
+  <div class="grid9-table__row">
+    <div>7</div><div>8</div><div>9</div>
+  </div>
+</div>
+```
+
+```css
+.grid9-table {
+  display: table;
+  border-spacing: 0;
+}
+
+.grid9-table__row {
+  display: table-row;
+}
+
+.grid9-table__row > div {
+  display: table-cell;
+  box-sizing: border-box;
+  width: 100px;
+  height: 100px;
+  border: 1px solid CanvasText;
+  vertical-align: middle;
+  text-align: center;
+}
+```
+
+Grid 直接表达三行三列，语义和维护成本最低；Flex 次之。Float、`inline-block` 和 table 布局可以解释历史实现原理，但不应为了兼容已经不再支持的环境而成为新项目首选。
 
 ## Demo
 

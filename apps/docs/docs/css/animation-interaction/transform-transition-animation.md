@@ -82,11 +82,31 @@ window.cancelAnimationFrame(id)
 
 **相比 `setTimeout` 实现动画的优势：**
 
-- **CPU 节能**：页面不可见（隐藏/最小化）时，浏览器会暂停 `requestAnimationFrame` 的回调，避免无意义渲染；`setTimeout` 会继续执行。
-- **帧率同步**：回调执行时机与浏览器刷新频率（通常 60fps/16.7ms）对齐，不会在同一帧触发多次，也不会丢帧；`setTimeout` 的固定间隔和屏幕刷新不同步，容易卡顿。
-- **集中 DOM 操作**：每帧内所有回调集中处理，减少强制回流次数。
+- **跟随重绘节奏**：浏览器通常按显示器刷新频率安排回调，例如 `60Hz`、`120Hz`，比固定间隔的定时器更适合驱动画面更新。
+- **减少后台无效工作**：多数浏览器会暂停后台标签页或隐藏 `<iframe>` 中的回调；定时器在后台也可能被节流，但它并不与重绘时机绑定。
+- **共享帧时间**：同一帧中的回调会收到同一个时间戳，动画应根据时间差计算进度，不能假设每帧固定经过 `16.7ms`。
 
-**属于宏任务**，会在微任务执行完成后再执行。
+`requestAnimationFrame` **不是普通宏任务或微任务**。浏览器在更新渲染的阶段收集并运行这些回调，再进行后续绘制。它只负责安排执行时机，不保证动画永远不丢帧：主线程工作过重、回调自身耗时或渲染成本过高时，仍然可能错过刷新周期。
+
+```js
+let startTime
+
+function move(timestamp) {
+  startTime ??= timestamp
+
+  const elapsed = timestamp - startTime
+  const progress = Math.min(elapsed / 300, 1)
+  box.style.transform = `translateX(${progress * 200}px)`
+
+  if (progress < 1) {
+    requestAnimationFrame(move)
+  }
+}
+
+requestAnimationFrame(move)
+```
+
+这里根据回调时间戳计算进度，因此在高刷新率屏幕上不会加速；某一帧被跳过时，下一帧也能按实际经过时间继续。
 
 ## 参考来源
 

@@ -337,29 +337,27 @@ requestAnimationFrame(() => {
 
 ### CSS 优化和提高性能的方法有哪些
 
-**加载性能：**
-- CSS 文件压缩打包，减小体积；
-- 关键 CSS 内联到 `<style>` 标签，非关键 CSS 延迟加载；
-- 使用 `<link>` 而非 `@import`，避免阻塞并行加载；
-- 合理拆分 CSS，避免加载无用样式（配合代码分割）。
+优化顺序应该是**先测量，再处理主要成本**。不能仅凭“通配符一定慢”“标签选择器一定比 class 慢”之类的经验规则判断真实瓶颈。
 
-**选择器性能：**
-- 避免过深的选择器嵌套（超过 3 层），浏览器从右向左匹配，关键选择器越简单越快；
-- 避免通配符 `*{}`，开销大；
-- 优先用 `class` 而非标签选择器；
-- 了解哪些属性可以继承，避免重复声明。
+1. **减少下载和解析成本**
+   - 压缩 CSS，删除未使用规则，并按路由或功能拆分，避免首屏下载整站样式。
+   - 关键 CSS 可以少量内联；其余样式用 `<link rel="stylesheet">` 正常加载，避免过度内联导致 HTML 变大和缓存复用下降。
+   - `@import` 会在样式表解析后才发现后续依赖，普通站点入口优先直接使用 `<link>`；确实需要级联层或条件导入时再使用它。
 
-**渲染性能：**
-- 尽量减少重排（reflow）：避免频繁读写 `offsetWidth`、`clientHeight` 等触发布局的属性，改用读写分离（先读后写）；
-- 尽量减少重绘（repaint）：优先用 `transform`、`opacity` 做动画，不用 `top`/`left`/`margin`；
-- 去除空规则 `{}`，减少文件体积；
-- 谨慎使用 `float`、`position: absolute/fixed`；
-- 不滥用 Web Fonts，避免渲染阻塞；
-- 使用 `will-change` 提前告知浏览器哪些元素需要硬件加速（仅对频繁变化的元素使用）。
+2. **控制样式重算和布局范围**
+   - 避免在循环中交替写样式、读 `offsetWidth` / `getBoundingClientRect()`，把读取集中在前、修改集中在后，减少强制同步布局。
+   - 大型页面关注 DOM 数量和层级；组件边界明确时可以评估 `contain`、`content-visibility`，但要同时验证尺寸、滚动和可访问性影响。
+   - 图片和媒体提前提供尺寸或比例，避免加载后推动后续内容。
 
-**可维护性：**
-- 相同属性抽离为复用类；
-- 样式与内容分离，CSS 写在外部文件。
+3. **降低绘制和动画成本**
+   - 位移、缩放和淡入淡出通常优先使用 `transform`、`opacity`，但仍要在目标设备上检查图层数量、绘制面积和主线程工作量。
+   - `will-change` 只在即将频繁变化的少量元素上短期使用；它是浏览器优化提示，不等于强制开启“硬件加速”，长期滥用会增加内存和合成成本。
+   - Web Font 要控制字重、字符集和加载策略，避免不必要的字体文件阻塞文字呈现。
+
+4. **有证据时再优化选择器**
+   - 当性能记录显示 `Recalculate Style` 耗时较高时，使用 Chrome DevTools 的 Selector Stats 查看耗时、匹配尝试次数和慢路径未命中比例。
+   - 优先处理真实命中成本高的复杂选择器，同时缩小受影响的 DOM 范围；选择器层级也应以可维护性和组件边界为约束。
+   - 不需要为了性能机械禁止 `*`、标签选择器、`float` 或定位。它们是否构成问题取决于页面规模、状态变化频率和实际测量结果。
 
 ### 如何判断元素是否到达可视区域
 
@@ -409,6 +407,7 @@ document.querySelectorAll('img[data-src]').forEach(img => observer.observe(img))
 
 - [web.dev: Rendering performance](https://web.dev/articles/rendering-performance)
 - [web.dev: Avoid large, complex layouts and layout thrashing](https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing)
+- [Chrome Developers: Analyze CSS selector performance](https://developer.chrome.com/docs/devtools/performance/selector-stats)
 - [MDN: `display`](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 - [MDN: `visibility`](https://developer.mozilla.org/en-US/docs/Web/CSS/visibility)
 - [MDN: `opacity`](https://developer.mozilla.org/en-US/docs/Web/CSS/opacity)

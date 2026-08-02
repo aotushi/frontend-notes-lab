@@ -2,7 +2,7 @@
 
 ## 问题
 
-`display` 为什么是 CSS 布局的入口？外部显示类型和内部显示类型分别决定什么？
+`display` 为什么是 CSS 布局的入口？常见属性值分别做什么？外部显示类型和内部显示类型又决定什么？
 
 ## 结论
 
@@ -84,11 +84,20 @@
 | --- | --- | --- | --- |
 | `display: block` | `block` | `flow` | 自己是块级盒，子元素走普通流 |
 | `display: inline` | `inline` | `flow` | 自己是行内级盒，内容走行内/普通流规则 |
+| `display: inline-block` | `inline` | `flow-root` | 自己参与行内排版，内部形成可设置尺寸的独立格式化根 |
 | `display: flow-root` | `block` | `flow-root` | 自己是块级盒，并建立 BFC |
 | `display: flex` | `block` | `flex` | 自己是块级盒，子元素走 Flex |
 | `display: inline-flex` | `inline` | `flex` | 自己是行内级盒，子元素走 Flex |
 | `display: grid` | `block` | `grid` | 自己是块级盒，子元素走 Grid |
 | `display: inline-grid` | `inline` | `grid` | 自己是行内级盒，子元素走 Grid |
+| `display: table` | `block` | `table` | 自己表现为表格盒，内部按表格格式化规则布局 |
+| `display: list-item` | 通常为 `block` | 通常为 `flow` | 除主体盒外还会生成列表标记盒 |
+| `display: contents` | 不生成自身主盒 | 由子元素决定 | 元素自己的盒子被跳过，子元素直接参与外层布局；使用前要验证语义和可访问性支持 |
+| `display: none` | 不生成盒 | 不生成盒 | 元素及其后代不参与布局，也通常不会进入可访问性树 |
+
+`inherit`、`initial`、`unset`、`revert`、`revert-layer` 是可以用于 `display` 的 **CSS 全局关键字**，但它们不是新的布局模式。例如 `display: inherit` 表示使用父元素的 `display` 计算值。
+
+`block`、`inline` 和 `inline-block` 在换行、宽高、margin 与 padding 上的完整比较，见 [行内、块级与行内块](/html/document-structure/inline-block-elements)。HTML 的内容模型决定元素能否合理嵌套，`display` 只决定生成什么盒以及如何布局，不能用其中一个替代另一个。
 
 ### 与布局章节的关系
 
@@ -132,3 +141,5 @@
 - [MDN: Using the multi-keyword syntax with CSS display](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Display/Multi-keyword_syntax)
 - [MDN: `<display-outside>`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/display-outside)
 - [MDN: `<display-inside>`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/display-inside)
+- [MDN: `<display-listitem>`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/display-listitem)
+- [MDN: CSS-wide values](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Value_processing#css-wide_keywords)
