@@ -23,7 +23,7 @@ BFC 是 Block Formatting Context，块级格式化上下文，是 formatting con
 BFC 主要影响三类布局关系：
 
 - <ConceptNote label="建立 BFC 的容器计算自动高度时，会包含其内部浮动元素。" title="释义：为什么 BFC 能包含内部浮动" :sections="[{ title: '直观理解', body: '浮动元素会脱离普通块布局对父元素高度的撑开效果，所以父元素只包着浮动子元素时，容易出现高度塌陷。' }, { title: '建立 BFC 后', body: '父元素计算自动高度时会把内部浮动元素也算进去，这个效果常被称为清除内部浮动或包含浮动。' }, { title: '推荐写法', code: '.container {\\n  display: flow-root;\\n}', body: 'overflow: hidden 也有效，但它还会裁剪溢出内容。' }]" />
-- <ConceptNote label="正常流中建立 BFC 的块盒，会避开同一上下文中的浮动盒。" title="释义：BFC 如何避开外部浮动" :sections="[{ title: '直观场景', body: '左侧头像设置 float: left，后面跟着一块正文内容。' }, { title: '没有建立 BFC', body: '正文块本身仍按普通块布局贴着包含块左边界，正文里的文字会围绕头像排布。' }, { title: '右侧内容建立 BFC 后', body: '右侧内容的 border box 会从浮动盒旁边开始，不会压到浮动盒下面。', code: '.avatar {\\n  float: left;\\n}\\n\\n.content {\\n  display: flow-root;\\n}' }, { title: '边界', body: '这个规则只描述普通流中的 BFC 与同一上下文里的浮动盒关系，不代表 BFC 能避免所有重叠。' }]" />
+- <ConceptNote label="建立 BFC 的块盒会整体避开外部浮动元素。" title="释义：BFC 如何避开外部浮动" :sections="[{ title: '外部浮动是什么', body: '这里的“外部浮动”是指位于这个 BFC 外面、却会和它相互影响的浮动元素，例如前面的浮动兄弟元素。' }, { title: '普通块的表现', body: '普通块跟在浮动元素后面时，块本身仍按整行宽度布局，背景和边框可能延伸到浮动元素背后，通常只是每行文字的可用宽度缩短。' }, { title: '建立 BFC 后', body: '后续块的整个 border box 会避开浮动元素的 margin box，所以背景、边框和内容都会排在浮动旁边。', code: '.sidebar {\\n  float: left;\\n  width: 160px;\\n}\\n\\n.content {\\n  display: flow-root;\\n}' }, { title: '空间不足时', body: '如果浮动元素旁边放不下这个 BFC 块，它会整体排到浮动元素下方。' }, { title: '边界', body: '这条规则描述的是普通流中的 BFC 与外部浮动之间的关系，不代表 BFC 可以阻止定位、变换或层叠造成的所有重叠。' }]" />
 - <ConceptNote label="新的 BFC 容器可以隔离部分垂直 margin 折叠。" title="释义：为什么是“部分” margin 折叠" :sections="[{ title: '全局分类', items: ['相邻兄弟块盒之间的垂直 margin 折叠。', '父元素与第一个或最后一个普通流子元素之间的垂直 margin 折叠。', '空块自身的 margin-top 和 margin-bottom 折叠。'] }, { title: 'BFC 能处理的部分', body: 'BFC 能影响跨 BFC 边界的 margin 折叠。例如把其中一个段落包进 display: flow-root 容器后，外部段落的 margin 不会直接和容器内部段落的 margin 折叠。' }, { title: 'BFC 不能处理的部分', body: 'BFC 不会取消同一个 BFC 内部普通流相邻块盒之间的 margin 折叠。' }]" />
 
 ### 创建 BFC 的情况
@@ -48,7 +48,7 @@ BFC 主要影响三类布局关系：
 ### 布局规则
 
 1. 在 BFC 中，普通流里的块级盒会沿 <ConceptNote label="block 方向" title="释义：block 方向是什么" :sections="[{ title: '直观理解', body: 'block 方向不是固定等于屏幕上的垂直方向，它取决于书写模式。' }, { title: '默认网页', code: 'writing-mode: horizontal-tb;', items: ['inline 方向：水平方向。', 'block 方向：从上到下的垂直方向。'] }, { title: '竖排书写', code: 'writing-mode: vertical-rl;', items: ['inline 方向：垂直方向。', 'block 方向：水平方向，通常从右向左推进。'] }]" /> 一个接一个排列。
-2. 同一个 BFC 中，相邻块级盒之间的垂直距离由 margin 决定，<ConceptNote label="垂直 margin 可能发生折叠" title="释义：为什么垂直 margin 会折叠" :sections="[{ title: '原因', body: '这是 CSS 普通块布局的规则，不是浏览器 bug。同一个 BFC 中，普通流块盒在 block 方向相邻时，它们的相邻垂直 margin 会合并成一个 margin。' }, { title: '例子', body: '前一个元素 margin-bottom: 20px，后一个元素 margin-top: 30px。它们之间的距离通常不是 50px，而是折叠成 30px。' }, { title: '设计动机', body: '早期文档排版里，段落和标题会连续出现。如果每个元素的上下 margin 都直接相加，段落间距会过大。折叠后能保持更自然的文档间距。' }, { title: '边界', items: ['只发生在 block 方向的 margin。', '水平 margin 不折叠。', 'flex/grid 布局里的项目通常不会发生这种普通块布局下的 margin 折叠。', '跨 BFC 边界的 margin 通常会被隔离。'] }]" />。
+2. 同一个 BFC 的普通流中，相邻块级盒之间的垂直距离由 margin 决定，<ConceptNote label="垂直 margin 可能发生折叠" title="释义：垂直 margin 何时折叠" :sections="[{ title: '成立前提', body: '处在同一个 BFC 只是必要条件之一，不代表垂直 margin 一定折叠。两个 margin 还必须属于普通流中的块级盒，在 block 方向上相邻，并且没有行盒、clearance、内边距或边框把它们隔开。' }, { title: '常见的三类折叠', items: ['相邻普通流兄弟块盒的 margin-bottom 与 margin-top。', '父元素与第一个或最后一个普通流子元素之间满足对应的边界条件时。', '空块没有上下边框、上下内边距或行盒，并且 height 为 0 或 auto、min-height 为 0 时，其 margin-top 与 margin-bottom。'] }, { title: '简单例子', body: '前一个元素 margin-bottom: 20px，后一个元素 margin-top: 30px。满足兄弟折叠条件时，它们之间通常是 30px，而不是 50px。' }, { title: '常见不折叠情况', items: ['水平方向的 margin 不折叠，根元素 html 的 margin 也不折叠。', '浮动元素和绝对定位元素的 margin 永不折叠。', 'inline-block 盒的 margin 不折叠，也不会与其普通流子元素折叠。', '后一个兄弟元素因 clear 产生 clearance 时，不与前一个兄弟发生该次 margin 折叠。', '父元素与第一个普通流子元素之间存在 border-top、padding-top 或行盒，或者子元素存在 clearance 时，顶部 margin 不折叠。', '父元素存在 border-bottom、padding-bottom，或者 height 不是 auto、min-height 不是 0 时，通常会阻断它与最后一个普通流子元素的底部 margin 折叠。', 'Flex 和 Grid 项目的 margin 不按普通块布局规则折叠。'] }, { title: 'BFC 边界', body: '父元素建立新的 BFC 后，它自身的 margin 不会与内部普通流子元素的 margin 折叠；但这个 BFC 内部相邻的普通流块盒之间仍然可能折叠。' }, { title: '设计目的', body: '连续的段落和标题通常同时设置上下 margin。折叠可以避免间距直接相加而变得过大，使文档排版保持自然。' }]" />。
 3. 普通流块盒的 margin box 外边缘会与包含块的 border box 外边缘相接触；即使存在浮动，块盒本身的边界仍按包含块计算，通常是内部行盒被浮动挤开。
 4. 建立 BFC 的元素在计算自动高度时，会包含其内部浮动元素。
 5. 正常流中建立 BFC 的元素，其 border box 不会与同一上下文中的浮动元素 margin box 重叠。
@@ -72,7 +72,7 @@ BFC 主要影响三类布局关系：
 
 #### 避开外部浮动
 
-正常流中的 BFC 区域不会压到同一上下文的浮动盒下面，早期两栏布局常利用这个特性。
+下面的 `.content` 通过 `display: flow-root` 建立 BFC，因而会整体避开左侧浮动的 `.sidebar`。早期的自适应两栏布局常利用这个特性：
 
 ```css
 .sidebar {
@@ -206,6 +206,7 @@ p {
 
 - [MDN: Block formatting context](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Display/Block_formatting_context)
 - [MDN: Introduction to formatting contexts](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Display/Formatting_contexts)
-- [MDN: Mastering margin collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_box_model/Mastering_margin_collapsing)
+- [MDN: Mastering margin collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Box_model/Margin_collapsing)
+- [CSS 2.2: Collapsing margins](https://www.w3.org/TR/CSS22/box.html#collapsing-margins)
 - [CSS 2.2: Block formatting contexts](https://www.w3.org/TR/CSS22/visuren.html#block-formatting)
 - [MDN: display](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
