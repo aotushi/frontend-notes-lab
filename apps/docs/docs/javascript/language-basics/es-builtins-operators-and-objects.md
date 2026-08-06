@@ -584,7 +584,7 @@ console.log(source) // ['a', 'x', 'd']
 
 数组去重题不要只背一个 API。面试里常问"写出多种方式"，但实际回答要同时说明相等规则、是否改变原数组、是否保留顺序、是否支持对象和是否会破坏类型。
 
-| 排序 | 方式 | 复杂度 / 成本 | 适合场景 | 边界 |
+| 序号 | 方式 | 复杂度 / 成本 | 适合场景 | 边界 |
 | --- | --- | --- | --- | --- |
 | 1 | `Set` | 平均 O(n)，空间 O(n) | 常规值去重默认首选，保留首次出现顺序 | 对象、数组、函数按引用去重，不做结构比较 |
 | 2 | `Map` 自定义 key | 平均 O(n)，空间 O(n)，另有 key 计算成本 | 对象数组按业务字段去重 | key 冲突时需明确保留第一个还是最后一个 |
@@ -796,18 +796,19 @@ function uniqueBySplice(list) {
 
 数组扁平化题不要只背 `flat()`。面试里常要求同时说出原生 API、递归、非递归和字符串类 hack；回答时要说明展开深度、类型保留、递归栈和中间数组开销。
 
-| 排序 | 方式 | 复杂度 / 成本 | 适合场景 | 边界 |
+| 序号 | 方式 | 复杂度 / 成本 | 适合场景 | 边界 |
 | --- | --- | --- | --- | --- |
 | 1 | `flat(depth)` / `flat(Infinity)` | O(n)，空间 O(n)，n 为访问到的元素数 | 现代环境默认首选 | 只做数组展开；深度要明确 |
-| 2 | `flatMap()` | O(n + m)，m 为映射后展开的一层元素数 | 先映射，再展开一层 | 只展开一层，不等于深度扁平化 |
-| 3 | 递归 + `for...of` | O(n)，空间 O(n)，另有递归栈 O(depth) | 手写 `flat`、完全拍平 | 嵌套过深可能调用栈溢出 |
-| 4 | 带深度递归 | O(n)，空间 O(n)，另有递归栈 O(depth) | 手写 `flat(depth)` | 深度很大时可能栈溢出 |
-| 5 | 显式栈迭代 | O(n)，空间 O(n) | 避免递归栈溢出 | 代码更长，需要反转或维护顺序 |
-| 6 | `reduce` + 递归 | 通常高于 O(n)，`concat` 会反复复制 | 函数式写法展示 | 大数组性能差，仍有递归栈问题 |
-| 7 | `while` + `some` + 展开 | 约 O(n × depth)，多次扫描和复制 | 不写递归的面试写法 | 层数多时代价明显 |
-| 8 | `JSON.stringify` + 替换 + `split` | O(n) 序列化 + 字符串替换 + 拆分成本 | 旧题 hack | 返回字符串数组，类型信息丢失 |
-| 9 | `JSON.stringify` + 替换 + `JSON.parse` | O(n) 序列化 + 字符串替换 + 解析成本 | 只处理简单 JSON 值的旧题 hack | 受 JSON 序列化限制，复杂值不可用 |
-| 10 | `toString` + `split` | O(n) 字符串化成本 | 只适合演示为什么不推荐 | 会把所有值变成字符串，复杂值不可用 |
+| 2 | 递归 + `for...of` | O(n)，空间 O(n)，另有递归栈 O(depth) | 手写 `flat`、完全拍平 | 嵌套过深可能调用栈溢出 |
+| 3 | 带深度递归 | O(n)，空间 O(n)，另有递归栈 O(depth) | 手写 `flat(depth)` | 深度很大时可能栈溢出 |
+| 4 | 显式栈迭代 | O(n)，空间 O(n) | 避免递归栈溢出 | 代码更长，需要反转或维护顺序 |
+| 5 | `reduce` + 递归 | 通常高于 O(n)，`concat` 会反复复制 | 函数式写法展示 | 大数组性能差，仍有递归栈问题 |
+| 6 | `while` + `some` + 展开 | 约 O(n × depth)，多次扫描和复制 | 不写递归的面试写法 | 层数多时代价明显 |
+| 7 | `JSON.stringify` + 替换 + `split` | O(n) 序列化 + 字符串替换 + 拆分成本 | 旧题 hack | 返回字符串数组，类型信息丢失 |
+| 8 | `JSON.stringify` + 替换 + `JSON.parse` | O(n) 序列化 + 字符串替换 + 解析成本 | 只处理简单 JSON 值的旧题 hack | 受 JSON 序列化限制，复杂值不可用 |
+| 9 | `toString` + `split` | O(n) 字符串化成本 | 只适合演示为什么不推荐 | 会把所有值变成字符串，复杂值不可用 |
+
+`flatMap()` 不作为独立的数组扁平化方案。它解决的是“先映射每个元素，再把映射结果展开一层”；如果只是展开已有嵌套数组，`flat(1)` 的意图更直接。
 
 1. `flat()` / `flat(Infinity)`
 
@@ -822,19 +823,7 @@ flattenByFlat([1, [2, [3]]], Infinity) // [1, 2, 3]
 
 点评：现代环境首选。`flat()` 默认只展开一层；完全拍平用 `Infinity`，但仍要注意数据规模。
 
-2. `flatMap()`
-
-```js
-function duplicateAndFlattenOneLevel(list) {
-  return list.flatMap((value) => [value, value * 2])
-}
-
-duplicateAndFlattenOneLevel([1, 2]) // [1, 2, 2, 4]
-```
-
-点评：`flatMap()` 等于先 `map()` 再展开一层，不是深度扁平化。
-
-3. 递归 + `for...of`
+2. 递归 + `for...of`
 
 ```js
 function flattenByForOf(list) {
@@ -856,7 +845,7 @@ flattenByForOf([1, [2, [3]]]) // [1, 2, 3]
 
 点评：递归写法可读性强，能保留元素类型和顺序，整体会访问每个元素一次；缺点是很深的嵌套可能触发调用栈限制，且这个版本默认完全拍平。
 
-4. 带深度的递归版
+3. 带深度的递归版
 
 ```js
 function flattenWithDepth(list, depth = 1) {
@@ -878,7 +867,7 @@ flattenWithDepth([1, [2, [3]]], 2) // [1, 2, 3]
 
 点评：这更接近手写 `Array.prototype.flat(depth)` 的核心逻辑，能控制展开层数并保留顺序；缺点仍是递归深度过大时可能栈溢出。
 
-5. 显式栈迭代
+4. 显式栈迭代
 
 ```js
 function flattenDeep(list) {
@@ -901,7 +890,7 @@ function flattenDeep(list) {
 
 点评：显式栈版本避免递归调用栈过深，但代码更长。它适合非常深的嵌套数组或算法题扩展。
 
-6. `reduce` + 递归
+5. `reduce` + 递归
 
 ```js
 function flattenByReduce(list) {
@@ -915,7 +904,7 @@ flattenByReduce([1, [2, [3]]]) // [1, 2, 3]
 
 点评：`reduce` 版本表达紧凑，但 `concat` 会不断创建新数组，大数组下性能通常不如手动 `push`；它同样有递归栈过深的问题。
 
-7. `while` + `some` + 展开运算符
+6. `while` + `some` + 展开运算符
 
 ```js
 function flattenBySpread(list) {
@@ -933,7 +922,7 @@ flattenBySpread([1, [2, [3]]]) // [1, 2, 3]
 
 点评：每轮只展开一层，所以需要循环。层数多或数组很大时，会产生较多中间数组。
 
-8. `JSON.stringify` + 替换 + `split`
+7. `JSON.stringify` + 替换 + `split`
 
 ```js
 function flattenByJsonSplit(list) {
@@ -945,7 +934,7 @@ flattenByJsonSplit([1, [2, [3]]]) // ['1', '2', '3']
 
 点评：返回值仍然是字符串数组；如果数组里本来有字符串、对象或特殊值，结果很容易不可靠。
 
-9. `JSON.stringify` + 替换 + `JSON.parse`
+8. `JSON.stringify` + 替换 + `JSON.parse`
 
 ```js
 function flattenByJsonParse(list) {
@@ -958,7 +947,7 @@ flattenByJsonParse([1, [2, [3]]]) // [1, 2, 3]
 
 点评：这个版本能保留简单数字类型，但仍会受 JSON 序列化限制：`undefined`、函数、Symbol、循环引用和包含方括号的字符串都可能出问题。
 
-10. `toString` + `split`
+9. `toString` + `split`
 
 ```js
 function flattenByToString(list) {
