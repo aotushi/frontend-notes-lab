@@ -15,11 +15,11 @@ JavaScript 对象复用的基础是原型委托。对象本身没有某个属性
 除 `null` 外，JavaScript 中的对象在创建时通常会关联另一个对象，这个被关联的对象就是它的原型。对象可以通过原型复用属性和方法，但这种“继承”不是复制，而是读取属性时发生的委托查找。
 
 ```js
-const parent = { role: 'admin' }
-const child = Object.create(parent)
+const parent = { role: "admin" };
+const child = Object.create(parent);
 
-child.name = 'Ada'
-child.role // 'admin'
+child.name = "Ada";
+child.role; // 'admin'
 ```
 
 #### 原型链查找规则概述
@@ -34,16 +34,16 @@ child.role // 'admin'
 
 ```js
 const base = {
-  role: 'member',
-  permissions: ['read']
-}
+  role: "member",
+  permissions: ["read"],
+};
 
-const user = Object.create(base)
-user.name = 'Ada'
+const user = Object.create(base);
+user.name = "Ada";
 
-console.log(user.name) // 'Ada'，来自自身
-console.log(user.role) // 'member'，来自原型
-console.log(user.missing) // undefined，查到链尾仍未找到
+console.log(user.name); // 'Ada'，来自自身
+console.log(user.role); // 'member'，来自原型
+console.log(user.missing); // undefined，查到链尾仍未找到
 ```
 
 #### 原型链图例
@@ -68,15 +68,15 @@ console.log(user.missing) // undefined，查到链尾仍未找到
 
 ```js
 function User(name) {
-  this.name = name
+  this.name = name;
 }
 
 User.prototype.say = function say() {
-  return this.name
-}
+  return this.name;
+};
 
-const user = new User('Ada')
-Object.getPrototypeOf(user) === User.prototype // true
+const user = new User("Ada");
+Object.getPrototypeOf(user) === User.prototype; // true
 ```
 
 ### `new` 操作符做了什么？
@@ -95,11 +95,11 @@ Object.getPrototypeOf(user) === User.prototype // true
 ```js
 class User {
   constructor(name) {
-    this.name = name
+    this.name = name;
   }
 
   say() {
-    return this.name
+    return this.name;
   }
 }
 ```
@@ -115,51 +115,51 @@ JavaScript 继承方式常见可以按下面 6 类理解：
 5. 寄生式继承。
 6. 寄生组合式继承。
 
-| 方式 | 核心写法 | 优点 | 主要问题 |
-| --- | --- | --- | --- |
-| 原型链继承 | `Child.prototype = new Parent()` | 可以继承父类原型方法 | 引用属性共享，子类创建实例时不能向父类传参 |
-| 借用构造函数 | `Parent.call(this, ...args)` | 实例属性独立，可以向父类传参 | 不能继承父类原型方法，方法写在构造函数里会重复创建 |
-| 组合继承 | 借用构造函数 + 原型链继承 | 实例属性独立，原型方法可复用 | 父构造函数会调用两次，子类原型上有冗余属性 |
-| 原型式继承 | `Object.create(parentLikeObject)` | 适合基于已有对象创建新对象 | 本质是浅委托，引用属性仍共享，不能走构造函数传参 |
-| 寄生式继承 | 创建对象后再增强对象 | 可以封装增强过程 | 每次创建对象都会重新创建增强方法 |
-| 寄生组合式继承 | `Object.create(Parent.prototype)` + `Parent.call(this)` | ES5 中较完整，只调用一次父构造函数 | 写法比 `class extends` 繁琐 |
+| 方式           | 核心写法                                                | 优点                               | 主要问题                                         |
+| -------------- | ------------------------------------------------------- | ---------------------------------- | ------------------------------------------------ |
+| 原型链继承     | `Child.prototype = new Parent()`                        | 可以继承父类原型方法               | 引用属性共享，子类创建实例时不能向父类传参       |
+| 借用构造函数   | `Parent.call(this, ...args)`                            | 实例属性独立，可以向父类传参       | 不会连接父类原型；构造函数内联方法无法共享       |
+| 组合继承       | 借用构造函数 + 原型链继承                               | 实例属性独立，原型方法可复用       | 父构造函数会调用两次，子类原型上有冗余属性       |
+| 原型式继承     | `Object.create(parentLikeObject)`                       | 适合基于已有对象创建新对象         | 本质是浅委托，引用属性仍共享，不能走构造函数传参 |
+| 寄生式继承     | 创建对象后再增强对象                                    | 可以封装增强过程                   | 每次创建对象都会重新创建增强方法                 |
+| 寄生组合式继承 | `Object.create(Parent.prototype)` + `Parent.call(this)` | ES5 中较完整，只调用一次父构造函数 | 写法比 `class extends` 繁琐                      |
 
 #### 原型链继承
 
 原型链继承的核心是让子类原型等于父类实例：
 
 ```js
-Child.prototype = new Parent()
+Child.prototype = new Parent();
 ```
 
 每个构造函数都有一个 `prototype` 对象，实例内部有一个指向原型对象的 `[[Prototype]]` 指针。实例通过这个内部指针访问原型对象，原型对象又通过 `constructor` 指回构造函数。
 
 ```js
 function Parent() {
-  this.name = 'kevin'
+  this.name = "kevin";
 }
 
 Parent.prototype.getName = function getName() {
-  return this.name
-}
+  return this.name;
+};
 
-Parent.prototype.stringVal = 'parentA'
+Parent.prototype.stringVal = "parentA";
 
 function Child() {}
 
-Child.prototype = new Parent()
-Child.prototype.constructor = Child
+Child.prototype = new Parent();
+Child.prototype.constructor = Child;
 
-const child = new Child()
+const child = new Child();
 
-console.log(child.getName()) // 'kevin'
-console.log(child.stringVal) // 'parentA'
+console.log(child.getName()); // 'kevin'
+console.log(child.stringVal); // 'parentA'
 ```
 
 原型链继承的主要缺点：
 
 1. 父类构造函数里的引用类型属性会被所有子类实例共享。
-2. 创建子类实例时，不能向父类构造函数传参。
+2. 创建子类实例时，不能向父类构造函数传参。父构造函数只在设置 Child.prototype 时执行一次；创建子实例时不会再次执行，因此不能使用不同参数分别初始化每个子实例。
 3. 子类原型只能直接指向一个对象，不能直接同时指向多个父类原型。
 4. 给子类原型添加属性和方法，应放在替换 `Child.prototype` 之后、创建子类实例之前。
 
@@ -167,26 +167,26 @@ console.log(child.stringVal) // 'parentA'
 
 ```js
 function Parent() {
-  this.names = ['kevin', 'daisy']
-  this.year = 1010
+  this.names = ["kevin", "daisy"];
+  this.year = 1010;
 }
 
 function Child() {}
 
-Child.prototype = new Parent()
-Child.prototype.constructor = Child
+Child.prototype = new Parent();
+Child.prototype.constructor = Child;
 
-const child1 = new Child()
-child1.names.push('yayu')
-child1.year = 'abab'
+const child1 = new Child();
+child1.names.push("yayu");
+child1.year = "abab";
 
-console.log(child1.names) // ['kevin', 'daisy', 'yayu']
-console.log(child1.year) // 'abab'
+console.log(child1.names); // ['kevin', 'daisy', 'yayu']
+console.log(child1.year); // 'abab'
 
-const child2 = new Child()
+const child2 = new Child();
 
-console.log(child2.names) // ['kevin', 'daisy', 'yayu']
-console.log(child2.year) // 1010
+console.log(child2.names); // ['kevin', 'daisy', 'yayu']
+console.log(child2.year); // 1010
 ```
 
 `names` 是共享数组，所以 `child1.names.push()` 会影响 `child2`。`year` 是原始值，`child1.year = 'abab'` 会在 `child1` 自身创建同名属性，遮蔽原型上的 `year`，不会改掉原型上的 `year`。
@@ -197,24 +197,31 @@ console.log(child2.year) // 1010
 
 ```js
 function Parent(name, age) {
-  this.name = name
-  this.age = age
+  this.name = name;
+  this.age = age;
   this.sayHello = function sayHello() {
-    return `hello, 大家好，我是 ${this.name}`
-  }
+    return `hello, 大家好，我是 ${this.name}`;
+  };
 }
+
+Parent.prototype.getRole = function getRole() {
+  return "parent";
+};
 
 function Child(name, age) {
-  Parent.call(this, name, age)
+  Parent.call(this, name, age);
 }
 
-const child = new Child('孙悟空', 18)
+const child1 = new Child("孙悟空", 18);
+const child2 = new Child("猪八戒", 18);
 
-console.log(child.name) // '孙悟空'
-console.log(child.sayHello()) // 'hello, 大家好，我是 孙悟空'
+console.log(child1.name); // '孙悟空'
+console.log(child1.sayHello()); // 'hello, 大家好，我是 孙悟空'
+console.log(child1.sayHello === child2.sayHello); // false
+console.log(child1.getRole); // undefined
 ```
 
-这种方式的核心是用父类构造函数增强子类实例，相当于把父类实例属性复制到子类实例上，没有用到父类原型链。
+这种方式只是让父构造函数以当前子实例作为 `this` 执行初始化代码。它会把 `name`、`age`、`sayHello` 等属性直接写到每个子实例上，但不会让 `Child.prototype` 连接到 `Parent.prototype`。
 
 优点：
 
@@ -223,33 +230,10 @@ console.log(child.sayHello()) // 'hello, 大家好，我是 孙悟空'
 
 缺点：
 
-1. 如果方法定义在构造函数中，每次创建实例都会重新创建一遍方法。
-2. 只能继承父类构造函数内的实例属性和方法，不能继承父类原型上的属性和方法。
+1. **无法继承父类原型方法**：`Parent.call(this)` 只执行父构造函数，不会建立从 `Child.prototype` 到 `Parent.prototype` 的原型链，因此 `child1.getRole` 是 `undefined`。
+2. **构造函数内联方法无法共享**：如果为了让子实例获得方法而在父构造函数中写 `this.sayHello = function ...`，每个子实例都会拥有独立的 `sayHello` 函数对象。对于不需要实例私有闭包状态的公共方法，这会造成不必要的重复创建，因此通常视为缺点；只有确实需要为每个实例保留独立闭包状态时，这种做法才可能是有意设计。
 
-把方法提到全局函数可以避免重复创建函数对象，但会带来命名空间污染，并且每次实例化仍然要给实例赋值一次方法引用：
-
-```js
-function globalSayHello() {
-  return `hello, 大家好，我是 ${this.name}`
-}
-
-function Parent(name, age) {
-  this.name = name
-  this.age = age
-  this.sayHello = globalSayHello
-}
-
-function Child(name, age) {
-  Parent.call(this, name, age)
-}
-
-const child1 = new Child('孙悟空', 18)
-const child2 = new Child('猪八戒', 18)
-
-console.log(child1.sayHello === child2.sayHello) // true
-```
-
-更好的复用位置通常是原型，这也是组合继承要解决的问题。
+第一点是这种继承方式本身的限制；第二点是为了绕过第一点、把方法放回构造函数时产生的常见代价。可复用的方法更适合放在原型上，因此需要组合继承同时连接父类原型并初始化实例属性。
 
 #### 组合继承
 
@@ -263,35 +247,35 @@ console.log(child1.sayHello === child2.sayHello) // true
 
 ```js
 function Parent(name) {
-  this.name = name
-  this.colors = ['red', 'blue', 'green']
+  this.name = name;
+  this.colors = ["red", "blue", "green"];
 }
 
 Parent.prototype.getName = function getName() {
-  return this.name
-}
+  return this.name;
+};
 
 function Child(name, age) {
-  Parent.call(this, name)
-  this.age = age
+  Parent.call(this, name);
+  this.age = age;
 }
 
-Child.prototype = new Parent()
-Child.prototype.constructor = Child
+Child.prototype = new Parent();
+Child.prototype.constructor = Child;
 
-const child1 = new Child('kevin', 18)
-child1.colors.push('black')
+const child1 = new Child("kevin", 18);
+child1.colors.push("black");
 
-console.log(child1.name) // 'kevin'
-console.log(child1.age) // 18
-console.log(child1.colors) // ['red', 'blue', 'green', 'black']
-console.log(child1.getName()) // 'kevin'
+console.log(child1.name); // 'kevin'
+console.log(child1.age); // 18
+console.log(child1.colors); // ['red', 'blue', 'green', 'black']
+console.log(child1.getName()); // 'kevin'
 
-const child2 = new Child('daisy', 20)
+const child2 = new Child("daisy", 20);
 
-console.log(child2.name) // 'daisy'
-console.log(child2.age) // 20
-console.log(child2.colors) // ['red', 'blue', 'green']
+console.log(child2.name); // 'daisy'
+console.log(child2.age); // 20
+console.log(child2.colors); // ['red', 'blue', 'green']
 ```
 
 组合继承的优点是同时解决了实例属性独立和原型方法复用的问题。缺点是父类构造函数会执行两次：
@@ -306,30 +290,30 @@ console.log(child2.colors) // ['red', 'blue', 'green']
 ```js
 class Parent {
   constructor(name) {
-    this.name = name
-    this.colors = ['red', 'blue', 'green']
+    this.name = name;
+    this.colors = ["red", "blue", "green"];
   }
 
   getName() {
-    return this.name
+    return this.name;
   }
 }
 
 class Child extends Parent {
   constructor(name, age) {
-    super(name)
-    this.age = age
+    super(name);
+    this.age = age;
   }
 }
 
-const child1 = new Child('Alice', 10)
-child1.colors.push('black')
+const child1 = new Child("Alice", 10);
+child1.colors.push("black");
 
-const child2 = new Child('Bob', 12)
+const child2 = new Child("Bob", 12);
 
-console.log(child1.getName()) // 'Alice'
-console.log(child2.colors) // ['red', 'blue', 'green']
-console.log(child1 instanceof Parent) // true
+console.log(child1.getName()); // 'Alice'
+console.log(child2.colors); // ['red', 'blue', 'green']
+console.log(child1 instanceof Parent); // true
 ```
 
 `extends` 会建立子类原型到父类原型的连接，`super()` 会执行父类构造函数完成实例初始化。它保留了原型方法复用和实例属性独立这两个目标，同时避免传统组合继承中“设置子类原型时调用一次父构造函数”的冗余。
@@ -341,25 +325,25 @@ console.log(child1 instanceof Parent) // true
 ```js
 function object(o) {
   function F() {}
-  F.prototype = o
-  return new F()
+  F.prototype = o;
+  return new F();
 }
 ```
 
 ```js
 const person = {
-  name: 'kevin',
-  friends: ['daisy', 'kelly']
-}
+  name: "kevin",
+  friends: ["daisy", "kelly"],
+};
 
-const person1 = object(person)
-const person2 = object(person)
+const person1 = object(person);
+const person2 = object(person);
 
-person1.name = 'person1'
-console.log(person2.name) // 'kevin'
+person1.name = "person1";
+console.log(person2.name); // 'kevin'
 
-person1.friends.push('taylor')
-console.log(person2.friends) // ['daisy', 'kelly', 'taylor']
+person1.friends.push("taylor");
+console.log(person2.friends); // ['daisy', 'kelly', 'taylor']
 ```
 
 `person1.name = 'person1'` 会在 `person1` 自身创建同名属性，不会修改原型对象上的 `name`。`friends` 是原型对象上的共享数组，修改数组内容会影响其它委托到同一个原型对象的实例。
@@ -372,20 +356,20 @@ console.log(person2.friends) // ['daisy', 'kelly', 'taylor']
 
 ```js
 function createObj(o) {
-  const clone = Object.create(o)
+  const clone = Object.create(o);
 
   clone.sayName = function sayName() {
-    return 'hi'
-  }
+    return "hi";
+  };
 
-  return clone
+  return clone;
 }
 
-const person = { name: 'kevin' }
-const person1 = createObj(person)
+const person = { name: "kevin" };
+const person1 = createObj(person);
 
-console.log(person1.name) // 'kevin'
-console.log(person1.sayName()) // 'hi'
+console.log(person1.name); // 'kevin'
+console.log(person1.sayName()); // 'hi'
 ```
 
 它的问题和借用构造函数类似：增强方法写在工厂函数内部时，每次创建对象都会重新创建一遍方法。
@@ -396,40 +380,40 @@ console.log(person1.sayName()) // 'hi'
 
 ```js
 function Parent(name) {
-  this.name = name
-  this.colors = ['red', 'blue', 'green']
+  this.name = name;
+  this.colors = ["red", "blue", "green"];
 }
 
 Parent.prototype.getName = function getName() {
-  return this.name
-}
+  return this.name;
+};
 
 function Child(name, age) {
-  Parent.call(this, name)
-  this.age = age
+  Parent.call(this, name);
+  this.age = age;
 }
 
-Child.prototype = Object.create(Parent.prototype)
-Child.prototype.constructor = Child
+Child.prototype = Object.create(Parent.prototype);
+Child.prototype.constructor = Child;
 
-const child = new Child('kevin', 18)
+const child = new Child("kevin", 18);
 
-console.log(child.getName()) // 'kevin'
-console.log(child instanceof Child) // true
-console.log(child instanceof Parent) // true
-console.log(Parent.prototype.isPrototypeOf(child)) // true
+console.log(child.getName()); // 'kevin'
+console.log(child instanceof Child); // true
+console.log(child instanceof Parent); // true
+console.log(Parent.prototype.isPrototypeOf(child)); // true
 ```
 
 可以把连接原型的过程封装起来：
 
 ```js
 function inheritPrototype(child, parent) {
-  const prototype = Object.create(parent.prototype)
-  prototype.constructor = child
-  child.prototype = prototype
+  const prototype = Object.create(parent.prototype);
+  prototype.constructor = child;
+  child.prototype = prototype;
 }
 
-inheritPrototype(Child, Parent)
+inheritPrototype(Child, Parent);
 ```
 
 寄生组合式继承的特点：
@@ -441,26 +425,114 @@ inheritPrototype(Child, Parent)
 
 ### ES6 class 的静态成员、实例成员什么时候挂载？
 
-按「挂在谁身上、何时赋值」区分四类成员：
+`class` 在 ES2015 中引入；下面还包含后来加入标准的类字段和静态初始化块。理解“挂载”时，需要同时区分**属性最终属于谁**和**初始化代码何时执行**。
 
-| 成员 | 挂载位置 | 时机 |
-| --- | --- | --- |
-| 静态方法 / 静态属性 | 类（构造函数）本身 | 类定义求值时就挂上，通过 `Child.staticFn` 访问 |
-| 原型方法 | `Class.prototype` | 类定义求值时挂上，所有实例共享 |
-| 实例字段（class fields） | 每个实例自身 | `new` 时初始化，基类在进入 constructor 前、子类在 `super()` 返回后 |
-| 构造函数里 `this.x =` | 每个实例自身 | 执行到该赋值语句时 |
+| 成员 | 声明示例 | 所在位置 | 定义或初始化时机 |
+| --- | --- | --- | --- |
+| 静态方法、静态访问器 | `static create() {}` | 类本身，如 `Base.create` | 类定义求值时安装，并且早于静态字段初始化器和静态块执行 |
+| 静态字段 | `static type = 'base'` | 类本身，如 `Base.type` | 类定义求值时初始化一次；与静态块按源码顺序执行 |
+| 静态初始化块 | `static { ... }` | 不会形成一个可访问的成员 | 类定义求值时执行一次；与静态字段初始化器按源码顺序执行 |
+| 实例方法、实例访问器 | `Base.prototype` | 原型对象 | 类定义求值时安装，所有实例通过原型链共享 |
+| 实例字段 | `field = value` | 每个实例自身 | 每次 `new` 都初始化；基类在构造函数体执行前，派生类在 `super()` 返回后、后续语句执行前 |
+| 构造函数内赋值 | `this.name = name` | 每个实例自身 | 构造函数执行到该语句时 |
+
+下面的完整案例同时展示类定义阶段、实例创建阶段和最终挂载位置：
 
 ```js
+const logs = []
+
 class Base {
-  static tag = 'base' // 挂在 Base 上
-  size = 1 // 每个实例各一份
-  getSize() {
-    return this.size
-  } // 挂在 Base.prototype
+  // 类定义求值时初始化一次，属性挂在 Base 自身。
+  static type = (logs.push('1. Base 静态字段'), 'base')
+
+  // 类定义求值时执行一次；this 指向 Base。
+  static {
+    logs.push('2. Base 静态块')
+    this.ready = true
+  }
+
+  // 类定义求值时挂在 Base 自身。
+  static describe() {
+    return `${this.type}: ${this.ready}`
+  }
+
+  // 每次创建实例都会初始化，属性挂在实例自身。
+  baseField = (logs.push('6. Base 实例字段'), 'base field')
+
+  constructor(name) {
+    logs.push('7. Base constructor 函数体')
+    this.name = name
+  }
+
+  // 类定义求值时挂在 Base.prototype，供实例共享。
+  getLabel() {
+    return `${this.name}: ${this.baseField}`
+  }
 }
+
+class Child extends Base {
+  // 父类的静态初始化先完成，然后才轮到子类。
+  static type = (logs.push('3. Child 静态字段'), 'child')
+
+  static {
+    logs.push('4. Child 静态块')
+  }
+
+  childField = (logs.push('8. Child 实例字段'), 'child field')
+
+  constructor(name) {
+    // super() 之前可以执行不访问 this 的代码。
+    logs.push('5. Child constructor：super 前')
+    super(name)
+
+    // Child 的实例字段已在 super() 返回后、运行到这里前完成初始化。
+    logs.push('9. Child constructor：super 后')
+    this.createdInConstructor = true
+  }
+}
+
+// 此时只定义了类，还没有创建实例。
+console.log(logs)
+// [
+//   '1. Base 静态字段',
+//   '2. Base 静态块',
+//   '3. Child 静态字段',
+//   '4. Child 静态块'
+// ]
+
+const child = new Child('孙悟空')
+
+console.log(logs.slice(4))
+// [
+//   '5. Child constructor：super 前',
+//   '6. Base 实例字段',
+//   '7. Base constructor 函数体',
+//   '8. Child 实例字段',
+//   '9. Child constructor：super 后'
+// ]
+
+// 静态成员属于类，不属于实例。
+console.log(Object.hasOwn(Base, 'type')) // true
+console.log(Object.hasOwn(Base, 'describe')) // true
+console.log(child.describe) // undefined
+
+// 静态方法可以被子类继承；调用时 this 是 Child。
+console.log(Child.describe()) // 'child: true'
+
+// 实例字段是实例自身属性，实例方法则来自原型。
+console.log(Object.hasOwn(child, 'baseField')) // true
+console.log(Object.hasOwn(child, 'childField')) // true
+console.log(Object.hasOwn(child, 'createdInConstructor')) // true
+console.log(Object.hasOwn(child, 'getLabel')) // false
+console.log(Object.hasOwn(Base.prototype, 'getLabel')) // true
+console.log(child.getLabel()) // '孙悟空: base field'
 ```
 
-关键点：静态成员和原型方法在**类声明时**就确定，不随实例创建重复挂载；实例字段每次 `new` 都重新赋值。子类的实例字段初始化发生在 `super()` 之后，所以在子类字段里能安全访问父类已初始化的状态。
+关键点：
+
+1. **类定义阶段**：先安装静态方法和原型方法，再按源码顺序执行静态字段初始化器与静态块；父类的静态初始化先于子类。
+2. **实例创建阶段**：每次 `new` 都会重新初始化实例字段。基类字段先于基类构造函数体，派生类字段则紧跟在 `super()` 返回之后。
+3. **最终挂载位置**：静态成员在类本身，实例方法在类的 `prototype` 上，实例字段与构造函数中的 `this.x` 在每个实例自身。
 
 ### ES5 继承和 ES6 继承除了写法，还有什么区别？
 
@@ -477,19 +549,19 @@ class Base {
 
 ```js
 function myInstanceof(value, ctor) {
-  if (value == null || (typeof value !== 'object' && typeof value !== 'function')) {
-    return false
+  if (value == null || (typeof value !== "object" && typeof value !== "function")) {
+    return false;
   }
 
-  let proto = Object.getPrototypeOf(value)
-  const target = ctor.prototype
+  let proto = Object.getPrototypeOf(value);
+  const target = ctor.prototype;
 
   while (proto) {
-    if (proto === target) return true
-    proto = Object.getPrototypeOf(proto)
+    if (proto === target) return true;
+    proto = Object.getPrototypeOf(proto);
   }
 
-  return false
+  return false;
 }
 ```
 
@@ -503,20 +575,20 @@ function myInstanceof(value, ctor) {
 
 ```js
 function Parent(name) {
-  this.name = name
+  this.name = name;
 }
 
 Parent.prototype.say = function say() {
-  return this.name
-}
+  return this.name;
+};
 
 function Child(name, age) {
-  Parent.call(this, name)
-  this.age = age
+  Parent.call(this, name);
+  this.age = age;
 }
 
-Child.prototype = Object.create(Parent.prototype)
-Child.prototype.constructor = Child
+Child.prototype = Object.create(Parent.prototype);
+Child.prototype.constructor = Child;
 ```
 
 ### `class extends`
@@ -524,14 +596,14 @@ Child.prototype.constructor = Child
 ```js
 class Parent {
   constructor(name) {
-    this.name = name
+    this.name = name;
   }
 }
 
 class Child extends Parent {
   constructor(name, age) {
-    super(name)
-    this.age = age
+    super(name);
+    this.age = age;
   }
 }
 ```
@@ -539,21 +611,23 @@ class Child extends Parent {
 ### 原型修改与重写
 
 ```js
-function Person(name) { this.name = name }
+function Person(name) {
+  this.name = name;
+}
 
 // 修改原型（添加属性）
-Person.prototype.getName = function() {}
-var p = new Person('hello')
-console.log(p.__proto__ === Person.prototype) // true
-console.log(p.__proto__ === p.constructor.prototype) // true
+Person.prototype.getName = function () {};
+var p = new Person("hello");
+console.log(p.__proto__ === Person.prototype); // true
+console.log(p.__proto__ === p.constructor.prototype); // true
 
 // 重写原型（直接赋值对象）
-Person.prototype = { getName: function() {} }
-var p2 = new Person('hello')
-console.log(p2.__proto__ === Person.prototype)        // true
-console.log(p2.__proto__ === p2.constructor.prototype) // false
+Person.prototype = { getName: function () {} };
+var p2 = new Person("hello");
+console.log(p2.__proto__ === Person.prototype); // true
+console.log(p2.__proto__ === p2.constructor.prototype); // false
 // constructor 丢失，需要手动修复
-p2.constructor = Person
+p2.constructor = Person;
 ```
 
 重写原型后，`constructor` 会指向 `Object`（根构造函数），需要手动指回来。
@@ -562,12 +636,12 @@ p2.constructor = Person
 
 ```js
 // 以 Person 构造函数为例
-p.__proto__                            // Person.prototype
-Person.prototype.__proto__             // Object.prototype
-p.__proto__.__proto__                  // Object.prototype
-p.__proto__.constructor                // Person
-Person.prototype.constructor           // Person
-Object.prototype.__proto__             // null（原型链终点）
+p.__proto__; // Person.prototype
+Person.prototype.__proto__; // Object.prototype
+p.__proto__.__proto__; // Object.prototype
+p.__proto__.constructor; // Person
+Person.prototype.constructor; // Person
+Object.prototype.__proto__; // null（原型链终点）
 ```
 
 ### 原型链的终点是什么？如何打印出原型链的终点？
@@ -579,10 +653,10 @@ Object.prototype.__proto__             // null（原型链终点）
 ```js
 // 打印出原型链
 function printChain(obj) {
-  let cur = obj
+  let cur = obj;
   while (cur !== null) {
-    console.log(cur)
-    cur = Object.getPrototypeOf(cur)
+    console.log(cur);
+    cur = Object.getPrototypeOf(cur);
   }
 }
 ```
@@ -593,13 +667,13 @@ function printChain(obj) {
 
 ```js
 function iterate(obj) {
-  const res = []
+  const res = [];
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
-      res.push(key + ': ' + obj[key])
+      res.push(key + ": " + obj[key]);
     }
   }
-  return res
+  return res;
 }
 ```
 
@@ -615,48 +689,45 @@ function iterate(obj) {
 ```js
 // 组合模式示例
 function Person(name, age) {
-  this.name = name
-  this.age = age
+  this.name = name;
+  this.age = age;
 }
-Person.prototype.greet = function() {
-  return 'Hi, I am ' + this.name
-}
+Person.prototype.greet = function () {
+  return "Hi, I am " + this.name;
+};
 ```
 
 ### 实现 call、apply 及 bind 函数
 
 ```js
 // 实现 call
-Function.prototype.myCall = function(context, ...args) {
-  if (typeof this !== 'function') throw new TypeError('Error')
-  context = context || window
-  context.fn = this
-  const result = context.fn(...args)
-  delete context.fn
-  return result
-}
+Function.prototype.myCall = function (context, ...args) {
+  if (typeof this !== "function") throw new TypeError("Error");
+  context = context || window;
+  context.fn = this;
+  const result = context.fn(...args);
+  delete context.fn;
+  return result;
+};
 
 // 实现 apply
-Function.prototype.myApply = function(context, args) {
-  if (typeof this !== 'function') throw new TypeError('Error')
-  context = context || window
-  context.fn = this
-  const result = args ? context.fn(...args) : context.fn()
-  delete context.fn
-  return result
-}
+Function.prototype.myApply = function (context, args) {
+  if (typeof this !== "function") throw new TypeError("Error");
+  context = context || window;
+  context.fn = this;
+  const result = args ? context.fn(...args) : context.fn();
+  delete context.fn;
+  return result;
+};
 
 // 实现 bind
-Function.prototype.myBind = function(context, ...args) {
-  if (typeof this !== 'function') throw new TypeError('Error')
-  const fn = this
+Function.prototype.myBind = function (context, ...args) {
+  if (typeof this !== "function") throw new TypeError("Error");
+  const fn = this;
   return function Fn(...innerArgs) {
-    return fn.apply(
-      this instanceof Fn ? this : context,
-      args.concat(innerArgs)
-    )
-  }
-}
+    return fn.apply(this instanceof Fn ? this : context, args.concat(innerArgs));
+  };
+};
 ```
 
 ## 参考来源
@@ -664,6 +735,8 @@ Function.prototype.myBind = function(context, ...args) {
 - [MDN: Inheritance and the prototype chain](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_and_the_prototype_chain)
 - [MDN: new operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new)
 - [MDN: Classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes)
+- [MDN: static](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static)
+- [MDN: Static initialization blocks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks)
 - [MDN: instanceof](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof)
 - [冴羽：JavaScript 深入之继承的多种方式和优缺点](https://github.com/mqyqingfeng/Blog/issues/16)
 - [JavaScript 继承](https://slbyml.github.io/javascript/extend.html#%E7%BB%84%E5%90%88%E5%BC%8F%E7%BB%A7%E6%89%BF)
